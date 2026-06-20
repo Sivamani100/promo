@@ -1,0 +1,365 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/auth_service.dart';
+import '../services/supabase_service.dart';
+import '../services/chat_service.dart';
+import '../services/social_agent.dart';
+
+// ---------- Auth Provider ----------
+
+class AuthState {
+  final User? user;
+  final Map<String, dynamic>? profile;
+  final String? role; // 'brand' | 'influencer' | 'admin'
+  final bool isLoading;
+  final String? error;
+  final bool isRecoveryMode;
+
+  const AuthState({this.user, this.profile, this.role, this.isLoading = true, this.error, this.isRecoveryMode = false});
+
+  AuthState copyWith({User? user, Map<String, dynamic>? profile, String? role, bool? isLoading, String? error, bool? isRecoveryMode}) {
+    return AuthState(
+      user: user ?? this.user,
+      profile: profile ?? this.profile,
+      role: role ?? this.role,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      isRecoveryMode: isRecoveryMode ?? this.isRecoveryMode,
+    );
+  }
+
+  bool get isAuthenticated => user != null;
+  bool get isBrand => role == 'brand';
+  bool get isInfluencer => role == 'influencer';
+  bool get isAdmin => role == 'admin';
+}
+
+class AuthNotifier extends StateNotifier<AuthState> {
+  final AuthService _authService = AuthService();
+  StreamSubscription<AuthState>? _authSub;
+
+  AuthNotifier() : super(const AuthState()) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    final uri = Uri.base;
+    final isRecoveryPath = uri.fragment.contains('recovery') || uri.toString().contains('recovery') || uri.fragment.contains('/set-new-password') || uri.path.contains('set-new-password');
+
+    // Check if there is a manual PKCE code exchange needed (e.g. on Web redirect)
+    if (uri.queryParameters.containsKey('code')) {
+      final code = uri.queryParameters['code']!;
+      print('[AUTH] Found PKCE code in URL on startup. isRecoveryPath: $isRecoveryPath. Exchanging...');
+      try {
+        state = const AuthState(isLoading: true);
+        final response = await _authService.exchangeCodeForSession(code);
+        print('[AUTH] Manual exchange success. User: ${response.session?.user.id}');
+        if (response.session != null) {
+          if (isRecoveryPath) {
+            state = AuthState(
+              user: response.session.user,
+              isLoading: false,
+              isRecoveryMode: true,
+            );
+          } else {
+            await _loadProfile(response.session.user);
+          }
+        } else {
+          state = const AuthState(isLoading: false);
+        }
+      } catch (e) {
+        print('[AUTH] Manual exchange error: $e');
+        state = AuthState(isLoading: false, error: e.toString());
+      }
+    } else {
+      final user = _authService.currentUser;
+      if (user != null) {
+        if (isRecoveryPath) {
+          print('[AUTH] Restoring session in recovery mode');
+          state = AuthState(
+            user: user,
+            isLoading: false,
+            isRecoveryMode: true,
+          );
+        } else {
+          await _loadProfile(user);
+        }
+      } else {
+        state = const AuthState(isLoading: false);
+      }
+    }
+
+    _authService.authStateChanges.listen((authState) async {
+      final event = authState.event;
+      print('[AUTH] authStateChange event: $event');
+      final isRecoveryPathCurrent = Uri.base.fragment.contains('recovery') || Uri.base.toString().contains('recovery') || Uri.base.fragment.contains('/set-new-password') || Uri.base.path.contains('set-new-password');
+
+      if (event == AuthChangeEvent.passwordRecovery) {
+        if (authState.session?.user != null) {
+          state = AuthState(
+            user: authState.session!.user,
+            isLoading: false,
+            isRecoveryMode: true,
+          );
+        }
+      } else if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
+        if (authState.session?.user != null) {
+          if (isRecoveryPathCurrent) {
+            state = AuthState(
+              user: authState.session!.user,
+              isLoading: false,
+              isRecoveryMode: true,
+            );
+          } else {
+            final isRecovery = state.isRecoveryMode;
+            await _loadProfile(authState.session!.user, isRecoveryMode: isRecovery);
+          }
+        }
+      } else if (event == AuthChangeEvent.signedOut) {
+        state = const AuthState(isLoading: false);
+      }
+    });
+  }
+
+  Future<void> _loadProfile(User user, {bool isRecoveryMode = false}) async {
+    try {
+      final profile = await _authService.fetchProfile(user.id);
+      state = AuthState(
+        user: user,
+        profile: profile,
+        role: profile?['role'] as String?,
+        isLoading: false,
+        isRecoveryMode: isRecoveryMode,
+      );
+      if (profile != null && profile['role'] == 'influencer') {
+        unawaited(SocialAgent.syncFollowersIfNecessary(user.id, profile).then((_) {
+          refreshProfile();
+        }).catchError((_) {}));
+      }
+    } catch (e) {
+      state = AuthState(
+        user: user,
+        isLoading: false,
+        error: e.toString(),
+        isRecoveryMode: isRecoveryMode,
+      );
+    }
+  }
+
+  Future<String?> signIn(String email, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
+    print('[AUTH] signIn called with email: $email');
+    try {
+      final response = await _authService.signIn(email: email, password: password);
+      print('[AUTH] signIn response user: ${response.user?.id}');
+      if (response.user != null) {
+        await _loadProfile(response.user!);
+        print('[AUTH] profile loaded, role: ${state.role}, error: ${state.error}');
+        return state.role;
+      }
+      print('[AUTH] signIn: response.user was null');
+      state = state.copyWith(isLoading: false, error: 'Sign in failed. Please try again.');
+      return null;
+    } on AuthException catch (e) {
+      print('[AUTH] AuthException: ${e.message} (statusCode: ${e.statusCode})');
+      state = state.copyWith(isLoading: false, error: e.message);
+      return null;
+    } catch (e) {
+      print('[AUTH] Unexpected error: $e');
+      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      return null;
+    }
+  }
+
+  Future<String?> signUp(String email, String password, Map<String, dynamic> metadata) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _authService.signUp(email: email, password: password, metadata: metadata);
+      if (response.user != null) {
+        // Wait for profile trigger to complete
+        await Future.delayed(const Duration(seconds: 1));
+        await _loadProfile(response.user!);
+        return metadata['role'] as String?;
+      }
+      state = state.copyWith(isLoading: false, error: 'Sign up failed. Please try again.');
+      return null;
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+      return null;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      return null;
+    }
+  }
+
+  Future<void> signOut() async {
+    await _authService.signOut();
+    state = const AuthState(isLoading: false);
+  }
+
+  void clearRecoveryMode() {
+    state = state.copyWith(isRecoveryMode: false);
+  }
+
+  Future<void> refreshProfile() async {
+    if (state.user != null) {
+      await _loadProfile(state.user!);
+    }
+  }
+
+  Future<void> updatePreferences(Map<String, dynamic> newPrefs) async {
+    final user = state.user;
+    if (user == null) return;
+    try {
+      await SupabaseService.client.from('profiles').update({
+        'preferences': newPrefs,
+      }).eq('id', user.id);
+      
+      final updatedProfile = Map<String, dynamic>.from(state.profile ?? {});
+      updatedProfile['preferences'] = newPrefs;
+      state = state.copyWith(profile: updatedProfile);
+    } catch (e) {
+      print('Error updating preferences: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    super.dispose();
+  }
+}
+
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
+
+// ---------- Notification Count Provider ----------
+
+final unreadNotificationCountProvider = StateProvider<int>((ref) => 0);
+class UnreadMessageCountNotifier extends StateNotifier<int> {
+  final String? userId;
+  RealtimeChannel? _subscription;
+
+  UnreadMessageCountNotifier(this.userId) : super(0) {
+    if (userId != null) {
+      _init();
+    }
+  }
+
+  void _init() {
+    _fetchCount();
+
+    // Subscribe to all changes in public:messages to keep unread counts in sync
+    try {
+      _subscription = SupabaseService.client
+          .channel('unread_messages_count:$userId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'messages',
+            callback: (payload) {
+              _fetchCount();
+            },
+          )
+          .subscribe();
+    } catch (e) {
+      print('Error subscribing to unread messages count: $e');
+    }
+  }
+
+  Future<void> _fetchCount() async {
+    final uid = userId;
+    if (uid == null) return;
+    try {
+      final count = await ChatService().getUnreadMessageCount(uid);
+      if (mounted) {
+        state = count;
+      }
+    } catch (e) {
+      print('Error fetching unread count: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_subscription != null) {
+      SupabaseService.client.removeChannel(_subscription!);
+    }
+    super.dispose();
+  }
+}
+
+final unreadMessageCountProvider = StateNotifierProvider<UnreadMessageCountNotifier, int>((ref) {
+  final userId = ref.watch(authProvider.select((s) => s.user?.id));
+  return UnreadMessageCountNotifier(userId);
+});
+
+// ---------- Navigation Provider ----------
+
+final bottomNavIndexProvider = StateProvider<int>((ref) => 0);
+
+// ---------- Pinned Rooms Provider ----------
+
+final pinnedRoomsProvider = Provider<List<String>>((ref) {
+  final profile = ref.watch(authProvider.select((s) => s.profile));
+  final prefs = profile?['preferences'] as Map<String, dynamic>?;
+  return List<String>.from(prefs?['pinned_rooms'] ?? []);
+});
+
+final archivedRoomsProvider = Provider<List<String>>((ref) {
+  final profile = ref.watch(authProvider.select((s) => s.profile));
+  final prefs = profile?['preferences'] as Map<String, dynamic>?;
+  return List<String>.from(prefs?['archived_rooms'] ?? []);
+});
+
+final mutedRoomsProvider = Provider<List<String>>((ref) {
+  final profile = ref.watch(authProvider.select((s) => s.profile));
+  final prefs = profile?['preferences'] as Map<String, dynamic>?;
+  return List<String>.from(prefs?['muted_rooms'] ?? []);
+});
+
+final unreadOverridesProvider = Provider<List<String>>((ref) {
+  final profile = ref.watch(authProvider.select((s) => s.profile));
+  final prefs = profile?['preferences'] as Map<String, dynamic>?;
+  return List<String>.from(prefs?['unread_overrides'] ?? []);
+});
+
+// ---------- Theme Provider (Persisted) ----------
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  static const _key = 'theme_mode';
+
+  ThemeModeNotifier() : super(ThemeMode.light) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getString(_key);
+      if (value == 'dark') {
+        state = ThemeMode.dark;
+      } else {
+        state = ThemeMode.light;
+      }
+    } catch (_) {}
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    state = mode;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_key, mode == ThemeMode.dark ? 'dark' : 'light');
+    } catch (_) {}
+  }
+
+  void toggle() {
+    setThemeMode(state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+  }
+}
+
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
+  (ref) => ThemeModeNotifier(),
+);
