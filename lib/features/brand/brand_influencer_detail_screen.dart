@@ -117,7 +117,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Creator Profile')),
-        body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+        body: const ShimmerProfileDetail(),
       );
     }
 

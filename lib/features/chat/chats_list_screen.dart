@@ -475,7 +475,20 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: loadingUsers
-                          ? const Center(child: CircularProgressIndicator())
+                          ? AppShimmer(
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                itemCount: 4,
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (_, __) => Row(
+                                  children: [
+                                    Container(width: 32, height: 32, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                    const SizedBox(width: 12),
+                                    const ShimmerBox(width: 120, height: 14),
+                                  ],
+                                ),
+                              ),
+                            )
                           : allUsers.isEmpty
                               ? const Center(child: Text('No users found.'))
                               : ListView.separated(
@@ -912,7 +925,12 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 6,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerChatTile(),
+            )
           : RefreshIndicator(
               onRefresh: _load,
               child: Padding(

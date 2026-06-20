@@ -126,7 +126,12 @@ class _SupportScreenState extends ConsumerState<SupportScreen> with SingleTicker
 
           // My tickets
           _loadingTickets
-              ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+              ? ListView.separated(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  itemCount: 4,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (_, __) => const ShimmerGenericListTile(),
+                )
               : RefreshIndicator(
                   onRefresh: _loadTickets,
                   child: _tickets.isEmpty

@@ -56,7 +56,12 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
         }),
       ]),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+            )
           : _lists.isEmpty
               ? const AppEmptyState(icon: Iconsax.archive_1, title: 'No saved lists', subtitle: 'Create a list to organize influencers')
               : ListView.separated(
@@ -132,7 +137,12 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('My Campaigns')),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 3,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (_, __) => const ShimmerCampaignCard(),
+            )
           : _campaigns.isEmpty
               ? const AppEmptyState(icon: Iconsax.cup, title: 'No campaigns yet', subtitle: 'Your campaigns will appear here')
               : ListView.separated(
@@ -229,7 +239,7 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Analytics')),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const ShimmerAnalyticsScreen()
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -651,7 +661,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         ),
       ),
       body: _loadingData
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const ShimmerProfileDetail()
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();

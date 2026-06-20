@@ -50,7 +50,12 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
     return Scaffold(
       appBar: AppBar(title: const Text('Applications')),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+            )
           : RefreshIndicator(
               onRefresh: _load,
               child: Column(

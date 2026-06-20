@@ -83,7 +83,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const ShimmerSearchResults()
           : TabBarView(
               controller: _tabCtrl,
               children: [

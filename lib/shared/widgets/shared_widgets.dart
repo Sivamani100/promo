@@ -697,3 +697,518 @@ class VerificationBadge extends StatelessWidget {
     );
   }
 }
+
+// ---------- Skeleton Loading Widgets ----------
+
+/// A skeleton for notification list items
+class ShimmerNotificationTile extends StatelessWidget {
+  const ShimmerNotificationTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36, height: 36,
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  ShimmerBox(width: 160, height: 13),
+                  SizedBox(height: 6),
+                  ShimmerBox(width: double.infinity, height: 10),
+                  SizedBox(height: 4),
+                  ShimmerBox(width: 60, height: 8),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A skeleton for application cards (user avatar + info + status badge)
+class ShimmerApplicationCard extends StatelessWidget {
+  const ShimmerApplicationCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(width: 40, height: 40, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      ShimmerBox(width: 100, height: 14),
+                      SizedBox(height: 4),
+                      ShimmerBox(width: 70, height: 10),
+                    ],
+                  ),
+                ),
+                const ShimmerBox(width: 60, height: 22, borderRadius: 100),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const ShimmerBox(width: double.infinity, height: 12),
+            const SizedBox(height: 4),
+            const ShimmerBox(width: 200, height: 12),
+            const SizedBox(height: 12),
+            Row(
+              children: const [
+                Expanded(child: ShimmerBox(width: double.infinity, height: 36, borderRadius: 100)),
+                SizedBox(width: 8),
+                Expanded(child: ShimmerBox(width: double.infinity, height: 36, borderRadius: 100)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A skeleton for chat/conversation list items
+class ShimmerChatTile extends StatelessWidget {
+  const ShimmerChatTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        child: Row(
+          children: [
+            Container(width: 50, height: 50, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      ShimmerBox(width: 120, height: 14),
+                      ShimmerBox(width: 40, height: 10),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const ShimmerBox(width: 180, height: 11),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A skeleton for stat/analytics grid cards
+class ShimmerStatGrid extends StatelessWidget {
+  final int count;
+  const ShimmerStatGrid({super.key, this.count = 4});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      childAspectRatio: 1.5,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      children: List.generate(count, (_) => AppShimmer(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+        ),
+      )),
+    );
+  }
+}
+
+/// A skeleton for profile detail screens (header + info sections)
+class ShimmerProfileDetail extends StatelessWidget {
+  const ShimmerProfileDetail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.pageMarginVertical,
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+        ),
+        children: [
+          Center(
+            child: Column(
+              children: [
+                Container(width: 80, height: 80, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                const SizedBox(height: 12),
+                const ShimmerBox(width: 140, height: 18),
+                const SizedBox(height: 6),
+                const ShimmerBox(width: 100, height: 12),
+                const SizedBox(height: 8),
+                const ShimmerBox(width: 200, height: 12),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(3, (_) => Column(
+              children: const [
+                ShimmerBox(width: 40, height: 20),
+                SizedBox(height: 4),
+                ShimmerBox(width: 60, height: 10),
+              ],
+            )),
+          ),
+          const SizedBox(height: 24),
+          const ShimmerBox(width: double.infinity, height: 44, borderRadius: 100),
+          const SizedBox(height: 24),
+          const ShimmerBox(width: 80, height: 14),
+          const SizedBox(height: 8),
+          const ShimmerBox(width: double.infinity, height: 60),
+          const SizedBox(height: 24),
+          const ShimmerBox(width: 80, height: 14),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(5, (i) => ShimmerBox(width: 60.0 + (i * 10), height: 28, borderRadius: 100)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A skeleton for search results (cards + profile tiles)
+class ShimmerSearchResults extends StatelessWidget {
+  const ShimmerSearchResults({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          const ShimmerBox(width: 100, height: 14),
+          const SizedBox(height: 12),
+          const ShimmerCampaignCard(),
+          const SizedBox(height: 20),
+          const ShimmerBox(width: 80, height: 14),
+          const SizedBox(height: 12),
+          ...List.generate(3, (_) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _ShimmerProfileTile(),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShimmerProfileTile extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        children: [
+          Container(width: 40, height: 40, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                ShimmerBox(width: 100, height: 13),
+                SizedBox(height: 4),
+                ShimmerBox(width: 70, height: 10),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A skeleton for settings list screens
+class ShimmerSettingsList extends StatelessWidget {
+  final int count;
+  const ShimmerSettingsList({super.key, this.count = 6});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: List.generate(count, (_) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: Row(
+              children: [
+                Container(width: 36, height: 36, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10))),
+                const SizedBox(width: 12),
+                const Expanded(child: ShimmerBox(width: 120, height: 14)),
+                const ShimmerBox(width: 16, height: 16),
+              ],
+            ),
+          ),
+        )),
+      ),
+    );
+  }
+}
+
+/// A skeleton for generic list items with icon + text
+class ShimmerGenericListTile extends StatelessWidget {
+  const ShimmerGenericListTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(width: 32, height: 32, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  ShimmerBox(width: 140, height: 14),
+                  SizedBox(height: 4),
+                  ShimmerBox(width: 90, height: 10),
+                ],
+              ),
+            ),
+            const ShimmerBox(width: 18, height: 18, borderRadius: 100),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A skeleton for card detail screens (cover image + details)
+class ShimmerCardDetail extends StatelessWidget {
+  const ShimmerCardDetail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.pageMarginVertical,
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+        ),
+        children: [
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const ShimmerBox(width: 200, height: 22),
+          const SizedBox(height: 8),
+          const ShimmerBox(width: 120, height: 12),
+          const SizedBox(height: 16),
+          Row(
+            children: const [
+              Expanded(child: ShimmerBox(width: double.infinity, height: 40, borderRadius: 100)),
+              SizedBox(width: 12),
+              Expanded(child: ShimmerBox(width: double.infinity, height: 40, borderRadius: 100)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const ShimmerBox(width: 80, height: 14),
+          const SizedBox(height: 8),
+          const ShimmerBox(width: double.infinity, height: 14),
+          const SizedBox(height: 4),
+          const ShimmerBox(width: double.infinity, height: 14),
+          const SizedBox(height: 4),
+          const ShimmerBox(width: 220, height: 14),
+          const SizedBox(height: 24),
+          const ShimmerBox(width: 80, height: 14),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(4, (i) => ShimmerBox(width: 70.0 + (i * 12), height: 28, borderRadius: 100)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A skeleton for influencer grid items (avatar + name)
+class ShimmerInfluencerGrid extends StatelessWidget {
+  const ShimmerInfluencerGrid({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Container(width: 56, height: 56, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            const SizedBox(height: 8),
+            const ShimmerBox(width: 80, height: 12),
+            const SizedBox(height: 4),
+            const ShimmerBox(width: 60, height: 10),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                ShimmerBox(width: 30, height: 16),
+                SizedBox(width: 12),
+                ShimmerBox(width: 30, height: 16),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A skeleton for analytics/chart sections
+class ShimmerAnalyticsScreen extends StatelessWidget {
+  const ShimmerAnalyticsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.pageMarginVertical,
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+      ),
+      children: [
+        const ShimmerStatGrid(count: 4),
+        const SizedBox(height: 24),
+        AppShimmer(
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        AppShimmer(
+          child: Container(
+            height: 180,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A skeleton for chat room/message screen
+class ShimmerChatRoom extends StatelessWidget {
+  const ShimmerChatRoom({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView(
+        reverse: true,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: List.generate(6, (i) {
+          final isMe = i % 3 == 0;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!isMe) ...[
+                  Container(width: 28, height: 28, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                  const SizedBox(width: 8),
+                ],
+                Container(
+                  width: isMe ? 180 : 200,
+                  height: 44 + (i % 2) * 16.0,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}

@@ -122,7 +122,12 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 6,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+            )
           : RefreshIndicator(
               onRefresh: _load,
               child: Column(

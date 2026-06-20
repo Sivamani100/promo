@@ -1034,7 +1034,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (_loading) {
       return Scaffold(
         appBar: AppBar(),
-        body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+        body: const ShimmerChatRoom(),
       );
     }
 

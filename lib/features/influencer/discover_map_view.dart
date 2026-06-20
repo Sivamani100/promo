@@ -331,14 +331,10 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: AppColors.accent, strokeWidth: 2),
-            const SizedBox(height: 16),
-            Text('Loading map...', style: AppTextStyles.captionSm),
-          ],
+      return const AppShimmer(
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
         ),
       );
     }

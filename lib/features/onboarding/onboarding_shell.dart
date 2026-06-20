@@ -715,18 +715,23 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => const Center(
-        child: Card(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Verifying handle on social platform...', style: TextStyle(fontSize: 14)),
-              ],
-            ),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: AppShimmer(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              ),
+              const SizedBox(height: 20),
+              const ShimmerBox(width: 160, height: 16),
+              const SizedBox(height: 8),
+              const ShimmerBox(width: 220, height: 12),
+            ],
           ),
         ),
       ),

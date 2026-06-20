@@ -64,7 +64,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Scaffold(appBar: AppBar(), body: Center(child: CircularProgressIndicator(color: AppColors.accent)));
+    if (_loading) return Scaffold(appBar: AppBar(), body: const ShimmerCardDetail());
     if (_card == null) return Scaffold(appBar: AppBar(), body: const AppEmptyState(icon: Icons.error_rounded, title: 'Campaign not found'));
 
     final c = _card!;

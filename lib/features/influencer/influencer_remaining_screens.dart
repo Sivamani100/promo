@@ -178,7 +178,12 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Saved Cards')),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (_, __) => const ShimmerCampaignCard(),
+            )
           : RefreshIndicator(
               onRefresh: _load,
               child: _saved.isEmpty
@@ -261,7 +266,24 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
         ],
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? AppShimmer(
+              child: GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: 8,
+                itemBuilder: (_, __) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  ),
+                ),
+              ),
+            )
           : RefreshIndicator(
               onRefresh: _load,
               child: _items.isEmpty
@@ -659,7 +681,7 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
     return Scaffold(
       appBar: AppBar(title: const Text('Analytics')),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const ShimmerAnalyticsScreen()
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -1255,7 +1277,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         ),
       ),
       body: _loadingData
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const ShimmerProfileDetail()
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();
@@ -2627,7 +2649,12 @@ class _ProfileViewsScreenState extends ConsumerState<ProfileViewsScreen> {
         title: const Text('Profile Views'),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 5,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+            )
           : RefreshIndicator(
               onRefresh: _loadViews,
               color: AppColors.accent,
@@ -3100,7 +3127,12 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+            )
           : RefreshIndicator(
               onRefresh: _loadData,
               color: AppColors.accent,

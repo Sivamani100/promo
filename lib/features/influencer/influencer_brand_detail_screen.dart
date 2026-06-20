@@ -155,7 +155,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Brand Profile')),
-        body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+        body: const ShimmerProfileDetail(),
       );
     }
 
