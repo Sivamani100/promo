@@ -497,16 +497,10 @@ class ChatService {
   }
 
   Future<void> markGroupMessageAsRead(String messageId, String userId, Map<String, dynamic> existingPayload) async {
-    final payload = Map<String, dynamic>.from(existingPayload);
-    final List<dynamic> seenBy = List<dynamic>.from(payload['seen_by'] ?? []);
-    if (!seenBy.contains(userId)) {
-      seenBy.add(userId);
-    }
-    payload['seen_by'] = seenBy;
-
-    await _client.from('messages').update({
-      'payload': payload,
-    }).eq('id', messageId);
+    await _client.rpc('append_message_seen_by', params: {
+      'message_uuid': messageId,
+      'user_uuid': userId,
+    });
   }
 
   Future<Map<String, dynamic>> createCustomGroupRoom({

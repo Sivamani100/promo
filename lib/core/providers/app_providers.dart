@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
 import '../services/chat_service.dart';
 import '../services/social_agent.dart';
+import '../services/notification_service.dart';
 
 // ---------- Auth Provider ----------
 
@@ -17,10 +20,27 @@ class AuthState {
   final bool isLoading;
   final String? error;
   final bool isRecoveryMode;
+  final bool isOnboardingComplete;
 
-  const AuthState({this.user, this.profile, this.role, this.isLoading = true, this.error, this.isRecoveryMode = false});
+  const AuthState({
+    this.user,
+    this.profile,
+    this.role,
+    this.isLoading = true,
+    this.error,
+    this.isRecoveryMode = false,
+    this.isOnboardingComplete = false,
+  });
 
-  AuthState copyWith({User? user, Map<String, dynamic>? profile, String? role, bool? isLoading, String? error, bool? isRecoveryMode}) {
+  AuthState copyWith({
+    User? user,
+    Map<String, dynamic>? profile,
+    String? role,
+    bool? isLoading,
+    String? error,
+    bool? isRecoveryMode,
+    bool? isOnboardingComplete,
+  }) {
     return AuthState(
       user: user ?? this.user,
       profile: profile ?? this.profile,
@@ -28,6 +48,7 @@ class AuthState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       isRecoveryMode: isRecoveryMode ?? this.isRecoveryMode,
+      isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
     );
   }
 
@@ -39,113 +60,195 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService = AuthService();
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<dynamic>? _authSub;
 
   AuthNotifier() : super(const AuthState()) {
     _init();
   }
 
   Future<void> _init() async {
-    final uri = Uri.base;
-    final isRecoveryPath = uri.fragment.contains('recovery') || uri.toString().contains('recovery') || uri.fragment.contains('/set-new-password') || uri.path.contains('set-new-password');
+    try {
+      final uri = Uri.base;
+      final isRecoveryPath = kIsWeb && (uri.fragment.contains('recovery') || uri.toString().contains('recovery') || uri.fragment.contains('/set-new-password') || uri.path.contains('set-new-password'));
 
-    // Check if there is a manual PKCE code exchange needed (e.g. on Web redirect)
-    if (uri.queryParameters.containsKey('code')) {
-      final code = uri.queryParameters['code']!;
-      print('[AUTH] Found PKCE code in URL on startup. isRecoveryPath: $isRecoveryPath. Exchanging...');
-      try {
-        state = const AuthState(isLoading: true);
-        final response = await _authService.exchangeCodeForSession(code);
-        print('[AUTH] Manual exchange success. User: ${response.session?.user.id}');
-        if (response.session != null) {
+      // Check if there is a manual PKCE code exchange needed (e.g. on Web redirect)
+      if (uri.queryParameters.containsKey('code')) {
+        final code = uri.queryParameters['code']!;
+        print('[AUTH] Found PKCE code in URL on startup. isRecoveryPath: $isRecoveryPath. Exchanging...');
+        try {
+          state = const AuthState(isLoading: true);
+          final response = await _authService.exchangeCodeForSession(code);
+          print('[AUTH] Manual exchange success. User: ${response.session?.user.id}');
+          if (response.session != null) {
+            if (isRecoveryPath) {
+              state = AuthState(
+                user: response.session.user,
+                isLoading: false,
+                isRecoveryMode: true,
+              );
+            } else {
+              await _loadProfile(response.session.user).timeout(
+                const Duration(seconds: 6),
+                onTimeout: () {
+                  print('[AUTH] _loadProfile manual exchange timed out');
+                  state = AuthState(
+                    user: response.session.user,
+                    isLoading: false,
+                    error: 'Profile load timeout',
+                  );
+                },
+              );
+            }
+          } else {
+            state = const AuthState(isLoading: false);
+          }
+        } catch (e) {
+          print('[AUTH] Manual exchange error: $e');
+          state = AuthState(isLoading: false, error: e.toString());
+        }
+      } else {
+        final user = _authService.currentUser;
+        if (user != null) {
           if (isRecoveryPath) {
+            print('[AUTH] Restoring session in recovery mode');
             state = AuthState(
-              user: response.session.user,
+              user: user,
               isLoading: false,
               isRecoveryMode: true,
             );
           } else {
-            await _loadProfile(response.session.user);
+            await _loadProfile(user).timeout(
+              const Duration(seconds: 6),
+              onTimeout: () {
+                print('[AUTH] _loadProfile startup timed out');
+                state = AuthState(
+                  user: user,
+                  isLoading: false,
+                  error: 'Profile load timeout',
+                );
+              },
+            );
           }
         } else {
           state = const AuthState(isLoading: false);
         }
-      } catch (e) {
-        print('[AUTH] Manual exchange error: $e');
-        state = AuthState(isLoading: false, error: e.toString());
       }
-    } else {
-      final user = _authService.currentUser;
-      if (user != null) {
-        if (isRecoveryPath) {
-          print('[AUTH] Restoring session in recovery mode');
-          state = AuthState(
-            user: user,
-            isLoading: false,
-            isRecoveryMode: true,
-          );
-        } else {
-          await _loadProfile(user);
-        }
-      } else {
-        state = const AuthState(isLoading: false);
-      }
-    }
 
-    _authService.authStateChanges.listen((authState) async {
-      final event = authState.event;
-      print('[AUTH] authStateChange event: $event');
-      final isRecoveryPathCurrent = Uri.base.fragment.contains('recovery') || Uri.base.toString().contains('recovery') || Uri.base.fragment.contains('/set-new-password') || Uri.base.path.contains('set-new-password');
+      _authSub = _authService.authStateChanges.listen((authState) async {
+        final event = authState.event;
+        print('[AUTH] authStateChange event: $event');
+        final isRecoveryPathCurrent = kIsWeb && (Uri.base.fragment.contains('recovery') || Uri.base.toString().contains('recovery') || Uri.base.fragment.contains('/set-new-password') || Uri.base.path.contains('set-new-password'));
 
-      if (event == AuthChangeEvent.passwordRecovery) {
-        if (authState.session?.user != null) {
-          state = AuthState(
-            user: authState.session!.user,
-            isLoading: false,
-            isRecoveryMode: true,
-          );
-        }
-      } else if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
-        if (authState.session?.user != null) {
-          if (isRecoveryPathCurrent) {
+        if (event == AuthChangeEvent.passwordRecovery) {
+          if (authState.session?.user != null) {
             state = AuthState(
               user: authState.session!.user,
               isLoading: false,
               isRecoveryMode: true,
             );
-          } else {
-            final isRecovery = state.isRecoveryMode;
-            await _loadProfile(authState.session!.user, isRecoveryMode: isRecovery);
           }
+        } else if (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed || event == AuthChangeEvent.initialSession) {
+          final newUser = authState.session?.user;
+          if (newUser != null) {
+            final isSameUser = state.user?.id == newUser.id;
+            final hasProfile = state.profile != null;
+            if (state.isLoading || (isSameUser && hasProfile)) {
+              print('[AUTH] Skipping redundant profile load (isLoading: ${state.isLoading}, sameUser: $isSameUser, hasProfile: $hasProfile)');
+              // Ensure we still update the user object if it changed
+              if (state.user != newUser && !state.isLoading) {
+                state = state.copyWith(user: newUser);
+              }
+              return;
+            }
+            final isRecovery = state.isRecoveryMode || isRecoveryPathCurrent;
+            await _loadProfile(newUser, isRecoveryMode: isRecovery).timeout(
+              const Duration(seconds: 6),
+              onTimeout: () {
+                print('[AUTH] _loadProfile listener timed out');
+                state = AuthState(
+                  user: newUser,
+                  isLoading: false,
+                  isRecoveryMode: isRecovery,
+                  error: 'Profile load timeout',
+                );
+              },
+            );
+          }
+        } else if (event == AuthChangeEvent.signedOut) {
+          state = const AuthState(isLoading: false);
         }
-      } else if (event == AuthChangeEvent.signedOut) {
-        state = const AuthState(isLoading: false);
-      }
-    });
+      });
+    } catch (e) {
+      print('[AUTH] Error during _init: $e');
+      state = AuthState(isLoading: false, error: e.toString());
+    }
   }
 
   Future<void> _loadProfile(User user, {bool isRecoveryMode = false}) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
       final profile = await _authService.fetchProfile(user.id);
+      
+      final prefs = await SharedPreferences.getInstance();
+      final localComplete = prefs.getBool('onboarding_complete_${user.id}') ?? false;
+      final bio = profile?['bio']?.toString().trim();
+      final hasBio = bio != null && bio.isNotEmpty;
+      final isComplete = (profile?['onboarding_complete'] == true) ||
+                         (profile?['onboarding_complete'] == null && hasBio) ||
+                         localComplete;
+      if (isComplete && !localComplete) {
+        await prefs.setBool('onboarding_complete_${user.id}', true);
+      }
+
       state = AuthState(
         user: user,
         profile: profile,
         role: profile?['role'] as String?,
         isLoading: false,
         isRecoveryMode: isRecoveryMode,
+        isOnboardingComplete: isComplete,
       );
+
       if (profile != null && profile['role'] == 'influencer') {
-        unawaited(SocialAgent.syncFollowersIfNecessary(user.id, profile).then((_) {
-          refreshProfile();
-        }).catchError((_) {}));
+        unawaited(SocialAgent.syncFollowersIfNecessary(user.id, profile).catchError((_) {}));
       }
     } catch (e) {
+      bool localComplete = false;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        localComplete = prefs.getBool('onboarding_complete_${user.id}') ?? false;
+      } catch (_) {}
+
       state = AuthState(
         user: user,
         isLoading: false,
         error: e.toString(),
         isRecoveryMode: isRecoveryMode,
+        isOnboardingComplete: localComplete,
       );
+    }
+  }
+
+  Future<String?> signInWithGoogle({required String idToken, String? accessToken}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await SupabaseService.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+      if (response.user != null) {
+        await _loadProfile(response.user!);
+        return state.role;
+      }
+      state = state.copyWith(isLoading: false, error: 'Sign in failed. Please try again.');
+      return null;
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+      return null;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      return null;
     }
   }
 
@@ -196,7 +299,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await _authService.signOut();
+    try {
+      if (!kIsWeb) {
+        final googleSignIn = GoogleSignIn();
+        await googleSignIn.signOut();
+      }
+    } catch (e) {
+      print('Google signout error: $e');
+    }
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      print('Supabase signout error: $e');
+    }
     state = const AuthState(isLoading: false);
   }
 
@@ -235,9 +350,64 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
 
+final splashCompletedProvider = StateProvider<bool>((ref) => false);
+
 // ---------- Notification Count Provider ----------
 
-final unreadNotificationCountProvider = StateProvider<int>((ref) => 0);
+class UnreadNotificationCountNotifier extends StateNotifier<int> {
+  final String? userId;
+  RealtimeChannel? _subscription;
+
+  UnreadNotificationCountNotifier(this.userId) : super(0) {
+    if (userId != null) {
+      _init();
+    }
+  }
+
+  void _init() {
+    _fetchCount();
+    try {
+      _subscription = NotificationService().subscribeToNotifications(
+        userId!,
+        () {
+          _fetchCount();
+        },
+      );
+    } catch (e) {
+      print('Error subscribing to notifications count: $e');
+    }
+  }
+
+  Future<void> _fetchCount() async {
+    final uid = userId;
+    if (uid == null) return;
+    try {
+      final count = await NotificationService().getUnreadCount(uid);
+      if (mounted) {
+        state = count;
+      }
+    } catch (e) {
+      print('Error fetching unread notification count: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_subscription != null) {
+      try {
+        SupabaseService.client.removeChannel(_subscription!);
+      } catch (e) {
+        print('Error removing notification channel: $e');
+      }
+    }
+    super.dispose();
+  }
+}
+
+final unreadNotificationCountProvider = StateNotifierProvider<UnreadNotificationCountNotifier, int>((ref) {
+  final userId = ref.watch(authProvider.select((s) => s.user?.id));
+  return UnreadNotificationCountNotifier(userId);
+});
 class UnreadMessageCountNotifier extends StateNotifier<int> {
   final String? userId;
   RealtimeChannel? _subscription;

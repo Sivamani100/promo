@@ -55,17 +55,23 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
     setState(() => _loading = true);
     try {
       await AuthService().updatePassword(password);
-      setState(() {
-        _loading = false;
-        _done = true;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _done = true;
+        });
+      }
       ref.read(authProvider.notifier).clearRecoveryMode();
     } on AuthException catch (e) {
-      setState(() => _loading = false);
-      _showSnack(e.message);
+      if (mounted) {
+        setState(() => _loading = false);
+        _showSnack(e.message);
+      }
     } catch (e) {
-      setState(() => _loading = false);
-      _showSnack('Failed to update password. Please try again.');
+      if (mounted) {
+        setState(() => _loading = false);
+        _showSnack('Failed to update password. Please try again.');
+      }
     }
   }
 

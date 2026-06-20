@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>io.supabase.promo</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.supabase.promo</string>
+				<string>promo</string>
+				<string>com.googleusercontent.apps.857153035385-9fpe4ne2lo2g5hk2pq8bvqc2bllaaikb</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires camera access to allow you to take and upload profile pictures and campaign media.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -10,6 +25,19 @@
 	<string>This app requires permission to save photos to your library.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires microphone access to record audio when capturing video for campaigns.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app requires access to your location to match you with campaigns and brands near your area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app requires access to your location to match you with campaigns and brands near your area.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram</string>
+		<string>youtube</string>
+		<string>tiktok</string>
+		<string>twitter</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

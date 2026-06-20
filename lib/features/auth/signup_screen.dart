@@ -77,7 +77,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           _passwordCtrl.text.trim(),
           metadata,
         );
-    setState(() => _loading = false);
+    if (mounted) {
+      setState(() => _loading = false);
+    }
 
     if (role == 'brand') {
       if (mounted) context.go('/brand/home');

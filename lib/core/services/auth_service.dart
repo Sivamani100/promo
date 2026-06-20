@@ -48,7 +48,8 @@ class AuthService {
         .from('profiles')
         .select()
         .eq('id', userId)
-        .maybeSingle();
+        .maybeSingle()
+        .timeout(const Duration(seconds: 5));
     return response;
   }
 

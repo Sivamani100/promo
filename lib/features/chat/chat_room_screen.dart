@@ -76,6 +76,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _msgCtrl.removeListener(_onTextChanged);
+    _msgCtrl.dispose();
+    _scrollCtrl.dispose();
+    _onlineStatusTimer?.cancel();
+    _typingTimer?.cancel();
+    _voiceRecordingTimer?.cancel();
+    if (_channel != null) {
+      try {
+        SupabaseService.client.removeChannel(_channel!);
+      } catch (e) {
+        print('Error removing room channel: $e');
+      }
+    }
+    super.dispose();
+  }
+
   List<Map<String, dynamic>> _filterMessages(List<Map<String, dynamic>> rawMsgs) {
     final userId = ref.read(authProvider).user?.id;
     if (userId == null) return rawMsgs;
@@ -849,23 +867,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _msgCtrl.removeListener(_onTextChanged);
-    _msgCtrl.dispose();
-    _scrollCtrl.dispose();
-    _typingTimer?.cancel();
-    _onlineStatusTimer?.cancel();
-    _voiceRecordingTimer?.cancel();
-    if (_channel != null) {
-      try {
-        SupabaseService.client.removeChannel(_channel!);
-      } catch (e) {
-        print('Error removing channel on dispose: $e');
-      }
-    }
-    super.dispose();
-  }
+
 
   List<dynamic> _buildMessageItemsList() {
     final items = <dynamic>[];
@@ -1176,16 +1178,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         ),
         actions: [
-          if (!isGroup) ...[
-            IconButton(
-              icon: const Icon(Icons.call_rounded, size: 20),
-              onPressed: () => _startSimulatedCall(isVideo: false),
-            ),
-            IconButton(
-              icon: const Icon(Icons.videocam_rounded, size: 20),
-              onPressed: () => _startSimulatedCall(isVideo: true),
-            ),
-          ],
           IconButton(
             icon: Icon(_showMilestones ? Icons.chat_bubble_rounded : Icons.flag_rounded, size: 22),
             onPressed: () => setState(() => _showMilestones = !_showMilestones),

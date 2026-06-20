@@ -138,6 +138,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
 
   Future<void> _loadEntityPositions() async {
     final rng = Random(42);
+    final Map<String, LatLng> newPositions = {};
     for (final e in _entities) {
       final id = e['id'] as String?;
       if (id == null) continue;
@@ -147,35 +148,18 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       double? lng = (prefs['longitude'] as num?)?.toDouble();
 
       if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
-        if (mounted) {
-          setState(() {
-            _entityPositionsMap[id] = LatLng(lat, lng);
-          });
-        }
+        newPositions[id] = LatLng(lat, lng);
       } else {
-        // Fallback 1: try to geocode the location string
-        final loc = e['location'] as String?;
-        if (loc != null && loc.isNotEmpty) {
-          // Add a short delay to respect Nominatim rate limit (300ms)
-          await Future.delayed(const Duration(milliseconds: 300));
-          final coords = await _geocode(loc);
-          if (coords != null && mounted) {
-            setState(() {
-              _entityPositionsMap[id] = LatLng(coords['lat']!, coords['lng']!);
-            });
-            continue;
-          }
-        }
-
-        // Fallback 2: scatter around the current center
+        // Fallback: scatter around the current center
         final sLat = _centerLat + (rng.nextDouble() - 0.5) * 0.06;
         final sLng = _centerLng + (rng.nextDouble() - 0.5) * 0.08;
-        if (mounted) {
-          setState(() {
-            _entityPositionsMap[id] = LatLng(sLat, sLng);
-          });
-        }
+        newPositions[id] = LatLng(sLat, sLng);
       }
+    }
+    if (mounted) {
+      setState(() {
+        _entityPositionsMap.addAll(newPositions);
+      });
     }
   }
 
@@ -190,15 +174,12 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       double? lng = (prefs['longitude'] as num?)?.toDouble();
 
       if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
-        final loc = e['location'] as String?;
-        if (loc == null || loc.isEmpty) {
-          final sLat = _centerLat + (rng.nextDouble() - 0.5) * 0.06;
-          final sLng = _centerLng + (rng.nextDouble() - 0.5) * 0.08;
-          if (mounted) {
-            setState(() {
-              _entityPositionsMap[id] = LatLng(sLat, sLng);
-            });
-          }
+        final sLat = _centerLat + (rng.nextDouble() - 0.5) * 0.06;
+        final sLng = _centerLng + (rng.nextDouble() - 0.5) * 0.08;
+        if (mounted) {
+          setState(() {
+            _entityPositionsMap[id] = LatLng(sLat, sLng);
+          });
         }
       }
     }

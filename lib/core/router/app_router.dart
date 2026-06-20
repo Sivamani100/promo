@@ -45,55 +45,67 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _brandShellKey = GlobalKey<NavigatorState>();
 final _influencerShellKey = GlobalKey<NavigatorState>();
 
-class GoRouterRefreshStream extends ChangeNotifier {
-  late final StreamSubscription<dynamic> _subscription;
-
-  GoRouterRefreshStream(Stream<dynamic> stream) {
+class AppRouterRefreshListenable extends ChangeNotifier {
+  void refresh() {
     notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
   }
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authNotifier = ref.read(authProvider.notifier);
+  final refreshListenable = AppRouterRefreshListenable();
+  
+  ref.listen<bool>(splashCompletedProvider, (previous, next) {
+    print('[ROUTER] splashCompleted changed from $previous to $next');
+    refreshListenable.refresh();
+  });
+  
+  ref.listen<AuthState>(authProvider, (previous, next) {
+    print('[ROUTER] authState changed: isLoading=${next.isLoading}, isAuthenticated=${next.isAuthenticated}, role=${next.role}');
+    refreshListenable.refresh();
+  });
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
-    refreshListenable: GoRouterRefreshStream(authNotifier.stream),
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
+      final isSplashCompleted = ref.read(splashCompletedProvider);
       final authState = ref.read(authProvider);
       final isLoading = authState.isLoading;
       final isAuth = authState.isAuthenticated;
       final isRecovery = authState.isRecoveryMode;
       final path = state.uri.path;
-      final isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/reset-password') || path.startsWith('/set-new-password') || path == '/splash';
+      final isAuthRoute = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/reset-password') || path.startsWith('/set-new-password');
 
       final isOnboardingRoute = path.startsWith('/onboarding');
 
-      if (isLoading) return null;
+      print('[ROUTER REDIRECT] path: $path, splashCompleted: $isSplashCompleted, authLoading: $isLoading, authenticated: $isAuth, role: ${authState.role}');
 
-      // If user clicked a password reset link, send to set-new-password screen
+      // 1. If splash is not completed, we MUST stay on /splash
+      if (!isSplashCompleted) {
+        return '/splash';
+      }
+
+      // 2. If auth state is loading, wait on splash or show loading
+      if (isLoading) {
+        return path == '/splash' ? null : null;
+      }
+
+      // 3. If in password recovery, send to set-new-password
       if (isRecovery && path != '/set-new-password') {
         return '/set-new-password';
       }
 
+      // 4. If not authenticated
       if (!isAuth) {
-        if (!isAuthRoute && !isOnboardingRoute) return '/login';
+        if (!isAuthRoute && !isOnboardingRoute) {
+          return '/login';
+        }
         return null;
       }
 
-      // User is authenticated
-      final profile = authState.profile;
-      final hasCompletedOnboarding = profile != null &&
-          profile['bio'] != null &&
-          profile['bio'].toString().trim().isNotEmpty;
+      // 5. If authenticated, verify onboarding completion
+      final hasCompletedOnboarding = authState.isOnboardingComplete;
 
       if (!hasCompletedOnboarding) {
         if (!isOnboardingRoute) {
@@ -102,8 +114,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // User has completed onboarding
-      if (isAuthRoute || isOnboardingRoute) {
+      // 6. User has completed onboarding and is authenticated
+      if (isAuthRoute || isOnboardingRoute || path == '/splash') {
         if (authState.role == 'brand') return '/brand/home';
         if (authState.role == 'influencer') return '/influencer/home';
         return '/login';

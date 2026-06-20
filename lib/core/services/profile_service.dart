@@ -26,27 +26,13 @@ class ProfileService {
     var query = _client.from('profiles').select().eq('role', 'influencer').eq('is_active', true);
     if (isVerified == true) query = query.eq('is_verified', true);
     if (location != null) query = query.ilike('location', '%$location%');
+    if (niche != null) query = query.contains('niche', [niche]);
+    if (platform != null) query = query.contains('platforms', [platform]);
+    if (minFollowers != null) query = query.gte('follower_count', minFollowers);
+    if (maxFollowers != null) query = query.lte('follower_count', maxFollowers);
+
     final data = await query.order('created_at', ascending: false).range(offset, offset + limit - 1);
-    List<Map<String, dynamic>> results = List<Map<String, dynamic>>.from(data);
-    if (niche != null) {
-      results = results.where((p) {
-        final niches = p['niche'] as List<dynamic>?;
-        return niches != null && niches.contains(niche);
-      }).toList();
-    }
-    if (platform != null) {
-      results = results.where((p) {
-        final platforms = p['platforms'] as List<dynamic>?;
-        return platforms != null && platforms.contains(platform);
-      }).toList();
-    }
-    if (minFollowers != null) {
-      results = results.where((p) => (p['follower_count'] ?? 0) >= minFollowers).toList();
-    }
-    if (maxFollowers != null) {
-      results = results.where((p) => (p['follower_count'] ?? 0) <= maxFollowers).toList();
-    }
-    return results;
+    return List<Map<String, dynamic>>.from(data);
   }
 
   Future<List<Map<String, dynamic>>> getBrands({int limit = 20, int offset = 0}) async {

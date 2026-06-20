@@ -43,17 +43,23 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     setState(() => _loading = true);
     try {
       await AuthService().resetPassword(_emailCtrl.text.trim());
-      setState(() {
-        _sent = true;
-        _loading = false;
-      });
-      _checkAnimCtrl.forward();
+      if (mounted) {
+        setState(() {
+          _sent = true;
+          _loading = false;
+        });
+        _checkAnimCtrl.forward();
+      }
     } on AuthException catch (e) {
-      setState(() => _loading = false);
-      _showSnack(e.message);
+      if (mounted) {
+        setState(() => _loading = false);
+        _showSnack(e.message);
+      }
     } catch (e) {
-      setState(() => _loading = false);
-      _showSnack('An error occurred. Please try again.');
+      if (mounted) {
+        setState(() => _loading = false);
+        _showSnack('An error occurred. Please try again.');
+      }
     }
   }
 

@@ -17,7 +17,6 @@ import '../../core/services/application_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
-import '../../core/services/social_agent.dart';
 
 // ========== Influencer Brands Screen ==========
 class InfluencerBrandsScreen extends ConsumerStatefulWidget {
@@ -804,6 +803,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
   final _tiktokCtrl = TextEditingController();
   final _youtubeCtrl = TextEditingController();
   final _twitterCtrl = TextEditingController();
+  final _instagramFollowersCtrl = TextEditingController();
+  final _tiktokFollowersCtrl = TextEditingController();
+  final _youtubeFollowersCtrl = TextEditingController();
+  final _twitterFollowersCtrl = TextEditingController();
 
   double? _latitude;
   double? _longitude;
@@ -937,6 +940,12 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     _tiktokCtrl.text = handles['TikTok'] ?? handles['tiktok'] ?? '';
     _youtubeCtrl.text = handles['YouTube'] ?? handles['youtube'] ?? '';
     _twitterCtrl.text = handles['Twitter'] ?? handles['twitter'] ?? '';
+
+    final followers = prefs['platform_followers'] as Map<String, dynamic>? ?? {};
+    _instagramFollowersCtrl.text = (followers['Instagram'] ?? followers['instagram'] ?? '').toString();
+    _tiktokFollowersCtrl.text = (followers['TikTok'] ?? followers['tiktok'] ?? '').toString();
+    _youtubeFollowersCtrl.text = (followers['YouTube'] ?? followers['youtube'] ?? '').toString();
+    _twitterFollowersCtrl.text = (followers['Twitter'] ?? followers['twitter'] ?? '').toString();
   }
 
 
@@ -1002,6 +1011,28 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       final user = ref.read(authProvider).user!;
       final profile = ref.read(authProvider).profile;
 
+      final loc = _locationCtrl.text.trim();
+      if (loc.isNotEmpty && (_latitude == null || _longitude == null || _latitude == 0.0 || _longitude == 0.0)) {
+        try {
+          final url = Uri.parse(
+            'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(loc)}&format=json&limit=1',
+          );
+          final response = await http.get(url, headers: {
+            'User-Agent': 'BrandMobileApp/1.0',
+          }).timeout(const Duration(seconds: 5));
+          if (response.statusCode == 200) {
+            final results = json.decode(response.body) as List<dynamic>;
+            if (results.isNotEmpty) {
+              final first = results[0];
+              _latitude = double.tryParse(first['lat']?.toString() ?? '');
+              _longitude = double.tryParse(first['lon']?.toString() ?? '');
+            }
+          }
+        } catch (e) {
+          print('[PROFILE] Geocoding fallback failed: $e');
+        }
+      }
+
       final currentPrefs = Map<String, dynamic>.from(profile?['preferences'] ?? {});
       final instagramHandle = _instagramCtrl.text.trim();
       final tiktokHandle = _tiktokCtrl.text.trim();
@@ -1014,121 +1045,40 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         'YouTube': youtubeHandle,
         'Twitter': twitterHandle,
       };
+
+      final int instagramFollowers = int.tryParse(_instagramFollowersCtrl.text.trim()) ?? 0;
+      final int tiktokFollowers = int.tryParse(_tiktokFollowersCtrl.text.trim()) ?? 0;
+      final int youtubeFollowers = int.tryParse(_youtubeFollowersCtrl.text.trim()) ?? 0;
+      final int twitterFollowers = int.tryParse(_twitterFollowersCtrl.text.trim()) ?? 0;
+
+      final followers = {
+        'Instagram': instagramFollowers,
+        'TikTok': tiktokFollowers,
+        'YouTube': youtubeFollowers,
+        'Twitter': twitterFollowers,
+      };
+
       currentPrefs['platform_handles'] = handles;
+      currentPrefs['platform_followers'] = followers;
       currentPrefs['latitude'] = _latitude;
       currentPrefs['longitude'] = _longitude;
 
-      // Background verification agent resolves followers and profile details
-      List<SocialProfileDetails> verifiedProfiles = [];
-      if (instagramHandle.isNotEmpty) {
-        verifiedProfiles.add(await SocialAgent.fetchProfileDetails('Instagram', instagramHandle));
-      }
-      if (tiktokHandle.isNotEmpty) {
-        verifiedProfiles.add(await SocialAgent.fetchProfileDetails('TikTok', tiktokHandle));
-      }
-      if (youtubeHandle.isNotEmpty) {
-        verifiedProfiles.add(await SocialAgent.fetchProfileDetails('YouTube', youtubeHandle));
-      }
-      if (twitterHandle.isNotEmpty) {
-        verifiedProfiles.add(await SocialAgent.fetchProfileDetails('Twitter', twitterHandle));
-      }
+      int totalFollowers = instagramFollowers + tiktokFollowers + youtubeFollowers + twitterFollowers;
 
-      if (!mounted) return;
-
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Verify Social Connections'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Please verify that the profiles found belong to you:'),
-                const SizedBox(height: 16),
-                if (verifiedProfiles.isEmpty)
-                  const Text('No platform handles entered.', style: TextStyle(fontStyle: FontStyle.italic))
-                else
-                  ...verifiedProfiles.map((p) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: p.avatarUrl.isNotEmpty
-                              ? Image.network(p.avatarUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.person))
-                              : const Icon(Icons.person),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(p.displayName, style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
-                              Text('@${p.handle}', style: AppTextStyles.captionSm.copyWith(color: AppColors.accent)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('${p.followerCount}', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
-                            Text('Followers', style: AppTextStyles.captionSm),
-                          ],
-                        ),
-                      ],
-                    ),
-                  )).toList(),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Edit Handles', style: TextStyle(color: AppColors.error)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: Colors.white),
-              child: const Text('Confirm & Save'),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed == true) {
-        int totalFollowers = verifiedProfiles.fold(0, (sum, p) => sum + p.followerCount);
-
-        await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
-        await ProfileService().updateProfile(user.id, {
-          'display_name': _nameCtrl.text.trim(),
-          'bio': _bioCtrl.text.trim(),
-          'location': _locationCtrl.text.trim(),
-          'follower_count': totalFollowers,
-          'platforms': handles.entries.where((e) => e.value.isNotEmpty).map((e) => e.key).toList(),
-        });
-        await ref.read(authProvider.notifier).refreshProfile();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Profile and platforms updated! Total followers: $totalFollowers')),
-          );
-          setState(() => _isEditing = false);
-        }
+      await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
+      await ProfileService().updateProfile(user.id, {
+        'display_name': _nameCtrl.text.trim(),
+        'bio': _bioCtrl.text.trim(),
+        'location': _locationCtrl.text.trim(),
+        'follower_count': totalFollowers,
+        'platforms': handles.entries.where((e) => e.value.isNotEmpty).map((e) => e.key).toList(),
+      });
+      await ref.read(authProvider.notifier).refreshProfile();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile and platforms updated! Total followers: $totalFollowers')),
+        );
+        setState(() => _isEditing = false);
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -1149,6 +1099,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     _tiktokCtrl.dispose();
     _youtubeCtrl.dispose();
     _twitterCtrl.dispose();
+    _instagramFollowersCtrl.dispose();
+    _tiktokFollowersCtrl.dispose();
+    _youtubeFollowersCtrl.dispose();
+    _twitterFollowersCtrl.dispose();
     super.dispose();
   }
 
@@ -1317,7 +1271,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                         Text('Connected Platforms', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
                         Text(
-                          'Your follower count will be verified automatically based on the handles you connect below.',
+                          'Enter your social media handles and follower counts manually.',
                           style: AppTextStyles.captionSm.copyWith(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 16),
@@ -1327,12 +1281,28 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           hint: 'username or profile URL',
                           prefixIcon: const Icon(Iconsax.instagram, color: Color(0xFFE1306C), size: 20),
                         ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          label: 'Instagram Followers',
+                          controller: _instagramFollowersCtrl,
+                          hint: 'e.g. 5000',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: const Icon(Iconsax.people, color: Color(0xFFE1306C), size: 20),
+                        ),
                         const SizedBox(height: 16),
                         AppTextField(
                           label: 'TikTok Handle',
                           controller: _tiktokCtrl,
                           hint: 'username or profile URL',
                           prefixIcon: Icon(Iconsax.music, color: AppColors.textPrimary, size: 20),
+                        ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          label: 'TikTok Followers',
+                          controller: _tiktokFollowersCtrl,
+                          hint: 'e.g. 5000',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icon(Iconsax.people, color: AppColors.textPrimary, size: 20),
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -1341,12 +1311,28 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           hint: 'channel URL or handle',
                           prefixIcon: const Icon(Iconsax.video_play, color: Color(0xFFFF0000), size: 20),
                         ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          label: 'YouTube Followers',
+                          controller: _youtubeFollowersCtrl,
+                          hint: 'e.g. 5000',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: const Icon(Iconsax.people, color: Color(0xFFFF0000), size: 20),
+                        ),
                         const SizedBox(height: 16),
                         AppTextField(
                           label: 'Twitter / X Handle',
                           controller: _twitterCtrl,
                           hint: 'username or profile URL',
                           prefixIcon: const Icon(Iconsax.global, color: Color(0xFF1DA1F2), size: 20),
+                        ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          label: 'Twitter / X Followers',
+                          controller: _twitterFollowersCtrl,
+                          hint: 'e.g. 5000',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: const Icon(Iconsax.people, color: Color(0xFF1DA1F2), size: 20),
                         ),
                         const SizedBox(height: 24),
                         Row(

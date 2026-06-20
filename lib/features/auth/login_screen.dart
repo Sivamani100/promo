@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -34,7 +37,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _loading = true);
     final role = await ref.read(authProvider.notifier).signIn(email, password);
-    setState(() => _loading = false);
+    if (mounted) {
+      setState(() => _loading = false);
+    }
 
     if (role == 'brand') {
       if (mounted) context.go('/brand/home');
@@ -45,6 +50,67 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } else {
       final error = ref.read(authProvider).error;
       _showSnack(error ?? 'Failed to sign in.');
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _loading = true);
+    try {
+      if (kIsWeb) {
+        // On Web, use Supabase OAuth redirect flow. This avoids any platform channel / MissingPluginException issues
+        // and doesn't require configuring the Google Identity Services client in index.html.
+        final success = await SupabaseService.client.auth.signInWithOAuth(
+          OAuthProvider.google,
+          redirectTo: Uri.base.origin,
+        );
+        if (!success) {
+          throw Exception('Failed to initiate Google Sign-In redirect.');
+        }
+        return;
+      }
+
+      final googleSignIn = GoogleSignIn(
+        serverClientId: '857153035385-9fpe4ne2lo2g5hk2pq8bvqc2bllaaikb.apps.googleusercontent.com',
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
+
+      if (idToken == null) {
+        throw Exception('Could not fetch Google ID token.');
+      }
+
+      final role = await ref.read(authProvider.notifier).signInWithGoogle(
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+
+      if (role == 'brand') {
+        if (mounted) context.go('/brand/home');
+      } else if (role == 'influencer') {
+        if (mounted) context.go('/influencer/home');
+      } else if (role == 'admin') {
+        _showSnack('Admin access is web-only. Please use the web dashboard.');
+      } else {
+        final error = ref.read(authProvider).error;
+        _showSnack(error ?? 'Failed to sign in with Google.');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showSnack('Google Authentication error: $e');
+      }
     }
   }
 
@@ -167,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: 44),
               ] else ...[
-                const SizedBox(height: 110),
+                const SizedBox(height: 48),
               ],
 
               // Title and Subtitle Frame
@@ -196,7 +262,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
 
-              const SizedBox(height: 36),
+              const SizedBox(height: 24),
 
               // Email Input
               _buildInputField(
@@ -244,7 +310,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
 
               // Button Container (Width 283px, Height 45px, fully rounded, center aligned)
               Center(
@@ -293,7 +359,76 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 12),
+
+              // OR Separator
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 40, height: 1, color: isDark ? AppColors.border : const Color(0xFFE7EAEB)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'or',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: isDark ? AppColors.textSecondary : const Color(0xFF888888),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(width: 40, height: 1, color: isDark ? AppColors.border : const Color(0xFFE7EAEB)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Google Sign-In Button
+              Center(
+                child: Container(
+                  width: 283,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(62),
+                    border: Border.all(
+                      color: isDark ? AppColors.border : const Color(0xFFE7EAEB),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _loading ? null : _handleGoogleSignIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(62),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.network(
+                          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png',
+                          width: 18,
+                          height: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Sign In with Google',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               // Bottom Account Section (Don't have an account? Sign up)
               Center(
@@ -324,7 +459,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
             ],
           ),
         ),

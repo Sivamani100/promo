@@ -41,6 +41,16 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
     if (mounted) setState(() { _cards = data; _loading = false; });
   }
 
+  int _parseBudgetValue(String? range) {
+    if (range == null) return 0;
+    final clean = range.replaceAll(',', '');
+    final match = RegExp(r'\d+').firstMatch(clean);
+    if (match != null) {
+      return int.tryParse(match.group(0)!) ?? 0;
+    }
+    return 0;
+  }
+
   List<Map<String, dynamic>> get _filtered {
     var results = List<Map<String, dynamic>>.from(_cards);
 
@@ -62,13 +72,13 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
         results.sort((a, b) => (b['created_at'] ?? '').compareTo(a['created_at'] ?? ''));
         break;
       case _SortOption.budgetHigh:
-        results.sort((a, b) => ((b['budget'] as num?) ?? 0).compareTo((a['budget'] as num?) ?? 0));
+        results.sort((a, b) => _parseBudgetValue(b['budget_range'] as String?).compareTo(_parseBudgetValue(a['budget_range'] as String?)));
         break;
       case _SortOption.budgetLow:
-        results.sort((a, b) => ((a['budget'] as num?) ?? 0).compareTo((b['budget'] as num?) ?? 0));
+        results.sort((a, b) => _parseBudgetValue(a['budget_range'] as String?).compareTo(_parseBudgetValue(b['budget_range'] as String?)));
         break;
       case _SortOption.deadline:
-        results.sort((a, b) => (a['deadline'] ?? '9999').compareTo(b['deadline'] ?? '9999'));
+        results.sort((a, b) => (a['application_deadline'] ?? '9999-12-31').compareTo(b['application_deadline'] ?? '9999-12-31'));
         break;
     }
     return results;

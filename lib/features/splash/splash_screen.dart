@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
@@ -25,7 +24,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _shimmerValue;
 
   bool _animationCompleted = false;
-  bool _navigated = false;
 
   @override
   void initState() {
@@ -71,33 +69,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    _logoCtrl.forward();
+    try {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (!mounted) return;
+      _logoCtrl.forward();
 
-    await Future.delayed(const Duration(milliseconds: 700));
-    if (!mounted) return;
-    _subtitleCtrl.forward();
-    _shimmerCtrl.repeat(reverse: true);
+      await Future.delayed(const Duration(milliseconds: 700));
+      if (!mounted) return;
+      _subtitleCtrl.forward();
+      _shimmerCtrl.repeat(reverse: true);
 
-    await Future.delayed(const Duration(milliseconds: 1600));
-    if (!mounted) return;
-    _animationCompleted = true;
-    final auth = ref.read(authProvider);
-    if (!auth.isLoading) {
-      _navigate();
-    }
-  }
-
-  void _navigate() {
-    if (_navigated) return;
-    _navigated = true;
-    final auth = ref.read(authProvider);
-    if (auth.user != null) {
-      final role = auth.role ?? 'brand';
-      context.go('/$role/home');
-    } else {
-      context.go('/login');
+      await Future.delayed(const Duration(milliseconds: 1600));
+      if (!mounted) return;
+      _animationCompleted = true;
+      ref.read(splashCompletedProvider.notifier).state = true;
+    } catch (e) {
+      debugPrint('Error in splash screen animation: $e');
+      if (mounted) {
+        _animationCompleted = true;
+        ref.read(splashCompletedProvider.notifier).state = true;
+      }
     }
   }
 
@@ -111,11 +102,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      if (!next.isLoading && _animationCompleted) {
-        _navigate();
-      }
-    });
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

@@ -47,6 +47,27 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _onlineTimer?.cancel();
+    if (_messagesSubscription != null) {
+      try {
+        SupabaseService.client.removeChannel(_messagesSubscription!);
+      } catch (e) {
+        print('Error removing message channel: $e');
+      }
+    }
+    for (final channel in _typingChannels.values) {
+      try {
+        SupabaseService.client.removeChannel(channel);
+      } catch (e) {
+        print('Error removing typing channel: $e');
+      }
+    }
+    super.dispose();
+  }
+
   Future<void> _load() async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
@@ -109,21 +130,30 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
   }
 
   void _subscribeToTyping(List<Map<String, dynamic>> rooms) {
-    for (final channel in _typingChannels.values) {
-      try {
-        SupabaseService.client.removeChannel(channel);
-      } catch (e) {
-        print('Error removing channel: $e');
-      }
-    }
-    _typingChannels.clear();
-    _typingNames.clear();
-
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
+    final activeIds = rooms.map((r) => r['id'] as String).toSet();
+
+    // Remove channels no longer in the rooms list
+    final removedIds = _typingChannels.keys.where((id) => !activeIds.contains(id)).toList();
+    for (final id in removedIds) {
+      final channel = _typingChannels.remove(id);
+      if (channel != null) {
+        try {
+          SupabaseService.client.removeChannel(channel);
+        } catch (e) {
+          print('Error removing typing channel: $e');
+        }
+      }
+      _typingNames.remove(id);
+    }
+
+    // Subscribe to new channels only
     for (final room in rooms) {
       final roomId = room['id'] as String;
+      if (_typingChannels.containsKey(roomId)) continue; // skip existing
+
       try {
         final channel = SupabaseService.client.channel('typing:$roomId');
         channel.onBroadcast(
@@ -610,22 +640,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    if (_messagesSubscription != null) {
-      SupabaseService.client.removeChannel(_messagesSubscription!);
-    }
-    for (final channel in _typingChannels.values) {
-      try {
-        SupabaseService.client.removeChannel(channel);
-      } catch (e) {
-        print('Error unsubscribing: $e');
-      }
-    }
-    _onlineTimer?.cancel();
-    super.dispose();
-  }
+
 
   void _showRoomOptions(Map<String, dynamic> room) {
     final roomId = room['id'] as String;

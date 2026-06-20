@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -12,7 +13,6 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/data_services.dart';
-import '../../core/services/social_agent.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 // ---------- Onboarding State Model ----------
@@ -29,6 +29,7 @@ class OnboardingState {
   final String targetBudgetRange;
   final String targetAudience;
   final Map<String, String> platformHandles;
+  final Map<String, int> platformFollowers;
   final bool isSaving;
   final double? latitude;
   final double? longitude;
@@ -46,6 +47,7 @@ class OnboardingState {
     this.targetBudgetRange = '',
     this.targetAudience = '',
     this.platformHandles = const {},
+    this.platformFollowers = const {},
     this.isSaving = false,
     this.latitude,
     this.longitude,
@@ -64,6 +66,7 @@ class OnboardingState {
     String? targetBudgetRange,
     String? targetAudience,
     Map<String, String>? platformHandles,
+    Map<String, int>? platformFollowers,
     bool? isSaving,
     double? latitude,
     double? longitude,
@@ -81,6 +84,7 @@ class OnboardingState {
       targetBudgetRange: targetBudgetRange ?? this.targetBudgetRange,
       targetAudience: targetAudience ?? this.targetAudience,
       platformHandles: platformHandles ?? this.platformHandles,
+      platformFollowers: platformFollowers ?? this.platformFollowers,
       isSaving: isSaving ?? this.isSaving,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
@@ -93,6 +97,13 @@ class OnboardingStateNotifier extends StateNotifier<OnboardingState> {
   OnboardingStateNotifier(Map<String, dynamic>? profile) : super(OnboardingState()) {
     if (profile != null) {
       final prefs = profile['preferences'] as Map<String, dynamic>? ?? {};
+      
+      final rawFollowers = prefs['platform_followers'] as Map<String, dynamic>? ?? {};
+      final followersMap = <String, int>{};
+      rawFollowers.forEach((k, v) {
+        followersMap[k] = (v is num) ? v.toInt() : (int.tryParse(v.toString()) ?? 0);
+      });
+
       state = OnboardingState(
         displayName: profile['display_name'] ?? '',
         companyName: profile['company_name'] ?? '',
@@ -106,6 +117,7 @@ class OnboardingStateNotifier extends StateNotifier<OnboardingState> {
         targetBudgetRange: (profile['preferences'] as Map<String, dynamic>?)?['target_budget_range'] ?? '',
         targetAudience: (profile['preferences'] as Map<String, dynamic>?)?['target_audience'] ?? '',
         platformHandles: Map<String, String>.from((profile['preferences'] as Map<String, dynamic>?)?['platform_handles'] ?? {}),
+        platformFollowers: followersMap,
         latitude: (prefs['latitude'] as num?)?.toDouble(),
         longitude: (prefs['longitude'] as num?)?.toDouble(),
       );
@@ -140,22 +152,38 @@ class OnboardingStateNotifier extends StateNotifier<OnboardingState> {
     state = state.copyWith(niches: list);
   }
 
-  void connectPlatform(String platform, String handle) {
+  void connectPlatform(String platform, String handle, int followers) {
     final map = Map<String, String>.from(state.platformHandles);
     map[platform] = handle;
+    final followersMap = Map<String, int>.from(state.platformFollowers);
+    followersMap[platform] = followers;
     final list = List<String>.from(state.platforms);
     if (!list.contains(platform)) {
       list.add(platform);
     }
-    state = state.copyWith(platformHandles: map, platforms: list);
+    final totalFollowers = followersMap.values.fold(0, (sum, val) => sum + val);
+    state = state.copyWith(
+      platformHandles: map,
+      platformFollowers: followersMap,
+      platforms: list,
+      followerCount: totalFollowers,
+    );
   }
 
   void disconnectPlatform(String platform) {
     final map = Map<String, String>.from(state.platformHandles);
     map.remove(platform);
+    final followersMap = Map<String, int>.from(state.platformFollowers);
+    followersMap.remove(platform);
     final list = List<String>.from(state.platforms);
     list.remove(platform);
-    state = state.copyWith(platformHandles: map, platforms: list);
+    final totalFollowers = followersMap.values.fold(0, (sum, val) => sum + val);
+    state = state.copyWith(
+      platformHandles: map,
+      platformFollowers: followersMap,
+      platforms: list,
+      followerCount: totalFollowers,
+    );
   }
 
   Future<void> saveProfile(String userId, WidgetRef ref) async {
@@ -166,7 +194,12 @@ class OnboardingStateNotifier extends StateNotifier<OnboardingState> {
         'bio': state.bio.trim(),
         'website_url': state.websiteUrl.trim(),
         'avatar_url': state.avatarUrl,
+        'onboarding_complete': true,
+        'onboarding_step': 5,
       };
+
+      double? lat = state.latitude;
+      double? lng = state.longitude;
 
       if (role == 'brand') {
         updateData['display_name'] = state.companyName.trim().isNotEmpty ? state.companyName.trim() : state.displayName.trim();
@@ -176,40 +209,48 @@ class OnboardingStateNotifier extends StateNotifier<OnboardingState> {
           'target_audience': state.targetAudience,
         };
       } else {
+        if (state.location.trim().isNotEmpty && (lat == null || lng == null || lat == 0.0 || lng == 0.0)) {
+          try {
+            final url = Uri.parse(
+              'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(state.location.trim())}&format=json&limit=1',
+            );
+            final response = await http.get(url, headers: {
+              'User-Agent': 'BrandMobileApp/1.0',
+            }).timeout(const Duration(seconds: 5));
+            if (response.statusCode == 200) {
+              final results = json.decode(response.body) as List<dynamic>;
+              if (results.isNotEmpty) {
+                final first = results[0];
+                lat = double.tryParse(first['lat']?.toString() ?? '');
+                lng = double.tryParse(first['lon']?.toString() ?? '');
+              }
+            }
+          } catch (e) {
+            print('[ONBOARDING] Geocoding fallback failed: $e');
+          }
+        }
+
         updateData['display_name'] = state.displayName.trim();
         updateData['niche'] = state.niches;
         updateData['platforms'] = state.platforms;
         updateData['location'] = state.location.trim();
         
-        // Background verification agent resolves followers automatically
-        int totalFollowers = 0;
-        final insta = state.platformHandles['Instagram'];
-        final tiktok = state.platformHandles['TikTok'];
-        final yt = state.platformHandles['YouTube'];
-        final twitter = state.platformHandles['Twitter'];
-        
-        if (insta != null && insta.isNotEmpty) {
-          totalFollowers += await SocialAgent.resolveFollowers('Instagram', insta);
-        }
-        if (tiktok != null && tiktok.isNotEmpty) {
-          totalFollowers += await SocialAgent.resolveFollowers('TikTok', tiktok);
-        }
-        if (yt != null && yt.isNotEmpty) {
-          totalFollowers += await SocialAgent.resolveFollowers('YouTube', yt);
-        }
-        if (twitter != null && twitter.isNotEmpty) {
-          totalFollowers += await SocialAgent.resolveFollowers('Twitter', twitter);
-        }
-        
-        updateData['follower_count'] = totalFollowers;
+        updateData['follower_count'] = state.followerCount;
         updateData['preferences'] = {
           'platform_handles': state.platformHandles,
-          'latitude': state.latitude,
-          'longitude': state.longitude,
+          'platform_followers': state.platformFollowers,
+          'latitude': lat,
+          'longitude': lng,
         };
       }
 
       await ProfileService().updateProfile(userId, updateData);
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('onboarding_complete_$userId', true);
+      } catch (e) {
+        print('Error saving local onboarding flag: $e');
+      }
       await ref.read(authProvider.notifier).refreshProfile();
     } catch (e) {
       print('[ONBOARDING] Error saving onboarding: $e');
@@ -675,142 +716,75 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
   }
 
   Future<void> _showConnectDialog(String platform) async {
-    final ctrl = TextEditingController(text: ref.read(onboardingStateProvider).platformHandles[platform]);
-    final handle = await showDialog<String>(
+    final handleCtrl = TextEditingController(text: ref.read(onboardingStateProvider).platformHandles[platform]);
+    final followersCtrl = TextEditingController(
+      text: (ref.read(onboardingStateProvider).platformFollowers[platform] ?? '').toString(),
+    );
+
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text('Connect $platform'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          style: AppTextStyles.body,
-          decoration: InputDecoration(
-            hintText: 'Enter handle (e.g. @username)',
-            hintStyle: AppTextStyles.caption,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: handleCtrl,
+              autofocus: true,
+              style: AppTextStyles.body,
+              decoration: InputDecoration(
+                labelText: 'Username / Handle',
+                hintText: 'e.g. @username',
+                hintStyle: AppTextStyles.caption,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: followersCtrl,
+              style: AppTextStyles.body,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Followers Count',
+                hintText: 'e.g. 5000',
+                hintStyle: AppTextStyles.caption,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            child: const Text('Next'),
+            onPressed: () {
+              final h = handleCtrl.text.trim();
+              final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
+              Navigator.pop(ctx, {'handle': h, 'followers': f});
+            },
+            child: const Text('Connect'),
           ),
         ],
       ),
     );
 
-    // Dispose dialog controller
-    ctrl.dispose();
+    handleCtrl.dispose();
+    followersCtrl.dispose();
 
-    if (handle == null) return;
+    if (result == null) return;
+    final handle = result['handle'] as String;
+    final followers = result['followers'] as int;
+
     if (handle.isEmpty) {
       ref.read(onboardingStateProvider.notifier).disconnectPlatform(platform);
       return;
     }
 
-    // Show a loading dialog
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: AppShimmer(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              ),
-              const SizedBox(height: 20),
-              const ShimmerBox(width: 160, height: 16),
-              const SizedBox(height: 8),
-              const ShimmerBox(width: 220, height: 12),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    try {
-      final details = await SocialAgent.fetchProfileDetails(platform, handle);
-      if (!mounted) return;
-      Navigator.pop(context); // Pop loading dialog
-
-      // Show confirmation dialog with DP and followers!
-      if (!mounted) return;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Verify Social Account'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('We found the following profile. Please confirm if this is your account:'),
-              const SizedBox(height: 20),
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.accent, width: 2),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: details.avatarUrl.isNotEmpty
-                    ? Image.network(details.avatarUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.person, size: 40))
-                    : const Icon(Icons.person, size: 40),
-              ),
-              const SizedBox(height: 12),
-              Text(details.displayName, style: AppTextStyles.label.copyWith(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text('@${details.handle}', style: AppTextStyles.captionSm.copyWith(color: AppColors.accent)),
-              const SizedBox(height: 8),
-              Chip(
-                backgroundColor: AppColors.surface2,
-                label: Text(
-                  '${details.followerCount} Followers',
-                  style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('No, Change ID', style: TextStyle(color: AppColors.error)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success, foregroundColor: Colors.white),
-              child: const Text('Yes, Link Account'),
-            ),
-          ],
-        ),
+    ref.read(onboardingStateProvider.notifier).connectPlatform(platform, handle, followers);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Linked $platform account! Followers count set to: $followers')),
       );
-
-      if (confirmed == true) {
-        ref.read(onboardingStateProvider.notifier).connectPlatform(platform, handle);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Linked $platform account! Verified follower count: ${details.followerCount}')),
-          );
-        }
-      } else {
-        // Try again recursively
-        _showConnectDialog(platform);
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context); // Pop loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to verify profile: $e')),
-        );
-      }
     }
   }
 
@@ -827,7 +801,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         Text(
           widget.role == 'brand' 
               ? 'Set your campaign preferences.' 
-              : 'Link your social media accounts. Our automated verification agent will automatically resolve and sync your follower count.', 
+              : 'Link your social media accounts and manually input your followers count.', 
           style: AppTextStyles.caption,
         ),
         const SizedBox(height: 24),
@@ -922,6 +896,8 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
 
   Widget _buildPlatformRow(String name, IconData icon, Color color, String? handle) {
     final isConnected = handle != null && handle.isNotEmpty;
+    final state = ref.watch(onboardingStateProvider);
+    final followers = state.platformFollowers[name] ?? 0;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -940,7 +916,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
                 Text(name, style: AppTextStyles.label),
                 if (isConnected) ...[
                   const SizedBox(height: 2),
-                  Text(handle, style: AppTextStyles.captionSm.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600)),
+                  Text('$handle ($followers Followers)', style: AppTextStyles.captionSm.copyWith(color: AppColors.accent, fontWeight: FontWeight.w600)),
                 ]
               ],
             ),
