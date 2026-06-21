@@ -190,7 +190,16 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                     borderRadius: BorderRadius.circular(16),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: Image.network(c['cover_image_url'], fit: BoxFit.cover),
+                      child: AppImage(
+                        url: c['cover_image_url'],
+                        fit: BoxFit.cover,
+                        fallback: Container(
+                          color: AppColors.surface2,
+                          child: Center(
+                            child: Icon(Iconsax.image, size: 48, color: AppColors.textMuted),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -307,6 +316,38 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                     _buildMetricGridCard(Iconsax.user_tick, 'Follower Target', minReqFollowers > 0 ? '${NumberFormat.compact().format(minReqFollowers)}+' : 'Any tier'),
                     _buildMetricGridCard(Iconsax.location, 'Preferred Location', c['preferred_location'] ?? 'Anywhere'),
                   ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accent.withOpacity(0.08),
+                        AppColors.accent.withOpacity(0.02),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.accent.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${c['openings'] ?? 1} positions available for this collaboration',
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.accent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 if (c['application_deadline'] != null) ...[
                   const SizedBox(height: 12),

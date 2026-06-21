@@ -526,10 +526,14 @@ class CampaignCardWidget extends StatelessWidget {
     }
 
     final minFollowers = card['min_followers'] as int? ?? 0;
-    final followersLabel = _followerTiers.firstWhere(
-      (t) => t['value'] == minFollowers,
-      orElse: () => {'label': 'Any tier'},
-    )['label'] as String;
+    final followersLabel = (() {
+      final Map<String, Object>? tier = _followerTiers.cast<Map<String, Object>?>().firstWhere(
+        (t) => t?['value'] == minFollowers,
+        orElse: () => null,
+      );
+      if (tier != null) return tier['label'] as String;
+      return '${NumberFormat.compact().format(minFollowers)}+ followers';
+    })();
 
     final location = card['preferred_location'] as String? ?? 'Anywhere';
     final budget = card['budget_range'] as String? ?? 'Open';
@@ -1706,12 +1710,13 @@ Future<T?> showPremiumDialog<T>({
   required String title,
   required Widget content,
   List<Widget>? actions,
+  List<Widget> Function(BuildContext dialogContext)? actionsBuilder,
   IconData? icon,
   bool isDestructive = false,
 }) {
   return showDialog<T>(
     context: context,
-    builder: (context) {
+    builder: (dialogCtx) {
       return AlertDialog(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
@@ -1743,8 +1748,84 @@ Future<T?> showPremiumDialog<T>({
         ),
         content: content,
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        actions: actions,
+        actions: actionsBuilder != null ? actionsBuilder(dialogCtx) : actions,
       );
     },
   );
+}
+
+bool isValidImageUrl(String? url) {
+  if (url == null || url.trim().isEmpty) return false;
+  final uri = Uri.tryParse(url.trim());
+  if (uri == null) return false;
+  return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https');
+}
+
+class AppImage extends StatelessWidget {
+  final String? url;
+  final BoxFit fit;
+  final Widget? fallback;
+  final double? width;
+  final double? height;
+  final BorderRadius? borderRadius;
+
+  const AppImage({
+    super.key,
+    required this.url,
+    this.fit = BoxFit.cover,
+    this.fallback,
+    this.width,
+    this.height,
+    this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget placeholder = fallback ?? Container(
+      color: AppColors.surface2,
+      width: width,
+      height: height,
+      child: Center(
+        child: Icon(Iconsax.image, color: AppColors.textMuted, size: 24),
+      ),
+    );
+
+    if (!isValidImageUrl(url)) {
+      return placeholder;
+    }
+
+    final cleanUrl = url!.trim();
+
+    Widget imageWidget = CachedNetworkImage(
+      imageUrl: cleanUrl,
+      fit: fit,
+      width: width,
+      height: height,
+      placeholder: (context, url) => Container(
+        color: AppColors.surface2,
+        width: width,
+        height: height,
+        child: Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            ),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) => placeholder,
+    );
+
+    if (borderRadius != null) {
+      imageWidget = ClipRRect(
+        borderRadius: borderRadius!,
+        child: imageWidget,
+      );
+    }
+
+    return imageWidget;
+  }
 }

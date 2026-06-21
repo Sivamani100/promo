@@ -19,6 +19,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import 'invite_group_members_screen.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -2518,112 +2519,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _showAddMemberDialog(StateSetter setSheetState) async {
-    final user = ref.read(authProvider).user;
-    if (user == null) return;
-
-    final allProfilesRes = await SupabaseService.client
-        .from('profiles')
-        .select('id, display_name, avatar_url, role')
-        .neq('id', user.id);
-    final allProfiles = List<Map<String, dynamic>>.from(allProfilesRes);
-
-    final existingUserIds = _groupMembers.map((m) => m['user_id'] as String).toSet();
-    final inviteable = allProfiles.where((p) => !existingUserIds.contains(p['id'])).toList();
-
-    if (!mounted) return;
-
-    final selected = <String>{};
-    await showPremiumDialog(
-      context: context,
-      title: 'Invite Members',
-      icon: Iconsax.user_add,
-      content: StatefulBuilder(
-        builder: (context, setDialogState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              inviteable.isEmpty
-                  ? const SizedBox(
-                      height: 100,
-                      child: Center(child: Text('All users are already in the group.')),
-                    )
-                  : SizedBox(
-                      width: double.maxFinite,
-                      height: 300,
-                      child: ListView.builder(
-                        itemCount: inviteable.length,
-                        itemBuilder: (context, idx) {
-                          final p = inviteable[idx];
-                          final isChecked = selected.contains(p['id']);
-                          return CheckboxListTile(
-                            value: isChecked,
-                            title: Text(p['display_name'] ?? 'User', style: AppTextStyles.body),
-                            subtitle: Text((p['role'] ?? 'member').toString().toUpperCase(), style: AppTextStyles.captionSm),
-                            secondary: AppAvatar(
-                              url: p['avatar_url'],
-                              fallbackText: p['display_name'] ?? 'U',
-                              size: 32,
-                            ),
-                            onChanged: (val) {
-                              setDialogState(() {
-                                if (val == true) {
-                                  selected.add(p['id']);
-                                } else {
-                                  selected.remove(p['id']);
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: selected.isEmpty
-                        ? null
-                        : () async {
-                            Navigator.pop(context);
-                            for (final uid in selected) {
-                              try {
-                                await _chatService.inviteUserToGroup(widget.roomId, uid);
-                              } catch (e) {
-                                print('Error inviting user $uid: $e');
-                              }
-                            }
-                            final members = await _chatService.getGroupMembers(widget.roomId);
-                            if (mounted) {
-                              setState(() {
-                                _groupMembers = members;
-                              });
-                              setSheetState(() {});
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: AppColors.accentOnDark,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                      elevation: 0,
-                    ),
-                    child: const Text('Invite'),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => InviteGroupMembersScreen(
+          roomId: widget.roomId,
+          existingMembers: _groupMembers,
+        ),
       ),
     );
+    if (result == true) {
+      final members = await _chatService.getGroupMembers(widget.roomId);
+      if (mounted) {
+        setState(() {
+          _groupMembers = members;
+        });
+        setSheetState(() {});
+      }
+    }
   }
 
   Widget _buildMemberTile(Map<String, dynamic> member, String? userId, bool isCurrentUserAdmin, StateSetter setSheetState) {
@@ -3184,16 +3097,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         style: AppTextStyles.body,
         decoration: const InputDecoration(hintText: 'Milestone title'),
       ),
-      actions: [
+      actionsBuilder: (dialogCtx) => [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogCtx),
           child: Text(
             'Cancel',
             style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
         ElevatedButton(
-          onPressed: () => Navigator.pop(context, ctrl.text),
+          onPressed: () => Navigator.pop(dialogCtx, ctrl.text),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.accent,
             foregroundColor: AppColors.accentOnDark,

@@ -9,6 +9,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/application_service.dart';
+import '../../core/services/card_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
@@ -177,61 +178,82 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                                        }).toList(),
                                      ),
                                    ],
-                                   if (app['status'] == 'pending') ...[
-                                    const SizedBox(height: 12),
-                                    Row(children: [
-                                      Expanded(
-                                        child: AppButton(
-                                          label: 'Accept',
-                                          onTap: () async {
-                                            final confirmed = await showPremiumConfirmDialog(
-                                              context: context,
-                                              title: 'Accept Application',
-                                              message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
-                                              confirmLabel: 'Accept',
-                                            );
-                                            if (confirmed == true) {
-                                              _updateStatus(app['id'], 'accepted');
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: AppButton(
-                                          label: 'Shortlist',
-                                          isPrimary: false,
-                                          onTap: () async {
-                                            final confirmed = await showPremiumConfirmDialog(
-                                              context: context,
-                                              title: 'Shortlist Application',
-                                              message: 'Are you sure you want to shortlist this application?',
-                                              confirmLabel: 'Shortlist',
-                                            );
-                                            if (confirmed == true) {
-                                              _updateStatus(app['id'], 'shortlisted');
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton(
-                                        icon: Icon(Iconsax.close_circle, color: AppColors.error),
-                                        onPressed: () async {
-                                          final confirmed = await showPremiumConfirmDialog(
-                                            context: context,
-                                            title: 'Reject Application',
-                                            message: 'Are you sure you want to reject this application? This action cannot be undone.',
-                                            confirmLabel: 'Reject',
-                                            isDestructive: true,
-                                          );
-                                          if (confirmed == true) {
-                                            _updateStatus(app['id'], 'rejected');
-                                          }
-                                        },
-                                      ),
-                                    ]),
-                                  ],
+                                   if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
+                                     const SizedBox(height: 12),
+                                     Row(children: [
+                                       Expanded(
+                                         child: AppButton(
+                                           label: 'Accept',
+                                           onTap: () async {
+                                             final card = app['card'] as Map<String, dynamic>?;
+                                             if (card == null) return;
+                                             final cardId = card['id'] as String;
+                                             final totalOpenings = card['openings'] ?? 1;
+                                             final acceptedCount = _apps.where((a) => a['card_id'] == cardId && a['status'] == 'accepted').length;
+
+                                             if (acceptedCount >= totalOpenings) {
+                                               final confirmed = await showPremiumConfirmDialog(
+                                                 context: context,
+                                                 title: 'Openings Limit Reached',
+                                                 message: 'All $totalOpenings openings have been filled. Would you like to increase the openings limit to ${totalOpenings + 1} and accept this applicant?',
+                                                 confirmLabel: 'Increase & Accept',
+                                                 cancelLabel: 'Cancel',
+                                               );
+                                               if (confirmed == true) {
+                                                 try {
+                                                   setState(() => _loading = true);
+                                                   await CardService().updateCard(cardId, {'openings': totalOpenings + 1});
+                                                   await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
+                                                   await _load();
+                                                   if (mounted) {
+                                                     ScaffoldMessenger.of(context).showSnackBar(
+                                                       const SnackBar(content: Text('Openings increased and application accepted successfully')),
+                                                     );
+                                                   }
+                                                 } catch (e) {
+                                                   if (mounted) {
+                                                     ScaffoldMessenger.of(context).showSnackBar(
+                                                       SnackBar(content: Text('Failed to update: $e')),
+                                                     );
+                                                   }
+                                                 } finally {
+                                                   if (mounted) {
+                                                     setState(() => _loading = false);
+                                                   }
+                                                 }
+                                               }
+                                             } else {
+                                               final confirmed = await showPremiumConfirmDialog(
+                                                 context: context,
+                                                 title: 'Accept Application',
+                                                 message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
+                                                 confirmLabel: 'Accept',
+                                               );
+                                               if (confirmed == true) {
+                                                 _updateStatus(app['id'], 'accepted');
+                                               }
+                                             }
+                                           },
+                                         ),
+                                       ),
+                                       const SizedBox(width: 8),
+                                       IconButton(
+                                         icon: Icon(Iconsax.close_circle, color: AppColors.error),
+                                         onPressed: () async {
+                                           final confirmed = await showPremiumConfirmDialog(
+                                             context: context,
+                                             title: 'Reject Application',
+                                             message: 'Are you sure you want to reject this application? This action cannot be undone.',
+                                             confirmLabel: 'Reject',
+                                             isDestructive: true,
+                                           );
+                                           if (confirmed == true) {
+                                             _updateStatus(app['id'], 'rejected');
+                                           }
+                                         },
+                                       ),
+                                     ]),
+                                   ],
                                   if (app['status'] == 'accepted') ...[
                                     BrandMilestoneTrackerWidget(
                                       influencerId: inf?['id'] ?? '',
@@ -390,12 +412,12 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
           );
         },
       ),
-      actions: [
+      actionsBuilder: (dialogCtx) => [
         Row(
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogCtx),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: BorderSide(color: AppColors.border),
@@ -410,7 +432,7 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
                 onPressed: () {
                   final t = ctrl.text.trim();
                   if (t.isEmpty) return;
-                  Navigator.pop(context, {
+                  Navigator.pop(dialogCtx, {
                     'title': t,
                     'due_date': selectedDate?.toIso8601String(),
                   });

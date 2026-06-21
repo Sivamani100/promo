@@ -67,6 +67,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   final _descCtrl = TextEditingController();
   final _budgetCtrl = TextEditingController();
   final _timelineCtrl = TextEditingController();
+  final _openingsCtrl = TextEditingController(text: '1');
   final _customCoverUrlCtrl = TextEditingController();
 
   // State
@@ -96,6 +97,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       _descCtrl.text = c['description'] ?? '';
       _budgetCtrl.text = c['budget_range'] ?? '';
       _timelineCtrl.text = c['timeline'] ?? '';
+      _openingsCtrl.text = (c['openings'] ?? 1).toString();
       _category = c['category'] ?? 'Fashion';
       _minFollowers = c['min_followers'] ?? 0;
       _preferredLocation = c['preferred_location'] ?? 'Anywhere';
@@ -159,6 +161,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     _descCtrl.dispose();
     _budgetCtrl.dispose();
     _timelineCtrl.dispose();
+    _openingsCtrl.dispose();
     _customCoverUrlCtrl.dispose();
     _tempDelivCountCtrl.dispose();
     super.dispose();
@@ -302,6 +305,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         'deliverables': deliverablesList.isEmpty ? null : deliverablesList,
         'cover_image_url': _coverImageUrl,
         'application_deadline': _applicationDeadline?.toIso8601String(),
+        'openings': int.tryParse(_openingsCtrl.text) ?? 1,
         'status': widget.card != null ? widget.card!['status'] : 'active',
       };
 
@@ -674,18 +678,18 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                           color: isSelected ? AppColors.accent : AppColors.border,
                           width: isSelected ? 3 : 1,
                         ),
-                        image: DecorationImage(
-                          image: NetworkImage(url),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(isSelected ? 0.3 : 0.5),
-                            BlendMode.darken,
-                          ),
-                        ),
                       ),
-                      alignment: Alignment.center,
+                      clipBehavior: Clip.antiAlias,
                       child: Stack(
+                        fit: StackFit.expand,
                         children: [
+                          AppImage(
+                            url: url,
+                            fit: BoxFit.cover,
+                          ),
+                          Container(
+                            color: Colors.black.withOpacity(isSelected ? 0.3 : 0.5),
+                          ),
                           Center(
                             child: Padding(
                               padding: const EdgeInsets.all(4.0),
@@ -847,6 +851,8 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         AppTextField(label: 'Budget / Compensation', hint: 'e.g. ₹20,000 - ₹40,000 or Product Exchange', controller: _budgetCtrl),
         const SizedBox(height: 16),
         AppTextField(label: 'Campaign Duration / Timeline', hint: 'e.g. 3 weeks from receipt of product', controller: _timelineCtrl),
+        const SizedBox(height: 16),
+        AppTextField(label: 'Number of Openings / Positions', hint: 'e.g. 5 creators wanted', controller: _openingsCtrl, keyboardType: TextInputType.number),
         const SizedBox(height: 16),
         Text('APPLICATION DEADLINE', style: AppTextStyles.overline),
         const SizedBox(height: 8),
@@ -1032,15 +1038,14 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
               AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface2,
-                    image: DecorationImage(
-                      image: NetworkImage(_coverImageUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  color: AppColors.surface2,
                   child: Stack(
+                    fit: StackFit.expand,
                     children: [
+                      AppImage(
+                        url: _coverImageUrl,
+                        fit: BoxFit.cover,
+                      ),
                       Positioned(
                         top: 12,
                         left: 12,
@@ -1128,7 +1133,14 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                           child: _buildPreviewDetailItem(
                             Iconsax.user_tick,
                             'Followers Target',
-                            _followerTiers.firstWhere((t) => t['value'] == _minFollowers)['label'] as String,
+                            (() {
+                              final Map<String, Object>? tier = _followerTiers.cast<Map<String, Object>?>().firstWhere(
+                                (t) => t?['value'] == _minFollowers,
+                                orElse: () => null,
+                              );
+                              if (tier != null) return tier['label'] as String;
+                              return '${NumberFormat.compact().format(_minFollowers)}+ followers';
+                            })(),
                           ),
                         ),
                         Expanded(
@@ -1138,6 +1150,19 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                             _preferredLocation,
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildPreviewDetailItem(
+                            Iconsax.profile_2user,
+                            'Number of Openings',
+                            '${int.tryParse(_openingsCtrl.text) ?? 1} spots available',
+                          ),
+                        ),
+                        const Spacer(),
                       ],
                     ),
                     if (deliverableStrings.isNotEmpty) ...[

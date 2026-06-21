@@ -213,6 +213,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/brand/applications', builder: (_, _) => const BrandApplicationsScreen()),
           GoRoute(path: '/brand/influencers', builder: (_, _) => const BrandInfluencersScreen()),
           GoRoute(path: '/brand/saved-lists', builder: (_, _) => const BrandSavedListsScreen()),
+          GoRoute(
+            path: '/brand/saved-lists/:id',
+            builder: (_, state) {
+              final listId = state.pathParameters['id']!;
+              final extra = state.extra as Map<String, dynamic>?;
+              final listName = extra?['name'] as String? ?? 'Saved List';
+              return BrandSavedListDetailScreen(listId: listId, name: listName);
+            },
+          ),
           GoRoute(path: '/brand/campaigns', builder: (_, _) => const BrandCampaignsScreen()),
           GoRoute(path: '/brand/chats', builder: (_, _) => const ChatsListScreen(role: 'brand')),
           GoRoute(path: '/brand/analytics', builder: (_, _) => const BrandAnalyticsScreen()),

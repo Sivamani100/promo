@@ -90,6 +90,69 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     _load();
   }
 
+  Future<void> _handleAccept(Map<String, dynamic> app) async {
+    final c = _card;
+    if (c == null) return;
+    final totalOpenings = c['openings'] ?? 1;
+    final acceptedCount = _apps.where((a) => a['status'] == 'accepted').length;
+
+    if (acceptedCount >= totalOpenings) {
+      final confirmed = await showPremiumConfirmDialog(
+        context: context,
+        title: 'Openings Limit Reached',
+        message: 'All $totalOpenings openings have been filled. Would you like to increase the openings limit to ${totalOpenings + 1} and accept this applicant?',
+        confirmLabel: 'Increase & Accept',
+        cancelLabel: 'Cancel',
+      );
+      if (confirmed == true) {
+        try {
+          setState(() => _loading = true);
+          await CardService().updateCard(widget.cardId, {'openings': totalOpenings + 1});
+          await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
+          await _load();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Openings increased and application accepted successfully')),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to update: $e')),
+            );
+          }
+        } finally {
+          if (mounted) {
+            setState(() => _loading = false);
+          }
+        }
+      }
+    } else {
+      final confirmed = await showPremiumConfirmDialog(
+        context: context,
+        title: 'Accept Application',
+        message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
+        confirmLabel: 'Accept',
+      );
+      if (confirmed == true) {
+        await _updateStatus(app['id'], 'accepted');
+      }
+    }
+  }
+
+  Future<void> _handleReject(Map<String, dynamic> app) async {
+    final confirmed = await showPremiumConfirmDialog(
+      context: context,
+      title: 'Reject Application',
+      message: 'Are you sure you want to reject this application? This action cannot be undone.',
+      confirmLabel: 'Reject',
+      isDestructive: true,
+    );
+    if (confirmed == true) {
+      await _updateStatus(app['id'], 'rejected');
+    }
+  }
+
   Widget _statusBadge(String status) {
     final color = status == 'accepted' ? AppColors.success : status == 'shortlisted' ? AppColors.info : status == 'rejected' ? AppColors.error : AppColors.textMuted;
     return Container(
@@ -170,7 +233,22 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
         ),
         children: [
           if (c['cover_image_url'] != null)
-            ClipRRect(borderRadius: BorderRadius.circular(16), child: AspectRatio(aspectRatio: 16 / 9, child: Image.network(c['cover_image_url'], fit: BoxFit.cover))),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: AppImage(
+                  url: c['cover_image_url'],
+                  fit: BoxFit.cover,
+                  fallback: Container(
+                    color: AppColors.surface2,
+                    child: Center(
+                      child: Icon(Iconsax.image, size: 48, color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           const SizedBox(height: 16),
           Row(children: [
             Container(
@@ -193,6 +271,13 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
           _infoRow('Budget', c['budget_range'] ?? 'Not set'),
           _infoRow('Timeline', c['timeline'] ?? 'Not set'),
           if (deliverables.isNotEmpty) _infoRow('Deliverables', deliverables.join(', ')),
+          _infoRow(
+            'Openings / Positions',
+            '${_apps.where((a) => a['status'] == 'accepted').length} / ${c['openings'] ?? 1} filled',
+            valueColor: _apps.where((a) => a['status'] == 'accepted').length >= (c['openings'] ?? 1)
+                ? AppColors.warning
+                : AppColors.success,
+          ),
           const SizedBox(height: 16),
           if (nicheTags.isNotEmpty) ...[
             Text('NICHE TAGS', style: AppTextStyles.overline),
@@ -284,17 +369,15 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                       const SizedBox(height: 8),
                       Text('Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning)),
                     ],
-                    if (app['status'] == 'pending') ...[
+                    if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: AppButton(label: 'Accept', onTap: () => _updateStatus(app['id'], 'accepted'))),
-                          const SizedBox(width: 8),
-                          Expanded(child: AppButton(label: 'Shortlist', isPrimary: false, onTap: () => _updateStatus(app['id'], 'shortlisted'))),
+                          Expanded(child: AppButton(label: 'Accept', onTap: () => _handleAccept(app))),
                           const SizedBox(width: 8),
                           IconButton(
                             icon: Icon(Iconsax.close_circle, color: AppColors.error),
-                            onPressed: () => _updateStatus(app['id'], 'rejected'),
+                            onPressed: () => _handleReject(app),
                           ),
                         ],
                       ),
@@ -314,11 +397,11 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value) => Padding(
+  Widget _infoRow(String label, String value, {Color? valueColor}) => Padding(
     padding: const EdgeInsets.only(bottom: 12),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: AppTextStyles.caption),
-      Text(value, style: AppTextStyles.label),
+      Text(value, style: AppTextStyles.label.copyWith(color: valueColor)),
     ]),
   );
 }

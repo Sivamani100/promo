@@ -334,9 +334,11 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                     child: Container(
                                       color: AppColors.surface2,
                                       width: double.infinity,
-                                      child: item['media_url'] != null
-                                          ? Image.network(item['media_url'], fit: BoxFit.cover)
-                                          : Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                                      child: AppImage(
+                                        url: item['media_url'],
+                                        fit: BoxFit.cover,
+                                        fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                                      ),
                                     ),
                                   ),
                                   Padding(
@@ -1978,29 +1980,24 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: mediaUrl != null
-                  ? Image.network(
-                      mediaUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.surface2,
-                        child: Center(child: Icon(Iconsax.image, color: AppColors.textMuted)),
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.purple.withValues(alpha: 0.1),
-                            AppColors.indigo.withValues(alpha: 0.1),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(Iconsax.gallery, color: AppColors.textMuted),
-                      ),
+              child: AppImage(
+                url: mediaUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                fallback: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.purple.withValues(alpha: 0.1),
+                        AppColors.indigo.withValues(alpha: 0.1),
+                      ],
                     ),
+                  ),
+                  child: Center(
+                    child: Icon(Iconsax.gallery, color: AppColors.textMuted),
+                  ),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -2184,9 +2181,11 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           border: Border.all(color: AppColors.border),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: item['media_url'] != null
-                            ? Image.network(item['media_url'], fit: BoxFit.cover)
-                            : Icon(Iconsax.image, color: AppColors.textMuted),
+                        child: AppImage(
+                          url: item['media_url'],
+                          fit: BoxFit.cover,
+                          fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+                        ),
                       );
                     },
                   ),

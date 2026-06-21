@@ -112,6 +112,23 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     }
   }
 
+  Future<void> _showSaveToListSheet() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bctx) {
+        return _SaveToListSheet(
+          brandId: user.id,
+          influencerId: widget.influencerId,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -150,6 +167,12 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
               floating: false,
               pinned: true,
               backgroundColor: isDark ? const Color(0xFF0F0F16) : Colors.white,
+              actions: [
+                IconButton(
+                  icon: const Icon(Iconsax.archive_add),
+                  onPressed: _showSaveToListSheet,
+                ),
+              ],
               title: AnimatedOpacity(
                 opacity: _isCollapsed ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 200),
@@ -538,9 +561,11 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                 child: Container(
                   color: AppColors.surface2,
                   width: double.infinity,
-                  child: item['media_url'] != null
-                      ? Image.network(item['media_url'], fit: BoxFit.cover)
-                      : Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                  child: AppImage(
+                    url: item['media_url'],
+                    fit: BoxFit.cover,
+                    fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                  ),
                 ),
               ),
               Padding(
@@ -747,5 +772,159 @@ class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _SliverTabHeaderDelegate oldDelegate) {
     return tabBar != oldDelegate.tabBar || isDark != oldDelegate.isDark;
+  }
+}
+
+class _SaveToListSheet extends ConsumerStatefulWidget {
+  final String brandId;
+  final String influencerId;
+  const _SaveToListSheet({required this.brandId, required this.influencerId});
+  @override
+  ConsumerState<_SaveToListSheet> createState() => _SaveToListSheetState();
+}
+
+class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
+  List<Map<String, dynamic>> _lists = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final data = await SavedService().getSavedLists(widget.brandId);
+    if (mounted) {
+      setState(() {
+        _lists = data;
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF14141E) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Save to List', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
+              IconButton(
+                icon: const Icon(Iconsax.add_circle, size: 24),
+                onPressed: () async {
+                  final name = await _showCreateDialog(context);
+                  if (name != null && name.isNotEmpty) {
+                    await SavedService().createList(widget.brandId, name);
+                    _load();
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else if (_lists.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No lists created yet. Tap + to create one.',
+                  style: AppTextStyles.caption,
+                ),
+              ),
+            )
+          else
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _lists.length,
+                itemBuilder: (context, i) {
+                  final list = _lists[i];
+                  final items = list['items'] as List? ?? [];
+                  final isSaved = items.any((item) => item['influencer_id'] == widget.influencerId);
+
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(
+                      isSaved ? Iconsax.folder_favorite5 : Iconsax.folder,
+                      color: isSaved ? AppColors.accent : AppColors.textMuted,
+                    ),
+                    title: Text(list['name'] ?? 'List', style: AppTextStyles.label),
+                    trailing: isSaved
+                        ? Icon(Icons.check_circle_rounded, color: AppColors.success)
+                        : null,
+                    onTap: () async {
+                      if (isSaved) {
+                        await SavedService().removeFromList(list['id'], widget.influencerId);
+                      } else {
+                        await SavedService().addToList(list['id'], widget.influencerId);
+                      }
+                      _load();
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<String?> _showCreateDialog(BuildContext context) async {
+    final ctrl = TextEditingController();
+    return showPremiumDialog<String>(
+      context: context,
+      title: 'New List',
+      icon: Iconsax.folder_add,
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        style: AppTextStyles.body,
+        decoration: InputDecoration(
+          hintText: 'List name',
+          hintStyle: AppTextStyles.caption,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textMuted,
+                  side: BorderSide(color: AppColors.border),
+                ),
+                child: const Text('Cancel'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, ctrl.text.trim()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                ),
+                child: const Text('Create'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

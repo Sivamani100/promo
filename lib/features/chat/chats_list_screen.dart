@@ -309,9 +309,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
           );
         },
       ),
-      actions: [
+      actionsBuilder: (dialogCtx) => [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogCtx),
           child: Text(
             'Cancel',
             style: TextStyle(color: AppColors.textSecondary),
@@ -389,9 +389,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
               },
             ),
           ),
-          actions: [
+          actionsBuilder: (dialogCtx) => [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogCtx),
               child: Text(
                 'Cancel',
                 style: TextStyle(color: AppColors.textSecondary),

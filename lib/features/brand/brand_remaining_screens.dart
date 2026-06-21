@@ -76,18 +76,25 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
                   itemBuilder: (_, i) {
                     final list = _lists[i];
                     final items = (list['items'] as List?) ?? [];
-                    return Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
-                      child: Row(children: [
-                        Icon(Iconsax.folder, color: AppColors.textMuted, size: 32),
-                        const SizedBox(width: 12),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(list['name'] ?? 'List', style: AppTextStyles.label),
-                          Text('${items.length} influencers', style: AppTextStyles.captionSm),
-                        ])),
-                        Icon(Iconsax.arrow_right_3, color: AppColors.textMuted),
-                      ]),
+                    return GestureDetector(
+                      onTap: () async {
+                        await context.push('/brand/saved-lists/${list['id']}', extra: {'name': list['name']});
+                        _load();
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
+                        child: Row(children: [
+                          Icon(Iconsax.folder, color: AppColors.textMuted, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(list['name'] ?? 'List', style: AppTextStyles.label),
+                            Text('${items.length} influencers', style: AppTextStyles.captionSm),
+                          ])),
+                          Icon(Iconsax.arrow_right_3, color: AppColors.textMuted),
+                        ]),
+                      ),
                     );
                   },
                 ),
@@ -1083,7 +1090,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   }
 
   Widget _buildBrandCard(BuildContext context, Map<String, dynamic> card) {
-    final coverUrl = card['cover_url'] as String?;
+    final coverUrl = card['cover_image_url'] as String?;
     return AspectRatio(
       aspectRatio: 0.85,
       child: Container(
@@ -1097,29 +1104,24 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: coverUrl != null
-                  ? Image.network(
-                      coverUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.surface2,
-                        child: Center(child: Icon(Iconsax.image, color: AppColors.textMuted)),
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.purple.withValues(alpha: 0.1),
-                            AppColors.indigo.withValues(alpha: 0.1),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(Iconsax.cards, color: AppColors.textMuted),
-                      ),
+              child: AppImage(
+                url: coverUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                fallback: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.purple.withValues(alpha: 0.1),
+                        AppColors.indigo.withValues(alpha: 0.1),
+                      ],
                     ),
+                  ),
+                  child: Center(
+                    child: Icon(Iconsax.cards, color: AppColors.textMuted),
+                  ),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
@@ -1134,7 +1136,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Budget: ₹${card['budget_min']} - ₹${card['budget_max']}',
+                    card['budget_range'] != null
+                        ? (card['budget_range'].toString().startsWith('₹')
+                            ? 'Budget: ${card['budget_range']}'
+                            : 'Budget: ₹${card['budget_range']}')
+                        : 'No budget set',
                     style: AppTextStyles.captionSm.copyWith(
                       fontSize: 10,
                       color: AppColors.accent,
@@ -1149,6 +1155,156 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class BrandSavedListDetailScreen extends StatefulWidget {
+  final String listId;
+  final String name;
+  const BrandSavedListDetailScreen({super.key, required this.listId, required this.name});
+  @override
+  State<BrandSavedListDetailScreen> createState() => _BrandSavedListDetailScreenState();
+}
+
+class _BrandSavedListDetailScreenState extends State<BrandSavedListDetailScreen> {
+  List<Map<String, dynamic>> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final sb = SupabaseService.client;
+      final data = await sb
+          .from('influencer_list_items')
+          .select('*, influencer:profiles!influencer_list_items_influencer_id_fkey(*)')
+          .eq('list_id', widget.listId)
+          .timeout(const Duration(seconds: 15));
+      if (mounted) {
+        setState(() {
+          _items = List<Map<String, dynamic>>.from(data);
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading list items: $e');
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _removeItem(String influencerId) async {
+    final confirmed = await showPremiumConfirmDialog(
+      context: context,
+      title: 'Remove Creator',
+      message: 'Are you sure you want to remove this creator from the list?',
+      confirmLabel: 'Remove',
+      isDestructive: true,
+      icon: Iconsax.trash,
+    );
+    if (confirmed == true) {
+      setState(() => _loading = true);
+      await SavedService().removeFromList(widget.listId, influencerId);
+      _load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.name),
+      ),
+      body: _loading
+          ? ListView.separated(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+            )
+          : _items.isEmpty
+              ? const AppEmptyState(
+                  icon: Iconsax.profile_2user,
+                  title: 'List is empty',
+                  subtitle: 'Add creators to this list from their profiles',
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.pageMarginHorizontal,
+                    AppSpacing.pageMarginVertical,
+                    AppSpacing.pageMarginHorizontal,
+                    AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                  ),
+                  itemCount: _items.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (_, i) {
+                    final item = _items[i];
+                    final inf = item['influencer'] as Map<String, dynamic>?;
+                    if (inf == null) return const SizedBox.shrink();
+                    final niches = (inf['niche'] as List<dynamic>?)?.cast<String>() ?? [];
+
+                    return GestureDetector(
+                      onTap: () => context.push('/brand/influencers/${inf['id']}'),
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            AppAvatar(
+                              url: inf['avatar_url'],
+                              fallbackText: inf['display_name'] ?? 'I',
+                              size: 48,
+                              onTap: () => context.push('/brand/influencers/${inf['id']}'),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          inf['display_name'] ?? '',
+                                          style: AppTextStyles.label,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (inf['is_verified'] == true) ...[
+                                        const SizedBox(width: 4),
+                                        const VerificationBadge(size: 14),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(niches.take(2).join(' · '), style: AppTextStyles.captionSm),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${((inf['follower_count'] ?? 0) / 1000).toStringAsFixed(0)}K followers · ${inf['location'] ?? 'Global'}',
+                                    style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Iconsax.trash, color: AppColors.error, size: 20),
+                              onPressed: () => _removeItem(inf['id']),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

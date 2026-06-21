@@ -175,9 +175,11 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
                                         width: 60, height: 60,
                                         decoration: BoxDecoration(color: AppColors.surface2, borderRadius: BorderRadius.circular(12)),
                                         clipBehavior: Clip.antiAlias,
-                                        child: card['cover_image_url'] != null
-                                            ? Image.network(card['cover_image_url'], fit: BoxFit.cover)
-                                            : Icon(Iconsax.volume_high, color: AppColors.textMuted),
+                                        child: AppImage(
+                                          url: card['cover_image_url'],
+                                          fit: BoxFit.cover,
+                                          fallback: Icon(Iconsax.volume_high, color: AppColors.textMuted),
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -477,12 +477,12 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
           );
         },
       ),
-      actions: [
+      actionsBuilder: (dialogCtx) => [
         Row(
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogCtx),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: BorderSide(color: AppColors.border),
@@ -497,7 +497,7 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                 onPressed: () {
                   final t = ctrl.text.trim();
                   if (t.isEmpty) return;
-                  Navigator.pop(context, {
+                  Navigator.pop(dialogCtx, {
                     'title': t,
                     'due_date': selectedDate?.toIso8601String(),
                   });
