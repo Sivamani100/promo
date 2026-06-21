@@ -243,7 +243,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               return InfluencerDiscoverScreen(filter: filter);
             },
           ),
-          GoRoute(path: '/influencer/my-applications', builder: (_, _) => const InfluencerApplicationsScreen()),
+          GoRoute(
+            path: '/influencer/my-applications',
+            builder: (_, state) {
+              final cardId = state.uri.queryParameters['cardId'];
+              return InfluencerApplicationsScreen(cardId: cardId);
+            },
+          ),
           GoRoute(path: '/influencer/milestones', builder: (_, _) => const InfluencerMilestonesScreen()),
           GoRoute(path: '/influencer/brands', builder: (_, _) => const InfluencerBrandsScreen()),
           GoRoute(path: '/influencer/saved', builder: (_, _) => const InfluencerSavedScreen()),

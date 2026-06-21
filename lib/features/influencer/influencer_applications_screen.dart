@@ -13,7 +13,8 @@ import '../../core/services/chat_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class InfluencerApplicationsScreen extends ConsumerStatefulWidget {
-  const InfluencerApplicationsScreen({super.key});
+  final String? cardId;
+  const InfluencerApplicationsScreen({super.key, this.cardId});
   @override
   ConsumerState<InfluencerApplicationsScreen> createState() => _InfluencerApplicationsScreenState();
 }
@@ -24,7 +25,13 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
   String _filter = 'all';
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    if (widget.cardId != null) {
+      _filter = 'accepted';
+    }
+    _load();
+  }
 
   Future<void> _load() async {
     final user = ref.read(authProvider).user;
@@ -75,10 +82,6 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
-            leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
-              onPressed: () => context.go('/influencer/home'),
-            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
@@ -203,13 +206,26 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                               final card = app['card'] as Map<String, dynamic>?;
                               final brand = card?['brand'] as Map<String, dynamic>?;
                               final status = app['status'] ?? 'pending';
+                              final isHighlighted = widget.cardId != null && card?['id'] == widget.cardId;
 
                               return Container(
                                 padding: const EdgeInsets.all(AppSpacing.lg),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
+                                  color: isHighlighted 
+                                      ? AppColors.accent.withOpacity(0.05) 
+                                      : AppColors.surface,
                                   borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                                  border: Border.all(color: AppColors.border),
+                                  border: Border.all(
+                                    color: isHighlighted ? AppColors.accent : AppColors.border,
+                                    width: isHighlighted ? 2.0 : 1.0,
+                                  ),
+                                  boxShadow: isHighlighted ? [
+                                    BoxShadow(
+                                      color: AppColors.accent.withOpacity(0.2),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ] : null,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,

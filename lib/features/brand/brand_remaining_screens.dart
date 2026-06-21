@@ -653,16 +653,15 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
-            leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
-              onPressed: () {
-                if (_isEditing) {
-                  setState(() => _isEditing = false);
-                } else {
-                  context.go('/brand/home');
-                }
-              },
-            ),
+            automaticallyImplyLeading: false,
+            leading: _isEditing
+                ? IconButton(
+                    icon: const Icon(Iconsax.arrow_left),
+                    onPressed: () {
+                      setState(() => _isEditing = false);
+                    },
+                  )
+                : null,
             centerTitle: false,
             titleSpacing: 0,
             title: Row(

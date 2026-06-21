@@ -15,6 +15,7 @@ import '../../core/services/data_services.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class InfluencerHomeScreen extends ConsumerStatefulWidget {
   const InfluencerHomeScreen({super.key});
@@ -145,7 +146,12 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     if (_loading) {
+      final isDark = AppColors.isDarkMode;
+      final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
+      final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
+
       return Scaffold(
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
           child: Padding(
@@ -170,90 +176,105 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
-            const AppShimmer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // Welcome & Profile Shimmer
+            AppShimmer(
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Analytics Grid Shimmer
+            AppShimmer(
+              child: Row(
                 children: [
-                  ShimmerBox(width: 120, height: 14),
-                  SizedBox(height: 8),
-                  ShimmerBox(width: 180, height: 28),
-                  SizedBox(height: 6),
-                  ShimmerBox(width: 100, height: 12),
+                  Expanded(
+                    child: Container(
+                      height: 135,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 135,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            AppShimmer(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 135,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 135,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Deliverables Shimmer
             AppShimmer(
               child: Container(
-                height: 80,
+                height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const AppShimmer(child: ShimmerBox(width: 140, height: 18)),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 125,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 4,
-                itemBuilder: (_, __) => AppShimmer(
-                  child: Container(
-                    width: 90,
-                    margin: const EdgeInsets.only(right: 16),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 66,
-                          height: 66,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const ShimmerBox(width: 60, height: 10),
-                        const SizedBox(height: 4),
-                        const ShimmerBox(width: 40, height: 8),
-                      ],
-                    ),
-                  ),
+            const SizedBox(height: 16),
+            // Featured Partners Shimmer
+            AppShimmer(
+              child: Container(
+                height: 190,
+                decoration: BoxDecoration(
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const AppShimmer(child: ShimmerBox(width: 140, height: 18)),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 95,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 3,
-                itemBuilder: (_, __) => AppShimmer(
-                  child: Container(
-                    width: 180,
-                    margin: const EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const AppShimmer(child: ShimmerBox(width: 160, height: 18)),
-            const SizedBox(height: 12),
-            const ShimmerCampaignCard(),
           ],
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -271,7 +292,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 Text(
                   'Creator',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -279,7 +300,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 Text(
                   '.',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,
                   ),
@@ -293,13 +314,13 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Iconsax.notification, size: 20),
+                    icon: const Icon(Iconsax.notification, size: 24),
                     onPressed: () => context.push('/influencer/notifications'),
                   ),
                   if (unreadNotifications > 0)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 6,
+                      top: 6,
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: const BoxDecoration(
@@ -324,7 +345,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 ],
               ),
               IconButton(
-                icon: const Icon(Iconsax.setting_2, size: 20),
+                icon: const Icon(Iconsax.setting_2, size: 24),
                 onPressed: () => context.push('/influencer/settings'),
               ),
             ],
@@ -342,466 +363,964 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
-            Text('${_greeting()},', style: AppTextStyles.caption),
-            Text(profile?['display_name'] ?? 'Creator', style: AppTextStyles.h1.copyWith(fontSize: 26)),
-            const SizedBox(height: 4),
-            Text(DateFormat('EEEE, MMMM d').format(DateTime.now()), style: AppTextStyles.captionSm),
+            _buildWelcomeBentoBox(profile, 0),
             const SizedBox(height: 20),
-  
-            // Profile Completeness
-            if (_profileCompleteness < 100)
-              GestureDetector(
-                onTap: () => _showCompletenessBottomSheet(context, profile),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.purple.withOpacity(0.15),
-                        AppColors.indigo.withOpacity(0.08),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.purple.withOpacity(0.25), width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.purple.withOpacity(0.04),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Iconsax.profile_add, size: 18, color: AppColors.purple),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Complete Your Profile',
-                                style: AppTextStyles.label.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '$_profileCompleteness%',
-                            style: AppTextStyles.label.copyWith(
-                              color: AppColors.purple,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: LinearProgressIndicator(
-                          value: _profileCompleteness / 100,
-                          backgroundColor: AppColors.isDarkMode ? const Color(0xFF141414) : const Color(0xFFE5E7EB),
-                          valueColor: AlwaysStoppedAnimation(AppColors.purple),
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Icon(Icons.stars_rounded, size: 14, color: AppColors.purple),
-                          const SizedBox(width: 6),
-                          Text(
-                            'A complete profile gets 3x more matches!',
-                            style: AppTextStyles.captionSm.copyWith(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-  
-
-            // Featured Brands (Spotify Artist Style)
-            if (_bestBrands.isNotEmpty) ...[
-              SectionHeader(
-                title: 'Featured Brands',
-                icon: Iconsax.star5,
-                actionLabel: 'See All',
-                onAction: () => context.go('/influencer/brands'),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 135,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _bestBrands.length,
-                  itemBuilder: (context, i) {
-                    final brand = _bestBrands[i];
-                    return GestureDetector(
-                      onTap: () => _showBrandDetails(brand),
-                      child: Container(
-                        width: 90,
-                        margin: const EdgeInsets.only(right: 16),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.accent,
-                                    AppColors.accent.withOpacity(0.2),
-                                    AppColors.accent,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.accent.withOpacity(0.12),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.surface,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: AppAvatar(
-                                  url: brand['avatar_url'],
-                                  fallbackText: brand['display_name'] ?? 'B',
-                                  size: 60,
-                                  onTap: () => context.push('/influencer/brands/${brand['id']}'),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    brand['display_name'] ?? 'Brand',
-                                    style: AppTextStyles.labelSm.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (brand['is_verified'] == true) ...[
-                                  const SizedBox(width: 4),
-                                  const VerificationBadge(size: 11),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              brand['industry'] ?? 'Partner',
-                              style: AppTextStyles.captionSm.copyWith(
-                                fontSize: 9,
-                                color: AppColors.textMuted,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            SectionHeader(
-              title: 'Weekly Highlights',
-              icon: Iconsax.chart_2,
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 1.3,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              padding: EdgeInsets.zero,
+            
+            // Analytics Grid (Bento style)
+            Row(
               children: [
-                GestureDetector(
-                  onTap: () => context.go('/influencer/discover?filter=matched'),
-                  child: _statHighlightCard(
+                Expanded(
+                  child: _statHighlightBento(
                     title: 'Total Matches',
                     value: '${_matchedCards.length}',
                     subtitle: 'Opportunities found',
                     icon: Iconsax.flash,
-                    lightGradient: [const Color(0xFFE0F2FE), const Color(0xFFBAE6FD)],
-                    darkGradient: [const Color(0xFF0C4A6E).withOpacity(0.85), const Color(0xFF075985).withOpacity(0.85)],
-                    accentColor: const Color(0xFF38BDF8),
+                    color: const Color(0xFF0EA5E9),
+                    onTap: () => context.go('/influencer/discover?filter=matched'),
+                    delayIndex: 1,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => context.push('/influencer/engagement-rate'),
-                  child: _statHighlightCard(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _statHighlightBento(
                     title: 'Engagement Rate',
                     value: '${profile?['follower_count'] != null && profile!['follower_count'] > 5000 ? "5.4%" : "4.8%"}',
                     subtitle: 'Average organic',
                     icon: Iconsax.activity,
-                    lightGradient: [const Color(0xFFDCFCE7), const Color(0xFFBBF7D0)],
-                    darkGradient: [const Color(0xFF064E3B).withOpacity(0.85), const Color(0xFF065F46).withOpacity(0.85)],
-                    accentColor: const Color(0xFF4ADE80),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => context.push('/influencer/profile-views'),
-                  child: _statHighlightCard(
-                    title: 'Profile Views',
-                    value: '$_profileViews',
-                    subtitle: 'Views this week',
-                    icon: Iconsax.eye,
-                    lightGradient: [const Color(0xFFFCE7F3), const Color(0xFFFBCFE8)],
-                    darkGradient: [const Color(0xFF500730).withOpacity(0.85), const Color(0xFF700B48).withOpacity(0.85)],
-                    accentColor: const Color(0xFFF472B6),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => context.go('/influencer/milestones'),
-                  child: _statHighlightCard(
-                    title: 'Completed Milestones',
-                    value: '$_completedMilestonesCount',
-                    subtitle: 'All campaigns on track',
-                    icon: Iconsax.crown,
-                    lightGradient: [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
-                    darkGradient: [const Color(0xFF451A03).withOpacity(0.85), const Color(0xFF78350F).withOpacity(0.85)],
-                    accentColor: const Color(0xFFFBBF24),
+                    color: const Color(0xFF10B981),
+                    onTap: () => context.push('/influencer/engagement-rate'),
+                    delayIndex: 2,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Profile Views',
+                    value: '$_profileViews',
+                    subtitle: 'Views this week',
+                    icon: Iconsax.eye,
+                    color: const Color(0xFFEC4899),
+                    onTap: () => context.push('/influencer/profile-views'),
+                    delayIndex: 3,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Completed Milestones',
+                    value: '$_completedMilestonesCount',
+                    subtitle: 'Campaigns on track',
+                    icon: Iconsax.crown,
+                    color: const Color(0xFFF59E0B),
+                    onTap: () => context.go('/influencer/milestones'),
+                    delayIndex: 4,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // Upcoming deliverables Bento
+            _buildDeliverablesBento(5),
+            const SizedBox(height: 16),
+            
+            // Featured Partners Bento
+            _buildFeaturedBrandsBento(6),
+            const SizedBox(height: 16),
+            
+            // Campaign opportunities Bento
+            _buildCampaignOpportunitiesBento(profile, 7),
+            
+            // Footer (Jio Style)
+            const SizedBox(height: 56),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'With love,',
+                    style: GoogleFonts.inter(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      height: 1.2,
+                      color: AppColors.isDarkMode 
+                          ? const Color(0xFF3F3F46) 
+                          : const Color(0xFFD4D4D8),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    'from Promo.',
+                    style: GoogleFonts.inter(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      height: 1.2,
+                      color: AppColors.isDarkMode 
+                          ? const Color(0xFF3F3F46) 
+                          : const Color(0xFFD4D4D8),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            if (_upcomingMilestones.isNotEmpty) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildWelcomeBentoBox(Map<String, dynamic>? profile, int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    final avatarUrl = profile?['avatar_url'];
+    final displayName = profile?['display_name'] ?? 'Creator';
+    
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_greeting()},',
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            displayName,
+                            style: AppTextStyles.h2.copyWith(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (profile?['is_verified'] == true) ...[
+                          const SizedBox(width: 6),
+                          const VerificationBadge(size: 20),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('EEEE, MMMM d').format(DateTime.now()),
+                      style: AppTextStyles.captionSm.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                    width: 1.2,
+                  ),
+                ),
+                child: ClipOval(
+                  child: avatarUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: avatarUrl,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.purple.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'C',
+                            style: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.purple,
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+          if (_profileCompleteness < 100) ...[
+            const SizedBox(height: 18),
+            Container(
+              height: 1,
+              color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => _showCompletenessBottomSheet(context, profile),
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(Iconsax.calendar_1, size: 16, color: AppColors.accent),
-                      const SizedBox(width: 8),
-                      Text('Upcoming Deliverables', style: AppTextStyles.label.copyWith(fontSize: 15, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Complete Your Profile',
+                        style: AppTextStyles.label.copyWith(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        '$_profileCompleteness%',
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.purple,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () => context.go('/influencer/milestones'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface2,
-                        borderRadius: BorderRadius.circular(20),
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: LinearProgressIndicator(
+                      value: _profileCompleteness / 100,
+                      backgroundColor: isDark ? const Color(0xFF1C1C21) : const Color(0xFFE5E7EB),
+                      valueColor: AlwaysStoppedAnimation(AppColors.purple),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'A complete profile gets 3x more matches!',
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppColors.textMuted,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Your creator profile is fully complete and verified!',
+                      style: AppTextStyles.labelSm.copyWith(
+                        color: AppColors.success,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _statHighlightBento({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+    required int delayIndex,
+  }) {
+    final isDark = AppColors.isDarkMode;
+    
+    // Determine colors and icons based on title
+    Color bgColor;
+    IconData displayIcon;
+    Color textColor = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF1E293B);
+    Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    Color iconColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+
+    if (title == 'Total Matches') {
+      bgColor = isDark ? const Color(0xFF0C243C) : const Color(0xFFD0ECFC);
+      displayIcon = Iconsax.flash;
+    } else if (title == 'Engagement Rate') {
+      bgColor = isDark ? const Color(0xFF0D3E26) : const Color(0xFFC1F0D5);
+      displayIcon = Icons.check_circle_outline_rounded;
+    } else if (title == 'Profile Views') {
+      bgColor = isDark ? const Color(0xFF481030) : const Color(0xFFFCD3E6);
+      displayIcon = Iconsax.eye;
+    } else { // Completed Milestones
+      bgColor = isDark ? const Color(0xFF482B08) : const Color(0xFFFDE2B5);
+      displayIcon = Iconsax.book;
+    }
+
+    return AspectRatio(
+      aspectRatio: 1.0,
+      child: _BentoBox(
+        animationDelayIndex: delayIndex,
+        onTap: onTap,
+        color: bgColor,
+        borderColor: Colors.transparent,
+        borderRadius: 28.0,
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Top Row: Title & Outline Icon
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  displayIcon,
+                  color: iconColor,
+                  size: 18,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Value & Subtitle
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                    color: textColor,
+                    letterSpacing: -1.2,
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: subTextColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeliverablesBento(int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withOpacity(isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Iconsax.calendar_15,
+                      color: AppColors.accent,
+                      size: 15,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Upcoming Deliverables',
+                    style: AppTextStyles.label.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              if (_upcomingMilestones.isNotEmpty)
+                GestureDetector(
+                  onTap: () => context.go('/influencer/milestones'),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      'Milestones',
+                      style: AppTextStyles.labelSm.copyWith(
+                        fontSize: 10.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_upcomingMilestones.isEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF141416) : const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF1F1F24) : const Color(0xFFF1F1F5),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Iconsax.emoji_happy5,
+                    size: 32,
+                    color: AppColors.textMuted.withOpacity(0.6),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'All Caught Up!',
+                    style: AppTextStyles.label.copyWith(fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'No pending deliverables at the moment.',
+                    style: AppTextStyles.caption.copyWith(fontSize: 11),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 32,
+                    child: ElevatedButton(
+                      onPressed: () => context.go('/influencer/discover'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.accentOnDark,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        elevation: 0,
                       ),
                       child: Text(
-                        'Milestones',
-                        style: AppTextStyles.labelSm.copyWith(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
+                        'Find Campaigns',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _upcomingMilestones.take(3).length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, idx) {
-                  final m = _upcomingMilestones[idx];
-                  return Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border.withOpacity(0.6)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                         AppAvatar(
-                          url: m['brand']?['avatar_url'],
-                          fallbackText: m['brand']?['display_name'] ?? 'B',
-                          size: 36,
-                          onTap: () {
-                            final bId = m['brand']?['id'];
-                            if (bId != null) {
-                              context.push('/influencer/brands/$bId');
-                            }
-                          },
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                m['title'] ?? 'Deliverable',
-                                style: AppTextStyles.label.copyWith(fontSize: 13),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                m['card']?['title'] ?? 'Campaign',
-                                style: AppTextStyles.captionSm.copyWith(fontSize: 10),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildDueDateBadge(m['due_date']),
-                      ],
-                    ),
-                  );
-                },
+            ),
+          ] else ...[
+            ListView.separated(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _upcomingMilestones.take(4).length,
+              separatorBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Divider(
+                  height: 1,
+                  color: isDark ? const Color(0xFF1F1F24) : const Color(0xFFF1F1F5),
+                ),
               ),
-              const SizedBox(height: 24),
-            ],
+              itemBuilder: (context, idx) {
+                final m = _upcomingMilestones[idx];
+                final brand = m['brand'] as Map<String, dynamic>?;
+                final card = m['card'] as Map<String, dynamic>?;
+                final cardId = card?['id'];
 
-            // Matched Campaigns
-            Row(
+                return GestureDetector(
+                  onTap: () {
+                    if (cardId != null) {
+                      context.push('/influencer/my-applications?cardId=$cardId');
+                    } else {
+                      context.push('/influencer/my-applications');
+                    }
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      AppAvatar(
+                        url: brand?['avatar_url'],
+                        fallbackText: brand?['display_name'] ?? 'B',
+                        size: 38,
+                        onTap: () {
+                          final bId = brand?['id'];
+                          if (bId != null) {
+                            context.push('/influencer/brands/$bId');
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              m['title'] ?? 'Deliverable',
+                              style: AppTextStyles.label.copyWith(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              card?['title'] ?? 'Campaign',
+                              style: AppTextStyles.captionSm.copyWith(
+                                fontSize: 10.5,
+                                color: AppColors.textMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _buildDueDateBadge(m['due_date']),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedBrandsBento(int delayIndex) {
+    if (_bestBrands.isEmpty) return const SizedBox.shrink();
+    final isDark = AppColors.isDarkMode;
+
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.only(top: 18, bottom: 18, left: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 18),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.auto_awesome_rounded, size: 16, color: AppColors.warning),
-                    const SizedBox(width: 8),
-                    Text('Matched Campaigns', style: AppTextStyles.label.copyWith(fontSize: 15, fontWeight: FontWeight.w700)),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withOpacity(isDark ? 0.15 : 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Iconsax.star5,
+                        color: AppColors.warning,
+                        size: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Featured Partners',
+                      style: AppTextStyles.label.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
                 GestureDetector(
-                  onTap: () => context.go('/influencer/discover'),
+                  onTap: () => context.go('/influencer/brands'),
+                  behavior: HitTestBehavior.opaque,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.surface2,
-                      borderRadius: BorderRadius.circular(20),
+                      color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'See All',
-                          style: AppTextStyles.labelSm.copyWith(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.textSecondary),
-                      ],
+                    child: Text(
+                      'See All',
+                      style: AppTextStyles.labelSm.copyWith(
+                        fontSize: 10.5,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            if (_matchedCards.isEmpty)
-              const AppEmptyState(icon: Icons.campaign_rounded, title: 'No campaigns yet')
-            else
-              Column(
-                children: List.generate(
-                  _matchedCards.take(5).length,
-                  (index) {
-                    final card = _matchedCards[index];
-                    final userNiches = (profile?['niche'] as List?)?.cast<String>() ?? [];
-                    final cardNiches = (card['niche_tags'] as List?)?.cast<String>() ?? [];
-                    final matchScore = cardNiches.where((n) => userNiches.contains(n)).length;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _buildCompactCampaignCard(card, matchScore),
-                    );
-                  },
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 125,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _bestBrands.length,
+              itemBuilder: (context, i) {
+                final brand = _bestBrands[i];
+                return GestureDetector(
+                  onTap: () => _showBrandDetails(brand),
+                  child: Container(
+                    width: 80,
+                    margin: const EdgeInsets.only(right: 12),
+                    child: Column(
+                      children: [
+                        AppAvatar(
+                          url: brand['avatar_url'],
+                          fallbackText: brand['display_name'] ?? 'B',
+                          size: 58,
+                          onTap: () => context.push('/influencer/brands/${brand['id']}'),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                brand['display_name'] ?? 'Brand',
+                                style: AppTextStyles.labelSm.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (brand['is_verified'] == true) ...[
+                              const SizedBox(width: 3),
+                              const VerificationBadge(size: 10),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          brand['industry'] ?? 'Partner',
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 9,
+                            color: AppColors.textMuted,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCampaignOpportunitiesBento(Map<String, dynamic>? profile, int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Color(0xFF10B981),
+                      size: 15,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Campaign Matches',
+                    style: AppTextStyles.label.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () => context.go('/influencer/discover'),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'See All',
+                        style: AppTextStyles.labelSm.copyWith(
+                          fontSize: 10.5,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 9,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_matchedCards.isEmpty)
+            const AppEmptyState(icon: Icons.campaign_rounded, title: 'No campaigns yet')
+          else
+            ListView.separated(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _matchedCards.take(5).length,
+              separatorBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Divider(
+                  height: 1,
+                  color: isDark ? const Color(0xFF1F1F24) : const Color(0xFFF1F1F5),
+                ),
+              ),
+              itemBuilder: (context, index) {
+                final card = _matchedCards[index];
+                final userNiches = (profile?['niche'] as List?)?.cast<String>() ?? [];
+                final cardNiches = (card['niche_tags'] as List?)?.cast<String>() ?? [];
+                final matchScore = cardNiches.where((n) => userNiches.contains(n)).length;
+                return _buildBentoCampaignRow(card, matchScore);
+              },
+            ),
+        ],
+      ),
+    );
+  }
 
-            // "With love, from Arkio." Footer — Jio style
-            const SizedBox(height: 48),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+  Widget _buildBentoCampaignRow(Map<String, dynamic> card, int matchScore) {
+    final brand = card['brand'] as Map<String, dynamic>?;
+    final category = card['category'] as String? ?? '';
+    final categoryColor = AppColors.getCategoryColor(category);
+    final budgetRange = card['budget_range'] as String?;
+
+    return GestureDetector(
+      onTap: () => context.push('/influencer/discover/${card['id']}'),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  color: AppColors.surface2,
+                  child: card['cover_image_url'] != null
+                      ? CachedNetworkImage(
+                          imageUrl: card['cover_image_url'],
+                          fit: BoxFit.cover,
+                        )
+                      : Center(
+                          child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
+                        ),
+                ),
+              ),
+              if (matchScore > 0)
+                Positioned(
+                  top: -4,
+                  left: -4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '${matchScore}x Niche',
+                      style: const TextStyle(
+                        fontSize: 7.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  card['title'] ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                if (brand != null)
+                  Row(
+                    children: [
+                      Text(
+                        brand['display_name'] ?? 'Brand',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      if (brand['is_verified'] == true)
+                        const VerificationBadge(size: 10),
+                    ],
+                  ),
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    Text(
-                      'With ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade500,
-                        height: 1,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: categoryColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: categoryColor.withOpacity(0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w700,
+                          color: categoryColor,
+                        ),
                       ),
                     ),
-                    Icon(
-                      Icons.favorite,
-                      size: 14,
-                      color: Colors.red.shade400,
-                    ),
-                    Text(
-                      ', from ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade500,
-                        height: 1,
+                    const Spacer(),
+                    if (budgetRange != null)
+                      Text(
+                        budgetRange,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Arkio.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
-                        height: 1,
-                      ),
-                    ),
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1396,4 +1915,90 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
         ],
       ),
     );
-  }}
+  }
+}
+
+class _BentoBox extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double? height;
+  final double? width;
+  final EdgeInsetsGeometry padding;
+  final List<Color>? gradient;
+  final Color? color;
+  final Color? borderColor;
+  final int animationDelayIndex;
+  final double borderRadius;
+
+  const _BentoBox({
+    required this.child,
+    this.onTap,
+    this.height,
+    this.width,
+    this.padding = const EdgeInsets.all(18),
+    this.gradient,
+    this.color,
+    this.borderColor,
+    this.animationDelayIndex = 0,
+    this.borderRadius = 24.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+    final boxColor = color ?? (isDark ? const Color(0xFF0F0F11) : Colors.white);
+    final borderCol = borderColor ?? (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB));
+
+    Widget content = Container(
+      height: height,
+      width: width,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: gradient == null ? boxColor : null,
+        gradient: gradient != null ? LinearGradient(
+          colors: gradient!,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ) : null,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: borderCol,
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+
+    if (onTap != null) {
+      content = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: content,
+        ),
+      );
+    }
+
+    return content
+        .animate()
+        .fadeIn(
+          duration: const Duration(milliseconds: 500),
+          delay: Duration(milliseconds: 50 * animationDelayIndex),
+        )
+        .slideY(
+          begin: 0.15,
+          end: 0.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 500),
+          delay: Duration(milliseconds: 50 * animationDelayIndex),
+        );
+  }
+}

@@ -343,10 +343,6 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
-            leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
-              onPressed: () => context.go('/influencer/home'),
-            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(

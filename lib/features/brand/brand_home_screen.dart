@@ -207,7 +207,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 Text(
                   'Promo',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -215,7 +215,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 Text(
                   '.',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,
                   ),
@@ -226,20 +226,20 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: const Icon(Iconsax.search_normal, size: 20),
+                icon: const Icon(Iconsax.search_normal, size: 24),
                 onPressed: () => context.push('/search'),
               ),
               Stack(
                 alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Iconsax.notification, size: 20),
+                    icon: const Icon(Iconsax.notification, size: 24),
                     onPressed: () => context.push('/brand/notifications'),
                   ),
                   if (unreadNotifications > 0)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 6,
+                      top: 6,
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: const BoxDecoration(
@@ -264,7 +264,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 ],
               ),
               IconButton(
-                icon: const Icon(Iconsax.setting_2, size: 20),
+                icon: const Icon(Iconsax.setting_2, size: 24),
                 onPressed: () => context.push('/brand/settings'),
               ),
               const SizedBox(width: 8),
@@ -273,7 +273,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 child: AppAvatar(
                   url: profile?['avatar_url'],
                   fallbackText: profile?['display_name'] ?? 'P',
-                  size: 30,
+                  size: 32,
                 ),
               ),
             ],
@@ -679,48 +679,38 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 );
               }),
 
-            // "With love, from Arkio." Footer — Jio style
-            const SizedBox(height: 48),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 32),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'With ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade500,
-                        height: 1,
-                      ),
+            // Footer (Jio Style)
+            const SizedBox(height: 56),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'With love,',
+                    style: GoogleFonts.inter(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      height: 1.2,
+                      color: AppColors.isDarkMode 
+                          ? const Color(0xFF3F3F46) 
+                          : const Color(0xFFD4D4D8),
+                      letterSpacing: -0.5,
                     ),
-                    Icon(
-                      Icons.favorite,
-                      size: 14,
-                      color: Colors.red.shade400,
+                  ),
+                  Text(
+                    'from Promo.',
+                    style: GoogleFonts.inter(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      height: 1.2,
+                      color: AppColors.isDarkMode 
+                          ? const Color(0xFF3F3F46) 
+                          : const Color(0xFFD4D4D8),
+                      letterSpacing: -0.5,
                     ),
-                    Text(
-                      ', from ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade500,
-                        height: 1,
-                      ),
-                    ),
-                    Text(
-                      'Arkio.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],

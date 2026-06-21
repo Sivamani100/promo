@@ -130,10 +130,15 @@ class AppAvatar extends StatelessWidget {
         color: AppColors.surface2,
         border: Border.all(color: AppColors.border, width: 1),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: url != null && url!.isNotEmpty
-          ? CachedNetworkImage(imageUrl: url!, fit: BoxFit.cover, errorWidget: (_, _, _) => _fallback())
-          : _fallback(),
+      child: ClipOval(
+        child: url != null && url!.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: url!,
+                fit: BoxFit.cover,
+                errorWidget: (_, _, _) => _fallback(),
+              )
+            : _fallback(),
+      ),
     );
 
     if (onTap != null) {
@@ -149,7 +154,10 @@ class AppAvatar extends StatelessWidget {
   Widget _fallback() {
     final letter = (fallbackText ?? '?')[0].toUpperCase();
     return Container(
-      color: AppColors.accent,
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        shape: BoxShape.circle,
+      ),
       alignment: Alignment.center,
       child: Text(letter, style: TextStyle(fontSize: size * 0.4, fontWeight: FontWeight.w700, color: AppColors.accentOnDark)),
     );

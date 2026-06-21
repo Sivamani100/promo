@@ -862,10 +862,6 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
-            leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
-              onPressed: () => context.go(widget.role == 'brand' ? '/brand/home' : '/influencer/home'),
-            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
