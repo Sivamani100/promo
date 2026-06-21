@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/providers/app_providers.dart';
+import 'package:flutter/services.dart';
 
 class AppScaffold extends ConsumerStatefulWidget {
   final String role;
@@ -17,6 +18,7 @@ class AppScaffold extends ConsumerStatefulWidget {
 
 class _AppScaffoldState extends ConsumerState<AppScaffold> {
   int _currentIndex = 0;
+  DateTime? _lastPressedAt;
 
   List<_NavItem> get _brandItems => [
         _NavItem(icon: Iconsax.home, activeIcon: Iconsax.home_1, label: 'Home', path: '/brand/home'),
@@ -62,14 +64,28 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final inactiveIconColor = isDark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6);
 
     return PopScope(
-      canPop: _currentIndex == 0,
-      onPopInvokedWithResult: (didPop, result) {
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         if (_currentIndex != 0) {
           setState(() {
             _currentIndex = 0;
           });
           context.go(widget.role == 'brand' ? '/brand/home' : '/influencer/home');
+        } else {
+          final now = DateTime.now();
+          if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+            _lastPressedAt = now;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Press back again to exit'),
+                duration: Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            await SystemNavigator.pop();
+          }
         }
       },
       child: Scaffold(

@@ -60,7 +60,13 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Browse Brands')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/influencer/home'),
+        ),
+        title: const Text('Browse Brands'),
+      ),
       body: _loading
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: AppSpacing.pageMarginVertical),
@@ -183,7 +189,13 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved Cards')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/influencer/home'),
+        ),
+        title: const Text('Saved Cards'),
+      ),
       body: _loading
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
@@ -265,6 +277,10 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/influencer/home'),
+        ),
         title: const Text('My Portfolio'),
         actions: [
           IconButton(
@@ -735,7 +751,13 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/influencer/home'),
+        ),
+        title: const Text('Analytics'),
+      ),
       body: _loading
           ? const ShimmerAnalyticsScreen()
           : RefreshIndicator(
@@ -1213,6 +1235,16 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Iconsax.arrow_left),
+              onPressed: () {
+                if (_isEditing) {
+                  setState(() => _isEditing = false);
+                } else {
+                  context.go('/influencer/home');
+                }
+              },
+            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
@@ -3423,6 +3455,10 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Iconsax.arrow_left),
+              onPressed: () => context.go('/influencer/home'),
+            ),
             titleSpacing: 0,
             title: Row(
               mainAxisSize: MainAxisSize.min,

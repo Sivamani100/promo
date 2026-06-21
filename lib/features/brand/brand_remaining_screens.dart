@@ -46,8 +46,14 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved Lists'), actions: [
-        IconButton(icon: const Icon(Iconsax.add), onPressed: () async {
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/brand/home'),
+        ),
+        title: const Text('Saved Lists'),
+        actions: [
+          IconButton(icon: const Icon(Iconsax.add), onPressed: () async {
           final name = await _showCreateDialog();
           if (name != null && name.isNotEmpty) {
             await SavedService().createList(ref.read(authProvider).user!.id, name);
@@ -186,7 +192,13 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Campaigns')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/brand/home'),
+        ),
+        title: const Text('My Campaigns'),
+      ),
       body: _loading
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
@@ -288,7 +300,13 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/brand/home'),
+        ),
+        title: const Text('Analytics'),
+      ),
       body: _loading
           ? const ShimmerAnalyticsScreen()
           : RefreshIndicator(
@@ -635,6 +653,16 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Iconsax.arrow_left),
+              onPressed: () {
+                if (_isEditing) {
+                  setState(() => _isEditing = false);
+                } else {
+                  context.go('/brand/home');
+                }
+              },
+            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(

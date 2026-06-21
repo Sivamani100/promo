@@ -50,7 +50,13 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Applications')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left),
+          onPressed: () => context.go('/brand/home'),
+        ),
+        title: const Text('Applications'),
+      ),
       body: _loading
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),

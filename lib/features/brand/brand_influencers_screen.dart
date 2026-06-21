@@ -53,6 +53,10 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Iconsax.arrow_left),
+              onPressed: () => context.go('/brand/home'),
+            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(

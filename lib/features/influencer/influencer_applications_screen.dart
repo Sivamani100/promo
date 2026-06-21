@@ -75,6 +75,10 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
+            leading: IconButton(
+              icon: const Icon(Iconsax.arrow_left),
+              onPressed: () => context.go('/influencer/home'),
+            ),
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
