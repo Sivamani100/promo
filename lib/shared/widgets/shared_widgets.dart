@@ -1212,3 +1212,153 @@ class ShimmerChatRoom extends StatelessWidget {
     );
   }
 }
+
+// ---------- showPremiumConfirmDialog ----------
+Future<bool?> showPremiumConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  String confirmLabel = 'Confirm',
+  String cancelLabel = 'Cancel',
+  bool isDestructive = false,
+  IconData? icon,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+        icon: icon != null
+            ? Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDestructive
+                      ? AppColors.error.withOpacity(0.12)
+                      : AppColors.accent.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: isDestructive ? AppColors.error : AppColors.accent,
+                ),
+              )
+            : null,
+        title: Text(
+          title,
+          style: AppTextStyles.h4.copyWith(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          message,
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+            height: 1.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: AppColors.border),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                  child: Text(
+                    cancelLabel,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDestructive ? AppColors.error : AppColors.accent,
+                    foregroundColor: isDestructive ? Colors.white : AppColors.accentOnDark,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    confirmLabel,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// ---------- showPremiumDialog ----------
+Future<T?> showPremiumDialog<T>({
+  required BuildContext context,
+  required String title,
+  required Widget content,
+  List<Widget>? actions,
+  IconData? icon,
+  bool isDestructive = false,
+}) {
+  return showDialog<T>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+        icon: icon != null
+            ? Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDestructive
+                      ? AppColors.error.withValues(alpha: 0.12)
+                      : AppColors.accent.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: isDestructive ? AppColors.error : AppColors.accent,
+                ),
+              )
+            : null,
+        title: Text(
+          title,
+          style: AppTextStyles.h4.copyWith(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: content,
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: actions,
+      );
+    },
+  );
+}

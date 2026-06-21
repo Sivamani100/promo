@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -27,7 +28,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     if (user == null) return;
     final data = await NotificationService().getNotifications(user.id);
     if (mounted) setState(() { _notifications = data; _loading = false; });
-    ref.read(unreadNotificationCountProvider.notifier).state = data.where((n) => n['is_read'] == false).length;
+    ref.read(unreadNotificationCountProvider.notifier).updateCount(data.where((n) => n['is_read'] == false).length);
   }
 
   Future<void> _markAllRead() async {
@@ -110,6 +111,26 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             if (!isRead) {
                               await NotificationService().markAsRead(n['id']);
                               _load();
+                            }
+                            if (!mounted) return;
+                            final role = ref.read(authProvider).role;
+                            if (role == null) return;
+
+                            final type = n['type'] as String?;
+                            final refId = n['reference_id'] as String?;
+
+                            if (type == 'new_message' && refId != null) {
+                              context.push('/$role/chats/$refId');
+                            } else if (type == 'application_received' && refId != null && role == 'brand') {
+                              context.push('/brand/cards/$refId');
+                            } else if (type == 'application_accepted' && refId != null && role == 'influencer') {
+                              context.push('/influencer/discover/$refId');
+                            } else if (type == 'application_rejected' && role == 'influencer') {
+                              context.push('/influencer/my-applications');
+                            } else if (type == 'milestone_completed' && refId != null) {
+                              context.push('/$role/chats/$refId');
+                            } else if (type == 'profile_view' && role == 'influencer') {
+                              context.push('/influencer/profile-views');
                             }
                           },
                           child: Container(

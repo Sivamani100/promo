@@ -119,10 +119,46 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
             label: const Text('Group', style: TextStyle(fontWeight: FontWeight.bold)),
             style: TextButton.styleFrom(foregroundColor: AppColors.accent),
           ),
-          PopupMenuButton(itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-            const PopupMenuItem(value: 'delete', child: Text('Delete')),
-          ]),
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'edit') {
+                final result = await context.push('/brand/cards/new', extra: _card);
+                if (result == true) {
+                  _load();
+                }
+              } else if (value == 'delete') {
+                final confirmed = await showPremiumConfirmDialog(
+                  context: context,
+                  title: 'Delete Campaign Card',
+                  message: 'Are you sure you want to delete this campaign card? This action cannot be undone.',
+                  confirmLabel: 'Delete',
+                  isDestructive: true,
+                  icon: Iconsax.trash,
+                );
+                if (confirmed == true && mounted) {
+                  try {
+                    await CardService().deleteCard(widget.cardId);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Card deleted successfully')),
+                      );
+                      context.pop();
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to delete card: $e')),
+                      );
+                    }
+                  }
+                }
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+            ],
+          ),
         ],
       ),
       body: ListView(

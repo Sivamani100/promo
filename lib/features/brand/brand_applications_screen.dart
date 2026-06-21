@@ -132,11 +132,56 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                                   if (app['status'] == 'pending') ...[
                                     const SizedBox(height: 12),
                                     Row(children: [
-                                      Expanded(child: AppButton(label: 'Accept', onTap: () => _updateStatus(app['id'], 'accepted'))),
+                                      Expanded(
+                                        child: AppButton(
+                                          label: 'Accept',
+                                          onTap: () async {
+                                            final confirmed = await showPremiumConfirmDialog(
+                                              context: context,
+                                              title: 'Accept Application',
+                                              message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
+                                              confirmLabel: 'Accept',
+                                            );
+                                            if (confirmed == true) {
+                                              _updateStatus(app['id'], 'accepted');
+                                            }
+                                          },
+                                        ),
+                                      ),
                                       const SizedBox(width: 8),
-                                      Expanded(child: AppButton(label: 'Shortlist', isPrimary: false, onTap: () => _updateStatus(app['id'], 'shortlisted'))),
+                                      Expanded(
+                                        child: AppButton(
+                                          label: 'Shortlist',
+                                          isPrimary: false,
+                                          onTap: () async {
+                                            final confirmed = await showPremiumConfirmDialog(
+                                              context: context,
+                                              title: 'Shortlist Application',
+                                              message: 'Are you sure you want to shortlist this application?',
+                                              confirmLabel: 'Shortlist',
+                                            );
+                                            if (confirmed == true) {
+                                              _updateStatus(app['id'], 'shortlisted');
+                                            }
+                                          },
+                                        ),
+                                      ),
                                       const SizedBox(width: 8),
-                                       IconButton(icon: Icon(Iconsax.close_circle, color: AppColors.error), onPressed: () => _updateStatus(app['id'], 'rejected')),
+                                      IconButton(
+                                        icon: Icon(Iconsax.close_circle, color: AppColors.error),
+                                        onPressed: () async {
+                                          final confirmed = await showPremiumConfirmDialog(
+                                            context: context,
+                                            title: 'Reject Application',
+                                            message: 'Are you sure you want to reject this application? This action cannot be undone.',
+                                            confirmLabel: 'Reject',
+                                            isDestructive: true,
+                                          );
+                                          if (confirmed == true) {
+                                            _updateStatus(app['id'], 'rejected');
+                                          }
+                                        },
+                                      ),
                                     ]),
                                   ],
                                   if (app['status'] == 'accepted') ...[
@@ -233,90 +278,108 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
     final ctrl = TextEditingController();
     DateTime? selectedDate;
 
-    final result = await showDialog<Map<String, dynamic>>(
+    final result = await showPremiumDialog<Map<String, dynamic>>(
       context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (dialogCtx, setDialogState) {
-            return AlertDialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Add Deliverable'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: ctrl,
-                    autofocus: true,
-                    style: AppTextStyles.body,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Draft Content for review',
-                      labelText: 'Title',
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('DUE DATE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  const SizedBox(height: 8),
-                  InkWell(
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: dialogCtx,
-                        initialDate: DateTime.now().add(const Duration(days: 7)),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null) {
-                        setDialogState(() {
-                          selectedDate = date;
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            selectedDate == null
-                                ? 'Select date...'
-                                : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                            style: AppTextStyles.body.copyWith(
-                              color: selectedDate == null ? AppColors.textMuted : AppColors.textPrimary,
-                            ),
-                          ),
-                          const Icon(Icons.calendar_today_rounded, size: 16),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+      title: 'Add Deliverable',
+      icon: Iconsax.calendar_add,
+      content: StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: ctrl,
+                autofocus: true,
+                style: AppTextStyles.body,
+                decoration: InputDecoration(
+                  hintText: 'e.g. Draft Content for review',
+                  labelText: 'Title',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogCtx),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final t = ctrl.text.trim();
-                    if (t.isEmpty) return;
-                    Navigator.pop(dialogCtx, {
-                      'title': t,
-                      'due_date': selectedDate?.toIso8601String(),
+              const SizedBox(height: 16),
+              Text('DUE DATE', style: AppTextStyles.overline),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: dialogCtx,
+                    initialDate: DateTime.now().add(const Duration(days: 7)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (date != null) {
+                    setDialogState(() {
+                      selectedDate = date;
                     });
-                  },
-                  child: const Text('Add'),
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        selectedDate == null
+                            ? 'Select date...'
+                            : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                        style: AppTextStyles.body.copyWith(
+                          color: selectedDate == null ? AppColors.textMuted : AppColors.textPrimary,
+                        ),
+                      ),
+                      const Icon(Icons.calendar_today_rounded, size: 16),
+                    ],
+                  ),
                 ),
-              ],
-            );
-          },
-        );
-      },
+              ),
+            ],
+          );
+        },
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  final t = ctrl.text.trim();
+                  if (t.isEmpty) return;
+                  Navigator.pop(context, {
+                    'title': t,
+                    'due_date': selectedDate?.toIso8601String(),
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.accentOnDark,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  elevation: 0,
+                ),
+                child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
 
     if (result != null) {

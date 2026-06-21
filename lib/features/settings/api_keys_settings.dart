@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
+import '../../shared/widgets/shared_widgets.dart';
 
 class ApiKeysSettingsScreen extends ConsumerStatefulWidget {
   const ApiKeysSettingsScreen({super.key});
@@ -103,90 +104,121 @@ class _ApiKeysSettingsScreenState extends ConsumerState<ApiKeysSettingsScreen> {
   }
 
   void _showNewKeyDialog(String name, String token) {
-    showDialog(
+    showPremiumDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('API Key Generated'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Please copy your API key now. For security reasons, you will not be able to view it again.',
-              style: TextStyle(fontSize: 13, height: 1.4),
+      title: 'API Key Generated',
+      icon: Iconsax.key,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Please copy your API key now. For security reasons, you will not be able to view it again.',
+            style: TextStyle(fontSize: 13, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surface2,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surface2,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      token,
-                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    token,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  IconButton(
-                    icon: Icon(Iconsax.copy, size: 18, color: AppColors.accent),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: token));
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(content: Text('Key copied to clipboard!'), duration: Duration(seconds: 1)),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                ),
+                IconButton(
+                  icon: Icon(Iconsax.copy, size: 18, color: AppColors.accent),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: token));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Key copied to clipboard!'), duration: Duration(seconds: 1)),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
-            child: const Text('Done'),
           ),
         ],
       ),
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: AppColors.accentOnDark,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+              elevation: 0,
+            ),
+            child: const Text('Done', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ),
+      ],
     );
   }
 
   void _showCreateDialog() {
     _keyNameCtrl.clear();
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Create API Key'),
-        content: TextField(
-          controller: _keyNameCtrl,
-          decoration: const InputDecoration(
-            labelText: 'Key Name',
-            hintText: 'e.g., Production API',
-          ),
-          autofocus: true,
+      title: 'Create API Key',
+      icon: Iconsax.key_square,
+      content: TextField(
+        controller: _keyNameCtrl,
+        decoration: InputDecoration(
+          labelText: 'Key Name',
+          hintText: 'e.g., Production API',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              final name = _keyNameCtrl.text;
-              Navigator.pop(ctx);
-              _createApiKey(name);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
-            child: const Text('Generate'),
-          ),
-        ],
+        autofocus: true,
       ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  final name = _keyNameCtrl.text.trim();
+                  if (name.isNotEmpty) {
+                    Navigator.pop(context);
+                    _createApiKey(name);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.accentOnDark,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  elevation: 0,
+                ),
+                child: const Text('Generate', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -270,7 +302,19 @@ class _ApiKeysSettingsScreenState extends ConsumerState<ApiKeysSettingsScreen> {
                               ),
                               IconButton(
                                 icon: const Icon(Iconsax.trash, color: Colors.red, size: 20),
-                                onPressed: () => _deleteKey(keyId),
+                                onPressed: () async {
+                                  final confirmed = await showPremiumConfirmDialog(
+                                    context: context,
+                                    title: 'Revoke API Key',
+                                    message: 'Are you sure you want to revoke this API key? Any applications currently using this key will immediately fail.',
+                                    confirmLabel: 'Revoke',
+                                    isDestructive: true,
+                                    icon: Iconsax.key,
+                                  );
+                                  if (confirmed == true) {
+                                    _deleteKey(keyId);
+                                  }
+                                },
                               ),
                             ],
                           ),

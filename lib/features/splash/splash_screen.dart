@@ -23,7 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _dotScale;
   late Animation<double> _shimmerValue;
 
-  bool _animationCompleted = false;
+
 
   @override
   void initState() {
@@ -81,12 +81,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
       await Future.delayed(const Duration(milliseconds: 1600));
       if (!mounted) return;
-      _animationCompleted = true;
       ref.read(splashCompletedProvider.notifier).state = true;
     } catch (e) {
       debugPrint('Error in splash screen animation: $e');
       if (mounted) {
-        _animationCompleted = true;
         ref.read(splashCompletedProvider.notifier).state = true;
       }
     }

@@ -581,73 +581,74 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final rooms = await _chatService.getRooms(user.id, role);
     if (!mounted) return;
 
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Forward Message'),
-          content: rooms.isEmpty
-              ? const Text('No chats to forward to.')
-              : SizedBox(
-                  width: double.maxFinite,
-                  height: 300,
-                  child: ListView.builder(
-                    itemCount: rooms.length,
-                    itemBuilder: (context, idx) {
-                      final room = rooms[idx];
-                      final isGroup = room['influencer_id'] == null;
-                      final title = isGroup
-                          ? (room['card']?['title'] ?? 'Group')
-                          : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
+      title: 'Forward Message',
+      icon: Iconsax.send_2,
+      content: rooms.isEmpty
+          ? const Text('No chats to forward to.')
+          : SizedBox(
+              width: double.maxFinite,
+              height: 300,
+              child: ListView.builder(
+                itemCount: rooms.length,
+                itemBuilder: (context, idx) {
+                  final room = rooms[idx];
+                  final isGroup = room['influencer_id'] == null;
+                  final title = isGroup
+                      ? (room['card']?['title'] ?? 'Group')
+                      : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
 
-                      return ListTile(
-                        leading: isGroup
-                            ? Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
-                              )
-                            : AppAvatar(
-                                url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
-                                fallbackText: title,
-                                size: 36,
-                              ),
-                        title: Text(title, style: AppTextStyles.body),
-                        onTap: () async {
-                          Navigator.pop(ctx);
-                          try {
-                            await _chatService.forwardMessage(
-                              targetRoomId: room['id'] as String,
-                              senderId: user.id,
-                              content: msg['content'] ?? '',
-                              attachmentUrl: msg['attachment_url'] as String?,
-                              attachmentType: msg['attachment_type'] as String?,
-                              forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Message forwarded to $title')),
-                            );
-                          } catch (e) {
-                            print('Error forwarding message: $e');
-                          }
-                        },
-                      );
+                  return ListTile(
+                    leading: isGroup
+                        ? Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
+                          )
+                        : AppAvatar(
+                            url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
+                            fallbackText: title,
+                            size: 36,
+                          ),
+                    title: Text(title, style: AppTextStyles.body),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      try {
+                        await _chatService.forwardMessage(
+                          targetRoomId: room['id'] as String,
+                          senderId: user.id,
+                          content: msg['content'] ?? '',
+                          attachmentUrl: msg['attachment_url'] as String?,
+                          attachmentType: msg['attachment_type'] as String?,
+                          forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Message forwarded to $title')),
+                          );
+                        }
+                      } catch (e) {
+                        print('Error forwarding message: $e');
+                      }
                     },
-                  ),
-                ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+                  );
+                },
+              ),
             ),
-          ],
-        );
-      },
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 
@@ -825,20 +826,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _clearChatHistory() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showPremiumConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Clear Chat'),
-        content: const Text('Are you sure you want to clear your message history for this chat? This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: 'Clear Chat History',
+      message: 'Are you sure you want to clear your message history for this chat? This action cannot be undone.',
+      confirmLabel: 'Clear',
+      isDestructive: true,
+      icon: Iconsax.trash,
     );
 
     if (confirmed == true) {
@@ -2023,18 +2017,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ListTile(
                   leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
                   title: const Text('Delete for Me', style: TextStyle(color: Colors.red)),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(ctx);
-                    _deleteMessageForMe(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
+                    final confirmed = await showPremiumConfirmDialog(
+                      context: context,
+                      title: 'Delete Message',
+                      message: 'Are you sure you want to delete this message for yourself? This cannot be undone.',
+                      confirmLabel: 'Delete',
+                      isDestructive: true,
+                      icon: Icons.delete_outline_rounded,
+                    );
+                    if (confirmed == true) {
+                      _deleteMessageForMe(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
+                    }
                   },
                 ),
                 if (isMyMessage) ...[
                   ListTile(
                     leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
                     title: const Text('Delete for Everyone', style: TextStyle(color: Colors.red)),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(ctx);
-                      _deleteMessageForEveryone(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
+                      final confirmed = await showPremiumConfirmDialog(
+                        context: context,
+                        title: 'Delete for Everyone',
+                        message: 'Are you sure you want to delete this message for everyone? This cannot be undone.',
+                        confirmLabel: 'Delete',
+                        isDestructive: true,
+                        icon: Icons.delete_forever_rounded,
+                      );
+                      if (confirmed == true) {
+                        _deleteMessageForEveryone(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
+                      }
                     },
                   ),
                 ],
@@ -2049,53 +2063,52 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showSeenByDialog(Map<String, dynamic> msg) {
     final seenByList = List<String>.from(msg['payload']?['seen_by'] ?? []);
 
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Seen By'),
-          content: seenByList.isEmpty
-              ? const SizedBox(
-                  height: 100,
-                  child: Center(child: Text('No one has read this message yet.')),
-                )
-              : SizedBox(
-                  width: double.maxFinite,
-                  height: 250,
-                  child: ListView.builder(
-                    itemCount: seenByList.length,
-                    itemBuilder: (context, idx) {
-                      final uid = seenByList[idx];
-                      final member = _groupMembers.firstWhere(
-                        (m) => m['user_id'] == uid,
-                        orElse: () => <String, dynamic>{},
-                      );
-                      
-                      final profile = member['profiles'] as Map<String, dynamic>? ?? {};
-                      final name = profile['display_name'] ?? 'User';
-                      final roleText = member['role'] ?? 'member';
+      title: 'Seen By',
+      icon: Iconsax.eye,
+      content: seenByList.isEmpty
+          ? const SizedBox(
+              height: 100,
+              child: Center(child: Text('No one has read this message yet.')),
+            )
+          : SizedBox(
+              width: double.maxFinite,
+              height: 250,
+              child: ListView.builder(
+                itemCount: seenByList.length,
+                itemBuilder: (context, idx) {
+                  final uid = seenByList[idx];
+                  final member = _groupMembers.firstWhere(
+                    (m) => m['user_id'] == uid,
+                    orElse: () => <String, dynamic>{},
+                  );
+                  
+                  final profile = member['profiles'] as Map<String, dynamic>? ?? {};
+                  final name = profile['display_name'] ?? 'User';
+                  final roleText = member['role'] ?? 'member';
 
-                      return ListTile(
-                        leading: AppAvatar(
-                          url: profile['avatar_url'],
-                          fallbackText: name,
-                          size: 32,
-                        ),
-                        title: Text(name, style: AppTextStyles.body),
-                        subtitle: Text(roleText.toUpperCase(), style: AppTextStyles.captionSm),
-                      );
-                    },
-                  ),
-                ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
+                  return ListTile(
+                    leading: AppAvatar(
+                      url: profile['avatar_url'],
+                      fallbackText: name,
+                      size: 32,
+                    ),
+                    title: Text(name, style: AppTextStyles.body),
+                    subtitle: Text(roleText.toUpperCase(), style: AppTextStyles.captionSm),
+                  );
+                },
+              ),
             ),
-          ],
-        );
-      },
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Close',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 
@@ -2520,15 +2533,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!mounted) return;
 
     final selected = <String>{};
-    await showDialog(
+    await showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: AppColors.surface,
-              title: const Text('Invite Members'),
-              content: inviteable.isEmpty
+      title: 'Invite Members',
+      icon: Iconsax.user_add,
+      content: StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              inviteable.isEmpty
                   ? const SizedBox(
                       height: 100,
                       child: Center(child: Text('All users are already in the group.')),
@@ -2563,39 +2577,52 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         },
                       ),
                     ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: selected.isEmpty
-                      ? null
-                      : () async {
-                          Navigator.pop(ctx);
-                          for (final uid in selected) {
-                            try {
-                              await _chatService.inviteUserToGroup(widget.roomId, uid);
-                            } catch (e) {
-                              print('Error inviting user $uid: $e');
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: selected.isEmpty
+                        ? null
+                        : () async {
+                            Navigator.pop(context);
+                            for (final uid in selected) {
+                              try {
+                                await _chatService.inviteUserToGroup(widget.roomId, uid);
+                              } catch (e) {
+                                print('Error inviting user $uid: $e');
+                              }
                             }
-                          }
-                          final members = await _chatService.getGroupMembers(widget.roomId);
-                          if (mounted) {
-                            setState(() {
-                              _groupMembers = members;
-                            });
-                            setSheetState(() {});
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
-                  child: const Text('Invite'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+                            final members = await _chatService.getGroupMembers(widget.roomId);
+                            if (mounted) {
+                              setState(() {
+                                _groupMembers = members;
+                              });
+                              setSheetState(() {});
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.accentOnDark,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Invite'),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -2729,13 +2756,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 title: const Text('Remove from Group', style: TextStyle(color: Colors.orangeAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  await _chatService.removeMember(widget.roomId, targetUserId);
-                  final members = await _chatService.getGroupMembers(widget.roomId);
-                  if (mounted) {
-                    setState(() {
-                      _groupMembers = members;
-                    });
-                    setSheetState(() {});
+                  final confirmed = await showPremiumConfirmDialog(
+                    context: context,
+                    title: 'Remove Member',
+                    message: 'Are you sure you want to remove $targetDisplayName from the group?',
+                    confirmLabel: 'Remove',
+                    isDestructive: true,
+                    icon: Icons.person_remove_rounded,
+                  );
+                  if (confirmed == true) {
+                    await _chatService.removeMember(widget.roomId, targetUserId);
+                    final members = await _chatService.getGroupMembers(widget.roomId);
+                    if (mounted) {
+                      setState(() {
+                        _groupMembers = members;
+                      });
+                      setSheetState(() {});
+                    }
                   }
                 },
               ),
@@ -2744,13 +2781,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 title: const Text('Ban Member', style: TextStyle(color: Colors.redAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  await _chatService.banMember(widget.roomId, targetUserId);
-                  final members = await _chatService.getGroupMembers(widget.roomId);
-                  if (mounted) {
-                    setState(() {
-                      _groupMembers = members;
-                    });
-                    setSheetState(() {});
+                  final confirmed = await showPremiumConfirmDialog(
+                    context: context,
+                    title: 'Ban Member',
+                    message: 'Are you sure you want to ban $targetDisplayName from the group? They will not be able to re-join.',
+                    confirmLabel: 'Ban',
+                    isDestructive: true,
+                    icon: Icons.block_rounded,
+                  );
+                  if (confirmed == true) {
+                    await _chatService.banMember(widget.roomId, targetUserId);
+                    final members = await _chatService.getGroupMembers(widget.roomId);
+                    if (mounted) {
+                      setState(() {
+                        _groupMembers = members;
+                      });
+                      setSheetState(() {});
+                    }
                   }
                 },
               ),
@@ -2762,40 +2809,45 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showMuteDurationDialog(String targetUserId, StateSetter setSheetState) {
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Mute Duration'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: const Text('Mute for 1 Hour'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 1)), setSheetState);
-                },
-              ),
-              ListTile(
-                title: const Text('Mute for 24 Hours'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 24)), setSheetState);
-                },
-              ),
-              ListTile(
-                title: const Text('Mute for 7 Days'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _muteMemberAction(targetUserId, DateTime.now().add(const Duration(days: 7)), setSheetState);
-                },
-              ),
-            ],
+      title: 'Mute Duration',
+      icon: Iconsax.volume_mute,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: const Text('Mute for 1 Hour'),
+            onTap: () {
+              Navigator.pop(context);
+              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 1)), setSheetState);
+            },
           ),
-        );
-      },
+          ListTile(
+            title: const Text('Mute for 24 Hours'),
+            onTap: () {
+              Navigator.pop(context);
+              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 24)), setSheetState);
+            },
+          ),
+          ListTile(
+            title: const Text('Mute for 7 Days'),
+            onTap: () {
+              Navigator.pop(context);
+              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(days: 7)), setSheetState);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 
@@ -3122,17 +3174,35 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _addMilestone() async {
     final ctrl = TextEditingController();
-    final title = await showDialog<String>(
+    final title = await showPremiumDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Add Milestone'),
-        content: TextField(controller: ctrl, autofocus: true, style: AppTextStyles.body, decoration: const InputDecoration(hintText: 'Milestone title')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Add')),
-        ],
+      title: 'Add Milestone',
+      icon: Iconsax.add_circle,
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        style: AppTextStyles.body,
+        decoration: const InputDecoration(hintText: 'Milestone title'),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, ctrl.text),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.accent,
+            foregroundColor: AppColors.accentOnDark,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            elevation: 0,
+          ),
+          child: const Text('Add'),
+        ),
+      ],
     );
     if (title != null && title.isNotEmpty) {
       await _chatService.createMilestone({'room_id': widget.roomId, 'title': title, 'status': 'pending'});

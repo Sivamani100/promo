@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:iconsax/iconsax.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -104,75 +105,74 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
     final rooms = await chatService.getRooms(user.id, role);
     if (!mounted) return;
 
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Forward Photo'),
-          content: rooms.isEmpty
-              ? const Text('No chats to forward to.')
-              : SizedBox(
-                  width: double.maxFinite,
-                  height: 300,
-                  child: ListView.builder(
-                    itemCount: rooms.length,
-                    itemBuilder: (context, idx) {
-                      final room = rooms[idx];
-                      final isGroup = room['influencer_id'] == null;
-                      final title = isGroup
-                          ? (room['card']?['title'] ?? 'Group')
-                          : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
+      title: 'Forward Photo',
+      icon: Iconsax.send_2,
+      content: rooms.isEmpty
+          ? const Text('No chats to forward to.')
+          : SizedBox(
+              width: double.maxFinite,
+              height: 300,
+              child: ListView.builder(
+                itemCount: rooms.length,
+                itemBuilder: (context, idx) {
+                  final room = rooms[idx];
+                  final isGroup = room['influencer_id'] == null;
+                  final title = isGroup
+                      ? (room['card']?['title'] ?? 'Group')
+                      : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
 
-                      return ListTile(
-                        leading: isGroup
-                            ? Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
-                              )
-                            : AppAvatar(
-                                url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
-                                fallbackText: title,
-                                size: 36,
-                              ),
-                        title: Text(title, style: AppTextStyles.body),
-                        onTap: () async {
-                          Navigator.pop(ctx);
-                          try {
-                            await chatService.forwardMessage(
-                              targetRoomId: room['id'] as String,
-                              senderId: user.id,
-                              content: 'Shared a photo',
-                              attachmentUrl: url,
-                              attachmentType: 'image',
-                              forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
-                            );
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Photo forwarded to $title')),
-                              );
-                            }
-                          } catch (e) {
-                            print('Error forwarding photo: $e');
-                          }
-                        },
-                      );
+                  return ListTile(
+                    leading: isGroup
+                        ? Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
+                          )
+                        : AppAvatar(
+                            url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
+                            fallbackText: title,
+                            size: 36,
+                          ),
+                    title: Text(title, style: AppTextStyles.body),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      try {
+                        await chatService.forwardMessage(
+                          targetRoomId: room['id'] as String,
+                          senderId: user.id,
+                          content: 'Shared a photo',
+                          attachmentUrl: url,
+                          attachmentType: 'image',
+                          forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Photo forwarded to $title')),
+                          );
+                        }
+                      } catch (e) {
+                        print('Error forwarding photo: $e');
+                      }
                     },
-                  ),
-                ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+                  );
+                },
+              ),
             ),
-          ],
-        );
-      },
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 

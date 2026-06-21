@@ -260,65 +260,64 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
-    showDialog(
+    showPremiumDialog(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('New 1-to-1 Chat'),
-          content: FutureBuilder<List<Map<String, dynamic>>>(
-            future: SupabaseService.client
-                .from('profiles')
-                .select('id, display_name, role, avatar_url')
-                .neq('id', user.id)
-                .then((res) => List<Map<String, dynamic>>.from(res)),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox(
-                  height: 100,
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-              final profiles = snapshot.data ?? [];
-              if (profiles.isEmpty) {
-                return const Text('No profiles available to chat with.');
-              }
+      title: 'New 1-to-1 Chat',
+      icon: Iconsax.message_add,
+      content: FutureBuilder<List<Map<String, dynamic>>>(
+        future: SupabaseService.client
+            .from('profiles')
+            .select('id, display_name, role, avatar_url')
+            .neq('id', user.id)
+            .then((res) => List<Map<String, dynamic>>.from(res)),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox(
+              height: 100,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final profiles = snapshot.data ?? [];
+          if (profiles.isEmpty) {
+            return const Text('No profiles available to chat with.');
+          }
 
-              return SizedBox(
-                width: double.maxFinite,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: profiles.length,
-                  itemBuilder: (ctx, idx) {
-                    final profile = profiles[idx];
-                    final display = profile['display_name'] ?? 'User';
-                    final role = profile['role'] ?? 'User';
-                    return ListTile(
-                      leading: AppAvatar(
-                        url: profile['avatar_url'],
-                        fallbackText: display,
-                        size: 36,
-                      ),
-                      title: Text(display, style: AppTextStyles.body),
-                      subtitle: Text(role.toUpperCase(), style: AppTextStyles.captionSm),
-                      onTap: () async {
-                        Navigator.pop(ctx);
-                        _startOneToOneChat(profile['id'] as String);
-                      },
-                    );
+          return SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: profiles.length,
+              itemBuilder: (ctx, idx) {
+                final profile = profiles[idx];
+                final display = profile['display_name'] ?? 'User';
+                final role = profile['role'] ?? 'User';
+                return ListTile(
+                  leading: AppAvatar(
+                    url: profile['avatar_url'],
+                    fallbackText: display,
+                    size: 36,
+                  ),
+                  title: Text(display, style: AppTextStyles.body),
+                  subtitle: Text(role.toUpperCase(), style: AppTextStyles.captionSm),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    _startOneToOneChat(profile['id'] as String);
                   },
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+                );
+              },
             ),
-          ],
-        );
-      },
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 
@@ -372,28 +371,33 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       }
 
       if (mounted) {
-        final selectedCamp = await showDialog<Map<String, dynamic>>(
+        final selectedCamp = await showPremiumDialog<Map<String, dynamic>>(
           context: context,
-          builder: (ctx) {
-            return AlertDialog(
-              backgroundColor: AppColors.surface,
-              title: const Text('Select Campaign'),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: campaigns.length,
-                  itemBuilder: (context, idx) {
-                    final camp = campaigns[idx];
-                    return ListTile(
-                      title: Text(camp['title'] ?? '', style: AppTextStyles.body),
-                      onTap: () => Navigator.pop(ctx, camp),
-                    );
-                  },
-                ),
+          title: 'Select Campaign',
+          icon: Iconsax.briefcase,
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: campaigns.length,
+              itemBuilder: (ctx, idx) {
+                final camp = campaigns[idx];
+                return ListTile(
+                  title: Text(camp['title'] ?? '', style: AppTextStyles.body),
+                  onTap: () => Navigator.pop(ctx, camp),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textSecondary),
               ),
-            );
-          },
+            ),
+          ],
         );
 
         if (selectedCamp == null) return;
@@ -754,21 +758,13 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 title: const Text('Clear History', style: TextStyle(color: Colors.redAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
-                  final confirm = await showDialog<bool>(
+                  final confirm = await showPremiumConfirmDialog(
                     context: context,
-                    builder: (c) => AlertDialog(
-                      backgroundColor: AppColors.surface,
-                      title: const Text('Clear Chat History'),
-                      content: const Text('Are you sure you want to clear all messages? This action cannot be undone.'),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(c, true),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                          child: const Text('Clear', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
+                    title: 'Clear Chat History',
+                    message: 'Are you sure you want to clear all messages? This action cannot be undone.',
+                    confirmLabel: 'Clear',
+                    isDestructive: true,
+                    icon: Iconsax.trash,
                   );
                   if (confirm == true) {
                     clearedRooms[roomId] = DateTime.now().toUtc().toIso8601String();

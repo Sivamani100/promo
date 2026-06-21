@@ -307,50 +307,96 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                         childAspectRatio: 0.75,
                       ),
                       itemCount: _items.length,
-                      itemBuilder: (_, i) {
+                      itemBuilder: (context, i) {
                         final item = _items[i];
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  color: AppColors.surface2,
-                                  width: double.infinity,
-                                  child: item['media_url'] != null
-                                      ? Image.network(item['media_url'], fit: BoxFit.cover)
-                                      : Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
-                                ),
+                        return Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                border: Border.all(color: AppColors.border),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(AppSpacing.md),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                    const SizedBox(height: 2),
-                                    Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
-                                    if (item['engagement_rate'] != null) ...[
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
-                                          const SizedBox(width: 4),
-                                          Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                              clipBehavior: Clip.antiAlias,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      color: AppColors.surface2,
+                                      width: double.infinity,
+                                      child: item['media_url'] != null
+                                          ? Image.network(item['media_url'], fit: BoxFit.cover)
+                                          : Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(AppSpacing.md),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                        const SizedBox(height: 2),
+                                        Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
+                                        if (item['engagement_rate'] != null) ...[
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
+                                              const SizedBox(width: 4),
+                                              Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                                            ],
+                                          ),
                                         ],
-                                      ),
-                                    ],
-                                  ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final confirmed = await showPremiumConfirmDialog(
+                                    context: context,
+                                    title: 'Delete Portfolio Item',
+                                    message: 'Are you sure you want to delete "${item['title'] ?? 'Untitled'}" from your portfolio?',
+                                    confirmLabel: 'Delete',
+                                    isDestructive: true,
+                                    icon: Iconsax.trash,
+                                  );
+                                  if (confirmed == true) {
+                                    setState(() => _loading = true);
+                                    try {
+                                      await PortfolioService().deletePortfolioItem(item['id'] as String);
+                                      _load();
+                                    } catch (e) {
+                                      setState(() => _loading = false);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Failed to delete item: $e')),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Iconsax.trash,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -1345,7 +1391,18 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                               child: AppButton(
                                 label: 'Cancel',
                                 isPrimary: false,
-                                onTap: () => setState(() => _isEditing = false),
+                                onTap: () async {
+                                  final confirmed = await showPremiumConfirmDialog(
+                                    context: context,
+                                    title: 'Discard Changes',
+                                    message: 'Are you sure you want to discard your profile edits?',
+                                    confirmLabel: 'Discard',
+                                    isDestructive: true,
+                                  );
+                                  if (confirmed == true && mounted) {
+                                    setState(() => _isEditing = false);
+                                  }
+                                },
                               ),
                             ),
                           ],
@@ -1673,7 +1730,17 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                   'Sign Out',
                                   Iconsax.logout,
                                   () async {
-                                    await ref.read(authProvider.notifier).signOut();
+                                    final confirm = await showPremiumConfirmDialog(
+                                      context: context,
+                                      title: 'Sign Out',
+                                      message: 'Are you sure you want to sign out of your account?',
+                                      confirmLabel: 'Sign Out',
+                                      isDestructive: true,
+                                      icon: Iconsax.logout,
+                                    );
+                                    if (confirm == true) {
+                                      await ref.read(authProvider.notifier).signOut();
+                                    }
                                   },
                                   isDestructive: true,
                                 ),

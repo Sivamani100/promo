@@ -138,7 +138,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       }),
 
       // Full-screen routes (no bottom bar)
-      GoRoute(path: '/brand/cards/new', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const BrandCardCreateScreen()),
+      GoRoute(
+        path: '/brand/cards/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) {
+          final card = state.extra as Map<String, dynamic>?;
+          return BrandCardCreateScreen(card: card);
+        },
+      ),
       GoRoute(path: '/brand/cards/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => BrandCardDetailScreen(cardId: state.pathParameters['id']!)),
       GoRoute(path: '/brand/chats/:roomId', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => ChatRoomScreen(roomId: state.pathParameters['roomId']!)),
       GoRoute(

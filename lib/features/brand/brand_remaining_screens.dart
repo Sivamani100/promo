@@ -96,12 +96,56 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
 
   Future<String?> _showCreateDialog() async {
     final ctrl = TextEditingController();
-    return showDialog<String>(context: context, builder: (ctx) => AlertDialog(
-      backgroundColor: AppColors.surface,
-      title: const Text('New List'),
-      content: TextField(controller: ctrl, autofocus: true, style: AppTextStyles.body, decoration: const InputDecoration(hintText: 'List name')),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')), ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Create'))],
-    ));
+    return showPremiumDialog<String>(
+      context: context,
+      title: 'New List',
+      icon: Iconsax.folder_add,
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        style: AppTextStyles.body,
+        decoration: InputDecoration(
+          hintText: 'List name',
+          hintStyle: AppTextStyles.caption,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+      ),
+      actions: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                ),
+                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  final text = ctrl.text.trim();
+                  if (text.isNotEmpty) Navigator.pop(context, text);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.accentOnDark,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                  elevation: 0,
+                ),
+                child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 
@@ -695,7 +739,18 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                               child: AppButton(
                                 label: 'Cancel',
                                 isPrimary: false,
-                                onTap: () => setState(() => _isEditing = false),
+                                onTap: () async {
+                                  final confirmed = await showPremiumConfirmDialog(
+                                    context: context,
+                                    title: 'Discard Changes',
+                                    message: 'Are you sure you want to discard your profile edits?',
+                                    confirmLabel: 'Discard',
+                                    isDestructive: true,
+                                  );
+                                  if (confirmed == true && mounted) {
+                                    setState(() => _isEditing = false);
+                                  }
+                                },
                               ),
                             ),
                           ],
@@ -945,7 +1000,17 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                   'Sign Out',
                                   Iconsax.logout,
                                   () async {
-                                    await ref.read(authProvider.notifier).signOut();
+                                    final confirm = await showPremiumConfirmDialog(
+                                      context: context,
+                                      title: 'Sign Out',
+                                      message: 'Are you sure you want to sign out of your account?',
+                                      confirmLabel: 'Sign Out',
+                                      isDestructive: true,
+                                      icon: Iconsax.logout,
+                                    );
+                                    if (confirm == true) {
+                                      await ref.read(authProvider.notifier).signOut();
+                                    }
                                   },
                                   isDestructive: true,
                                 ),

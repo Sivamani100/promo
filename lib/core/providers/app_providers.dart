@@ -391,6 +391,12 @@ class UnreadNotificationCountNotifier extends StateNotifier<int> {
     }
   }
 
+  void updateCount(int count) {
+    if (mounted) {
+      state = count;
+    }
+  }
+
   @override
   void dispose() {
     if (_subscription != null) {

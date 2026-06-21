@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
+import '../../shared/widgets/shared_widgets.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -98,21 +99,13 @@ class SettingsScreen extends ConsumerWidget {
               label: 'Sign Out',
               isDestructive: true,
               onTap: () async {
-                final confirmed = await showDialog<bool>(
+                final confirmed = await showPremiumConfirmDialog(
                   context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: AppColors.surface,
-                    title: const Text('Sign Out'),
-                    content: const Text('Are you sure you want to sign out?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                        child: const Text('Sign Out'),
-                      ),
-                    ],
-                  ),
+                  title: 'Sign Out',
+                  message: 'Are you sure you want to sign out of your account?',
+                  confirmLabel: 'Sign Out',
+                  isDestructive: true,
+                  icon: Iconsax.logout,
                 );
                 if (confirmed == true) {
                   await ref.read(authProvider.notifier).signOut();
