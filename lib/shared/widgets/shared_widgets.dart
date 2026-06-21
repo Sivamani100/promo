@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -197,7 +198,7 @@ enum StatCardPreset {
 }
 
 // ---------- StatCard ----------
-class StatCard extends StatelessWidget {
+class StatCard extends StatefulWidget {
   final String label;
   final String value;
   final IconData icon;
@@ -208,6 +209,7 @@ class StatCard extends StatelessWidget {
   final Color? textColor;
   final Color? labelColor;
   final Color? iconColor;
+  final VoidCallback? onTap;
 
   const StatCard({
     super.key,
@@ -221,7 +223,50 @@ class StatCard extends StatelessWidget {
     this.textColor,
     this.labelColor,
     this.iconColor,
+    this.onTap,
   });
+
+  @override
+  State<StatCard> createState() => _StatCardState();
+}
+
+class _StatCardState extends State<StatCard> with SingleTickerProviderStateMixin {
+  late AnimationController _animCtrl;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+      lowerBound: 0.96,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+    _scaleAnim = _animCtrl;
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) {
+    _animCtrl.reverse();
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    _animCtrl.forward();
+    if (widget.onTap != null) {
+      widget.onTap!();
+    }
+  }
+
+  void _onTapCancel() {
+    _animCtrl.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,58 +277,58 @@ class StatCard extends StatelessWidget {
     Color? resolvedLabel;
     Color? resolvedIcon;
 
-    if (preset != null) {
-      switch (preset!) {
+    if (widget.preset != null) {
+      switch (widget.preset!) {
         case StatCardPreset.indigo:
           resolvedGradient = isDark 
-              ? [const Color(0xFF1E1B4B), const Color(0xFF312E81)] 
+              ? [const Color(0xFF1E1B4B).withOpacity(0.85), const Color(0xFF312E81).withOpacity(0.85)] 
               : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)];
-          resolvedBorder = isDark ? const Color(0xFF4338CA) : const Color(0xFFC7D2FE);
+          resolvedBorder = isDark ? const Color(0xFF4338CA).withOpacity(0.6) : const Color(0xFFC7D2FE);
           resolvedText = isDark ? const Color(0xFFC7D2FE) : const Color(0xFF4F46E5);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
           break;
         case StatCardPreset.rose:
           resolvedGradient = isDark 
-              ? [const Color(0xFF500730), const Color(0xFF700B48)] 
+              ? [const Color(0xFF500730).withOpacity(0.85), const Color(0xFF700B48).withOpacity(0.85)] 
               : [const Color(0xFFFDF2F8), const Color(0xFFFCE7F3)];
-          resolvedBorder = isDark ? const Color(0xFF9D174D) : const Color(0xFFFBCFE8);
+          resolvedBorder = isDark ? const Color(0xFF9D174D).withOpacity(0.6) : const Color(0xFFFBCFE8);
           resolvedText = isDark ? const Color(0xFFFBCFE8) : const Color(0xFFDB2777);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
           break;
         case StatCardPreset.emerald:
           resolvedGradient = isDark 
-              ? [const Color(0xFF064E3B), const Color(0xFF065F46)] 
+              ? [const Color(0xFF064E3B).withOpacity(0.85), const Color(0xFF065F46).withOpacity(0.85)] 
               : [const Color(0xFFECFDF5), const Color(0xFFD1FAE5)];
-          resolvedBorder = isDark ? const Color(0xFF047857) : const Color(0xFFA7F3D0);
+          resolvedBorder = isDark ? const Color(0xFF047857).withOpacity(0.6) : const Color(0xFFA7F3D0);
           resolvedText = isDark ? const Color(0xFFA7F3D0) : const Color(0xFF059669);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
           break;
         case StatCardPreset.amber:
           resolvedGradient = isDark 
-              ? [const Color(0xFF451A03), const Color(0xFF78350F)] 
+              ? [const Color(0xFF451A03).withOpacity(0.85), const Color(0xFF78350F).withOpacity(0.85)] 
               : [const Color(0xFFFFF7ED), const Color(0xFFFFEDD5)];
-          resolvedBorder = isDark ? const Color(0xFF92400E) : const Color(0xFFFFD8A8);
+          resolvedBorder = isDark ? const Color(0xFF92400E).withOpacity(0.6) : const Color(0xFFFFD8A8);
           resolvedText = isDark ? const Color(0xFFFFD8A8) : const Color(0xFFD97706);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
           break;
         case StatCardPreset.cyan:
           resolvedGradient = isDark 
-              ? [const Color(0xFF0C4A6E), const Color(0xFF075985)] 
+              ? [const Color(0xFF0C4A6E).withOpacity(0.85), const Color(0xFF075985).withOpacity(0.85)] 
               : [const Color(0xFFF0F9FF), const Color(0xFFE0F2FE)];
-          resolvedBorder = isDark ? const Color(0xFF0369A1) : const Color(0xFFBAE6FD);
+          resolvedBorder = isDark ? const Color(0xFF0369A1).withOpacity(0.6) : const Color(0xFFBAE6FD);
           resolvedText = isDark ? const Color(0xFFBAE6FD) : const Color(0xFF0284C7);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
           break;
         case StatCardPreset.purple:
           resolvedGradient = isDark 
-              ? [const Color(0xFF3B0764), const Color(0xFF581C87)] 
+              ? [const Color(0xFF3B0764).withOpacity(0.85), const Color(0xFF581C87).withOpacity(0.85)] 
               : [const Color(0xFFFAF5FF), const Color(0xFFF3E8FF)];
-          resolvedBorder = isDark ? const Color(0xFF7E22CE) : const Color(0xFFE9D5FF);
+          resolvedBorder = isDark ? const Color(0xFF7E22CE).withOpacity(0.6) : const Color(0xFFE9D5FF);
           resolvedText = isDark ? const Color(0xFFE9D5FF) : const Color(0xFF9333EA);
           resolvedLabel = resolvedText.withOpacity(0.85);
           resolvedIcon = resolvedText;
@@ -291,51 +336,77 @@ class StatCard extends StatelessWidget {
       }
     }
 
-    final bg = backgroundColor ?? AppColors.surface;
-    final grads = gradientColors ?? resolvedGradient;
-    final borderCol = borderColor ?? resolvedBorder ?? AppColors.border;
-    final valColor = textColor ?? resolvedText ?? AppColors.textPrimary;
-    final lblColor = labelColor ?? resolvedLabel ?? AppColors.textSecondary;
-    final icColor = iconColor ?? resolvedIcon ?? AppColors.textMuted;
+    final bg = widget.backgroundColor ?? AppColors.surface;
+    final grads = widget.gradientColors ?? resolvedGradient;
+    final borderCol = widget.borderColor ?? resolvedBorder ?? AppColors.border;
+    final valColor = widget.textColor ?? resolvedText ?? AppColors.textPrimary;
+    final lblColor = widget.labelColor ?? resolvedLabel ?? AppColors.textSecondary;
+    final icColor = widget.iconColor ?? resolvedIcon ?? AppColors.textMuted;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: grads == null ? bg : null,
-        gradient: grads != null ? LinearGradient(
-          colors: grads,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ) : null,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: borderCol, width: 1.2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(child: Text(label, style: AppTextStyles.captionSm.copyWith(color: lblColor), overflow: TextOverflow.ellipsis)),
-              Icon(icon, size: 18, color: icColor),
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      behavior: HitTestBehavior.opaque,
+      child: ScaleTransition(
+        scale: _scaleAnim,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: grads == null ? bg : null,
+            gradient: grads != null ? LinearGradient(
+              colors: grads,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ) : null,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: borderCol, width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: AppTextStyles.h2.copyWith(
-                fontSize: 28,
-                height: 1.1,
-                fontWeight: FontWeight.w900,
-                color: valColor,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.label,
+                      style: AppTextStyles.captionSm.copyWith(
+                        color: lblColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(widget.icon, size: 16, color: icColor),
+                ],
               ),
-            ),
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  widget.value,
+                  style: AppTextStyles.h2.copyWith(
+                    fontSize: 26,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                    color: valColor,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -415,8 +486,23 @@ class CampaignCardWidget extends StatelessWidget {
   final Map<String, dynamic> card;
   final VoidCallback? onTap;
   final int? matchScore;
+  final bool isApplied;
 
-  const CampaignCardWidget({super.key, required this.card, this.onTap, this.matchScore});
+  const CampaignCardWidget({
+    super.key,
+    required this.card,
+    this.onTap,
+    this.matchScore,
+    this.isApplied = false,
+  });
+
+  static const _followerTiers = [
+    {'label': 'Any tier', 'value': 0},
+    {'label': '10k+ followers', 'value': 10000},
+    {'label': '50k+ followers', 'value': 50000},
+    {'label': '100k+ followers', 'value': 100000},
+    {'label': '500k+ followers', 'value': 500000},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -424,47 +510,180 @@ class CampaignCardWidget extends StatelessWidget {
     final category = card['category'] as String? ?? '';
     final categoryColor = AppColors.getCategoryColor(category);
     final nicheTags = (card['niche_tags'] as List<dynamic>?)?.cast<String>() ?? [];
+    
+    // Extract campaign type from niche tags
+    String campaignType = 'Sponsored Post';
+    if (nicheTags.contains('Sponsored Post')) {
+      campaignType = 'Sponsored Post';
+    } else if (nicheTags.contains('Product Review')) {
+      campaignType = 'Product Review';
+    } else if (nicheTags.contains('Brand Ambassador')) {
+      campaignType = 'Brand Ambassador';
+    } else if (nicheTags.contains('Affiliate / Commission')) {
+      campaignType = 'Affiliate / Commission';
+    } else if (nicheTags.contains('Other')) {
+      campaignType = 'Other';
+    }
+
+    final minFollowers = card['min_followers'] as int? ?? 0;
+    final followersLabel = _followerTiers.firstWhere(
+      (t) => t['value'] == minFollowers,
+      orElse: () => {'label': 'Any tier'},
+    )['label'] as String;
+
+    final location = card['preferred_location'] as String? ?? 'Anywhere';
+    final budget = card['budget_range'] as String? ?? 'Open';
+    final timeline = card['timeline'] as String? ?? 'Flexible';
+
+    final deliverables = (card['deliverables'] as List<dynamic>?)?.cast<String>() ?? [];
+
+    DateTime? applicationDeadline;
+    if (card['application_deadline'] != null) {
+      applicationDeadline = DateTime.tryParse(card['application_deadline'].toString());
+    }
+
+    final isDark = AppColors.isDarkMode;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.border, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.03),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cover image
+            // Cover image with linear gradient
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Stack(
                 children: [
-                  Container(
-                    color: AppColors.surface2,
-                    child: card['cover_image_url'] != null
-                        ? CachedNetworkImage(imageUrl: card['cover_image_url'], fit: BoxFit.cover, width: double.infinity, height: double.infinity)
-                        : Center(child: Icon(Iconsax.volume_high, size: 40, color: AppColors.borderSubtle)),
-                  ),
-                  Positioned(
-                    top: 12, left: 12,
+                  Positioned.fill(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: categoryColor, borderRadius: BorderRadius.circular(100)),
-                      child: Text(category, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.black)),
+                      color: AppColors.surface2,
+                      child: card['cover_image_url'] != null && card['cover_image_url'].toString().isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: card['cover_image_url'],
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Center(
+                                child: Icon(Iconsax.image, size: 40, color: AppColors.borderSubtle),
+                              ),
+                            )
+                          : Center(
+                              child: Icon(Iconsax.image, size: 40, color: AppColors.borderSubtle),
+                            ),
                     ),
                   ),
-                  if (matchScore != null && matchScore! > 0)
-                    Positioned(
-                      top: 12, right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: AppColors.success.withOpacity(0.9), borderRadius: BorderRadius.circular(100)),
-                        child: Text('Match: +$matchScore', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.black)),
+                  // Dark sheen gradient backdrop overlay
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withOpacity(0.35),
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.55),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: categoryColor,
+                            borderRadius: BorderRadius.circular(100),
+                            boxShadow: [
+                              BoxShadow(
+                                color: categoryColor.withOpacity(0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            category.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                        if (matchScore != null && matchScore! > 0) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              borderRadius: BorderRadius.circular(100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.success.withOpacity(0.35),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              'Match: +$matchScore',
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                      ),
+                      child: Text(
+                        campaignType,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -473,7 +692,7 @@ class CampaignCardWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (brand != null)
+                  if (brand != null) ...[
                     GestureDetector(
                       onTap: () {
                         if (brand['id'] != null) {
@@ -483,25 +702,109 @@ class CampaignCardWidget extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       child: Row(
                         children: [
-                          AppAvatar(url: brand['avatar_url'], fallbackText: brand['display_name'] ?? 'B', size: 24),
+                          AppAvatar(
+                            url: brand['avatar_url'],
+                            fallbackText: brand['display_name'] ?? 'B',
+                            size: 24,
+                          ),
                           const SizedBox(width: 8),
-                          Text(brand['display_name'] ?? 'Brand', style: AppTextStyles.captionSm.copyWith(fontWeight: FontWeight.w600)),
+                          Text(
+                            brand['display_name'] ?? 'Brand',
+                            style: AppTextStyles.captionSm.copyWith(fontWeight: FontWeight.w600),
+                          ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  Text(
+                    card['title'] ?? '',
+                    style: AppTextStyles.h4.copyWith(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: -0.3),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    card['description'] ?? '',
+                    style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, height: 1.45),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  // Key Info Parameter Grid
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDetailItem(
+                          Iconsax.wallet_3,
+                          'Compensation',
+                          budget,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildDetailItem(
+                          Iconsax.clock,
+                          'Timeline',
+                          timeline,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
-                  Text(card['title'] ?? '', style: AppTextStyles.h4.copyWith(fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 6),
-                  Text(card['description'] ?? '', style: AppTextStyles.caption.copyWith(fontSize: 12, height: 1.5), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  if (nicheTags.isNotEmpty) ...[
-                    const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDetailItem(
+                          Iconsax.user_tick,
+                          'Followers Target',
+                          followersLabel,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildDetailItem(
+                          Iconsax.location,
+                          'Preferred Location',
+                          location,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (deliverables.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text('DELIVERABLES', style: AppTextStyles.overline),
+                    const SizedBox(height: 8),
                     Wrap(
-                      spacing: 6, runSpacing: 6,
-                      children: nicheTags.take(3).map((tag) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: AppColors.surface2, borderRadius: BorderRadius.circular(100), border: Border.all(color: AppColors.borderSubtle)),
-                        child: Text('#${tag.toLowerCase()}', style: AppTextStyles.captionSm.copyWith(fontSize: 10, color: AppColors.textSecondary)),
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: deliverables.map((str) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface2,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Text(
+                          str,
+                          style: AppTextStyles.labelSm.copyWith(fontSize: 10, color: AppColors.textSecondary),
+                        ),
                       )).toList(),
+                    ),
+                  ],
+                  if (applicationDeadline != null) ...[
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(Iconsax.calendar_1, size: 14, color: AppColors.error),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Applications close: ${DateFormat('MMMM dd, yyyy').format(applicationDeadline)}',
+                          style: AppTextStyles.captionSm.copyWith(color: AppColors.error, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ],
                 ],
@@ -509,26 +812,109 @@ class CampaignCardWidget extends StatelessWidget {
             ),
             Container(
               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('BUDGET', style: AppTextStyles.captionSm.copyWith(fontSize: 9)),
-                      Text(card['budget_range'] ?? 'Open', style: AppTextStyles.label.copyWith(fontSize: 13)),
+              alignment: Alignment.centerRight,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: isApplied
+                      ? const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : LinearGradient(
+                          colors: [AppColors.accent, AppColors.accent.withOpacity(0.85)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isApplied
+                          ? const Color(0xFF059669).withOpacity(0.25)
+                          : AppColors.accent.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isApplied) ...[
+                      const Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                      const SizedBox(width: 6),
                     ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(100)),
-                    child: Text('View', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accentOnDark)),
-                  ),
-                ],
+                    Text(
+                      isApplied ? 'Applied' : 'View Campaign',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: isApplied ? Colors.white : AppColors.accentOnDark,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String title, String value) {
+    final isDark = AppColors.isDarkMode;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF141414) : const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.04) : Colors.black.withOpacity(0.04),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 13, color: AppColors.accent),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title.toUpperCase(),
+                  style: AppTextStyles.overline.copyWith(
+                    fontSize: 8,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: AppTextStyles.bodySm.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

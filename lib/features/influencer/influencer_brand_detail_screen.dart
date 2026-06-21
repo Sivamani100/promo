@@ -11,6 +11,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/card_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/data_services.dart';
+import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class InfluencerBrandDetailScreen extends ConsumerStatefulWidget {
@@ -28,6 +29,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   Map<String, dynamic>? _brand;
   List<Map<String, dynamic>> _campaigns = [];
   List<Map<String, dynamic>> _reviews = [];
+  Set<String> _appliedCardIds = {};
   bool _loading = true;
   bool _following = false;
   bool _togglingFollow = false;
@@ -67,6 +69,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
         CardService().getBrandCards(widget.brandId),
         _analyticsService.getReviews(widget.brandId),
         if (user != null) _followService.isFollowing(user.id, widget.brandId) else Future.value(false),
+        if (user != null) ApplicationService().getAppliedCardIds(user.id) else Future.value(<String>[]),
       ]);
 
       if (mounted) {
@@ -75,6 +78,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
           _campaigns = results[1] as List<Map<String, dynamic>>;
           _reviews = results[2] as List<Map<String, dynamic>>;
           _following = results[3] as bool;
+          _appliedCardIds = (results[4] as List<String>).toSet();
           _loading = false;
         });
       }
@@ -535,6 +539,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
         final card = _campaigns[i];
         return CampaignCardWidget(
           card: card,
+          isApplied: _appliedCardIds.contains(card['id']),
           onTap: () => context.push('/influencer/discover/${card['id']}'),
         );
       },

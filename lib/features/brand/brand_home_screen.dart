@@ -307,26 +307,99 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               children: [
-                StatCard(label: 'Active Cards', value: '$_activeCards', icon: Iconsax.cards, preset: StatCardPreset.indigo),
-                StatCard(label: 'Applications', value: '$_totalApps', icon: Iconsax.profile_2user, preset: StatCardPreset.rose),
-                StatCard(label: 'Active Chats', value: '$_activeChats', icon: Iconsax.message, preset: StatCardPreset.emerald),
-                StatCard(label: 'Accepted Deals', value: '$_acceptedDeals', icon: Iconsax.tick_circle, preset: StatCardPreset.amber),
+                StatCard(
+                  label: 'Active Cards',
+                  value: '$_activeCards',
+                  icon: Iconsax.cards,
+                  preset: StatCardPreset.indigo,
+                  onTap: () => context.go('/brand/cards'),
+                ),
+                StatCard(
+                  label: 'Applications',
+                  value: '$_totalApps',
+                  icon: Iconsax.profile_2user,
+                  preset: StatCardPreset.rose,
+                  onTap: () => context.go('/brand/applications'),
+                ),
+                StatCard(
+                  label: 'Active Chats',
+                  value: '$_activeChats',
+                  icon: Iconsax.message,
+                  preset: StatCardPreset.emerald,
+                  onTap: () => context.go('/brand/chats'),
+                ),
+                StatCard(
+                  label: 'Accepted Deals',
+                  value: '$_acceptedDeals',
+                  icon: Iconsax.tick_circle,
+                  preset: StatCardPreset.amber,
+                  onTap: () => context.go('/brand/campaigns'),
+                ),
               ],
             ),
             const SizedBox(height: 16),
   
             // Quick Actions
             Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: AppColors.isDarkMode 
+                      ? [const Color(0xFF0F0F12), const Color(0xFF16161C)] 
+                      : [const Color(0xFFFFFFFF), const Color(0xFFF9FAFB)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.border.withOpacity(AppColors.isDarkMode ? 0.4 : 0.8),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(AppColors.isDarkMode ? 0.3 : 0.03),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Quick Actions', style: AppTextStyles.h4.copyWith(fontSize: 16)),
-                  const SizedBox(height: 12),
-                  AppButton(label: 'Post a New Card', icon: Iconsax.add_circle, onTap: () => context.push('/brand/cards/new')),
-                  const SizedBox(height: 8),
-                  AppButton(label: 'View Applications', icon: Iconsax.receive_square, isPrimary: false, onTap: () => context.go('/brand/applications')),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withOpacity(0.08),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Iconsax.flash, size: 16, color: AppColors.accent),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Quick Actions',
+                        style: AppTextStyles.h4.copyWith(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    label: 'Post a New Card',
+                    icon: Iconsax.add_circle,
+                    onTap: () => context.push('/brand/cards/new'),
+                  ),
+                  const SizedBox(height: 10),
+                  AppButton(
+                    label: 'View Applications',
+                    icon: Iconsax.receive_square,
+                    isPrimary: false,
+                    onTap: () => context.go('/brand/applications'),
+                  ),
                 ],
               ),
             ),
@@ -342,7 +415,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 125,
+                height: 135,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -362,18 +435,39 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                         child: Column(
                           children: [
                             Container(
+                              padding: const EdgeInsets.all(3),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.border,
-                                  width: 2,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.accent,
+                                    AppColors.accent.withOpacity(0.2),
+                                    AppColors.accent,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withOpacity(0.12),
+                                    blurRadius: 8,
+                                  ),
+                                ],
                               ),
-                              child: AppAvatar(
-                                url: creator['avatar_url'],
-                                fallbackText: creator['display_name'] ?? 'C',
-                                size: 66,
-                                onTap: () => context.push('/brand/influencers/${creator['id']}'),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.surface,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: AppAvatar(
+                                  url: creator['avatar_url'],
+                                  fallbackText: creator['display_name'] ?? 'C',
+                                  size: 60,
+                                  onTap: () => context.push('/brand/influencers/${creator['id']}'),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -419,26 +513,52 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
               const SizedBox(height: 16),
             ],
 
-
-
             // Creator Academy / Tip of the Day Slide
             Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF14141E) : const Color(0xFFF2F2F7),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                border: Border.all(color: AppColors.border),
+                gradient: LinearGradient(
+                  colors: AppColors.isDarkMode
+                      ? [const Color(0xFF1A1A24).withOpacity(0.95), const Color(0xFF12121A).withOpacity(0.95)]
+                      : [const Color(0xFFF5F3FF), const Color(0xFFEDE9FE)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.isDarkMode 
+                      ? const Color(0xFF3B0764).withOpacity(0.2) 
+                      : const Color(0xFFC084FC).withOpacity(0.3),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.isDarkMode 
+                        ? Colors.black.withOpacity(0.35) 
+                        : const Color(0xFFC084FC).withOpacity(0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withOpacity(0.15),
+                      color: const Color(0xFFA855F7).withOpacity(0.12),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFA855F7).withOpacity(0.25),
+                        width: 1,
+                      ),
                     ),
-                    child: Icon(Iconsax.lamp_on, color: AppColors.accent, size: 20),
+                    child: const Icon(
+                      Iconsax.lamp_on,
+                      color: Color(0xFFA855F7),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -447,12 +567,22 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                       children: [
                         Text(
                           'Brand Tip of the Day',
-                          style: AppTextStyles.label.copyWith(fontSize: 13, fontWeight: FontWeight.bold),
+                          style: AppTextStyles.label.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.isDarkMode ? Colors.white : const Color(0xFF6B21A8),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Keeping milestones clear and verifying submissions within 24 hours boosts creator performance by 85%.',
-                          style: AppTextStyles.captionSm.copyWith(fontSize: 11, height: 1.4),
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 11,
+                            height: 1.45,
+                            color: AppColors.isDarkMode 
+                                ? Colors.white.withOpacity(0.7) 
+                                : const Color(0xFF701A75),
+                          ),
                         ),
                       ],
                     ),
@@ -469,22 +599,82 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
               ...List.generate(_activities.length, (i) {
                 final a = _activities[i];
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(children: [
-                        Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.accent, border: Border.all(color: AppColors.surface, width: 2))),
-                        if (i < _activities.length - 1) Container(width: 2, height: 40, color: AppColors.border),
-                      ]),
-                      const SizedBox(width: 12),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(a['title'] ?? '', style: AppTextStyles.label.copyWith(fontSize: 13)),
-                        if (a['body'] != null) Text(a['body'], style: AppTextStyles.captionSm, maxLines: 2),
-                        const SizedBox(height: 4),
-                        Text(a['created_at'] != null ? DateFormat('MMM d, h:mm a').format(DateTime.parse(a['created_at'])) : '', style: AppTextStyles.captionSm.copyWith(fontSize: 9)),
-                      ])),
-                    ],
+                  padding: const EdgeInsets.only(bottom: 0),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Timeline line and glowing indicator node
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 4),
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.accent.withOpacity(0.2),
+                                  border: Border.all(color: AppColors.accent, width: 2),
+                                ),
+                              ),
+                              if (i < _activities.length - 1)
+                                Expanded(
+                                  child: Container(
+                                    width: 1.5,
+                                    color: AppColors.border,
+                                    margin: const EdgeInsets.symmetric(vertical: 4),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        // Activity contents
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  a['title'] ?? '',
+                                  style: AppTextStyles.label.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (a['body'] != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    a['body'],
+                                    style: AppTextStyles.caption.copyWith(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                      height: 1.45,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                                const SizedBox(height: 6),
+                                Text(
+                                  a['created_at'] != null 
+                                      ? DateFormat('MMM d, h:mm a').format(DateTime.parse(a['created_at'])) 
+                                      : '',
+                                  style: AppTextStyles.captionSm.copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }),

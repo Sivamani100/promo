@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -127,9 +128,56 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                                     _statusBadge(app['status'] ?? 'pending'),
                                   ]),
                                   const SizedBox(height: 12),
-                                  Text(app['pitch_message'] ?? '', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
-                                  if (app['proposed_rate'] != null) ...[SizedBox(height: 8), Text('Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning))],
-                                  if (app['status'] == 'pending') ...[
+                                   Text(app['pitch_message'] ?? '', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
+                                   if (app['proposed_rate'] != null) ...[
+                                     const SizedBox(height: 8),
+                                     Text('Proposed Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                                   ],
+                                   if (app['portfolio_links'] != null && (app['portfolio_links'] as List).isNotEmpty) ...[
+                                     const SizedBox(height: 12),
+                                     Text('PORTFOLIO ATTACHMENTS', style: AppTextStyles.overline),
+                                     const SizedBox(height: 6),
+                                     Wrap(
+                                       spacing: 8,
+                                       runSpacing: 8,
+                                       children: (app['portfolio_links'] as List).map((link) {
+                                         return InkWell(
+                                           onTap: () async {
+                                             final uri = Uri.parse(link.toString().startsWith('http') ? link.toString() : 'https://${link.toString()}');
+                                             try {
+                                               await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
+                                             } catch (e) {
+                                               print('Error launching portfolio url: $e');
+                                             }
+                                           },
+                                           child: Container(
+                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                             decoration: BoxDecoration(
+                                               color: AppColors.accent.withOpacity(0.06),
+                                               border: Border.all(color: AppColors.accent.withOpacity(0.2)),
+                                               borderRadius: BorderRadius.circular(8),
+                                             ),
+                                             child: Row(
+                                               mainAxisSize: MainAxisSize.min,
+                                               children: [
+                                                 Icon(Iconsax.link, size: 12, color: AppColors.accent),
+                                                 const SizedBox(width: 6),
+                                                 Text(
+                                                   link.toString().length > 25 ? '${link.toString().substring(0, 22)}...' : link.toString(),
+                                                   style: TextStyle(
+                                                     fontSize: 11,
+                                                     fontWeight: FontWeight.bold,
+                                                     color: AppColors.accent,
+                                                   ),
+                                                 ),
+                                               ],
+                                             ),
+                                           ),
+                                         );
+                                       }).toList(),
+                                     ),
+                                   ],
+                                   if (app['status'] == 'pending') ...[
                                     const SizedBox(height: 12),
                                     Row(children: [
                                       Expanded(

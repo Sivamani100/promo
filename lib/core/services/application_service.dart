@@ -27,6 +27,20 @@ class ApplicationService {
     await _client.from('applications').insert(appData);
   }
 
+  Future<void> updateApplication(String applicationId, Map<String, dynamic> appData) async {
+    await _client.from('applications').update(appData).eq('id', applicationId);
+  }
+
+  Future<Map<String, dynamic>?> getApplicationForCardAndInfluencer(String cardId, String influencerId) async {
+    final data = await _client
+        .from('applications')
+        .select('*')
+        .eq('card_id', cardId)
+        .eq('influencer_id', influencerId)
+        .maybeSingle();
+    return data;
+  }
+
   Future<void> updateApplicationStatus(String applicationId, String status, {String? brandNote}) async {
     final data = <String, dynamic>{
       'status': status,

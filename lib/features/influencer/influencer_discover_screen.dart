@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
+import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'discover_map_view.dart';
 
@@ -23,11 +24,22 @@ enum _SortOption { newest, budgetHigh, budgetLow, deadline }
 
 class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScreen> {
   List<Map<String, dynamic>> _cards = [];
+  Set<String> _appliedCardIds = {};
   bool _loading = true;
+  final _searchCtrl = TextEditingController();
+
+  // Primary filters
   String? _categoryFilter;
   _SortOption _sortOption = _SortOption.newest;
   bool _showMap = false;
   bool _matchedOnly = false;
+
+  // Advanced filters state
+  String? _platformFilter;
+  String? _locationFilter;
+  bool _hideUnqualified = false;
+  int? _minBudgetFilter;
+  final _minBudgetCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -36,9 +48,28 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
     _load();
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _minBudgetCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     final data = await CardService().getActiveCards(limit: 50);
-    if (mounted) setState(() { _cards = data; _loading = false; });
+    final user = ref.read(authProvider).user;
+    Set<String> applied = {};
+    if (user != null) {
+      final appliedIds = await ApplicationService().getAppliedCardIds(user.id);
+      applied = appliedIds.toSet();
+    }
+    if (mounted) {
+      setState(() {
+        _cards = data;
+        _appliedCardIds = applied;
+        _loading = false;
+      });
+    }
   }
 
   int _parseBudgetValue(String? range) {
@@ -51,9 +82,27 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
     return 0;
   }
 
+  bool get _hasAnyFilterActive =>
+      _platformFilter != null ||
+      _locationFilter != null ||
+      _hideUnqualified ||
+      _minBudgetFilter != null;
+
   List<Map<String, dynamic>> get _filtered {
     var results = List<Map<String, dynamic>>.from(_cards);
 
+    // Text Search query
+    final query = _searchCtrl.text.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      results = results.where((c) {
+        final title = (c['title'] as String? ?? '').toLowerCase();
+        final desc = (c['description'] as String? ?? '').toLowerCase();
+        final cat = (c['category'] as String? ?? '').toLowerCase();
+        return title.contains(query) || desc.contains(query) || cat.contains(query);
+      }).toList();
+    }
+
+    // Matched Only (Niches)
     if (_matchedOnly) {
       final profile = ref.read(authProvider).profile;
       final userNiches = (profile?['niche'] as List?)?.cast<String>() ?? [];
@@ -63,10 +112,43 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
       }).toList();
     }
 
+    // Category filter
     if (_categoryFilter != null) {
       results = results.where((c) => c['category'] == _categoryFilter).toList();
     }
 
+    // Platform requirements filter
+    if (_platformFilter != null) {
+      results = results.where((c) {
+        final cardPlatforms = (c['platform_requirements'] as List?)?.cast<String>() ?? [];
+        return cardPlatforms.contains(_platformFilter);
+      }).toList();
+    }
+
+    // Location filter
+    if (_locationFilter != null && _locationFilter != 'Anywhere') {
+      results = results.where((c) => c['preferred_location'] == _locationFilter).toList();
+    }
+
+    // Follower qualification filter
+    if (_hideUnqualified) {
+      final profile = ref.read(authProvider).profile;
+      final followers = profile?['follower_count'] as int? ?? 0;
+      results = results.where((c) {
+        final reqFollowers = c['min_followers'] as int? ?? 0;
+        return followers >= reqFollowers;
+      }).toList();
+    }
+
+    // Budget minimum filter
+    if (_minBudgetFilter != null) {
+      results = results.where((c) {
+        final budgetVal = _parseBudgetValue(c['budget_range'] as String?);
+        return budgetVal >= _minBudgetFilter!;
+      }).toList();
+    }
+
+    // Sorting
     switch (_sortOption) {
       case _SortOption.newest:
         results.sort((a, b) => (b['created_at'] ?? '').compareTo(a['created_at'] ?? ''));
@@ -91,6 +173,159 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
       case _SortOption.budgetLow: return 'Budget ↑';
       case _SortOption.deadline: return 'Deadline';
     }
+  }
+
+  void _showAdvancedFiltersBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + MediaQuery.of(dialogCtx).viewInsets.bottom),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppColors.borderSubtle,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Advanced Filters', style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            _platformFilter = null;
+                            _locationFilter = null;
+                            _hideUnqualified = false;
+                            _minBudgetFilter = null;
+                            _minBudgetCtrl.clear();
+                          });
+                        },
+                        child: Text('Reset All', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  
+                  // Platform filter
+                  Text('PLATFORM REQUIREMENT', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [null, 'Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'].map((p) {
+                      final isSelected = _platformFilter == p;
+                      return AppChip(
+                        label: p ?? 'Any Platform',
+                        selected: isSelected,
+                        onTap: () => setDialogState(() => _platformFilter = p),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Location filter
+                  Text('PREFERRED LOCATION', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [null, 'India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Europe'].map((loc) {
+                      final isSelected = _locationFilter == loc;
+                      return AppChip(
+                        label: loc ?? 'Anywhere',
+                        selected: isSelected,
+                        onTap: () => setDialogState(() => _locationFilter = loc),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Budget range
+                  Text('MINIMUM COMPENSATION (INR)', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _minBudgetCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. 15000',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      prefixText: '₹ ',
+                    ),
+                    style: AppTextStyles.body,
+                    onChanged: (val) {
+                      setDialogState(() {
+                        _minBudgetFilter = int.tryParse(val);
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Eligibility switch
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Only Show Eligible Campaigns', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Hide campaigns where you do not meet follower counts', style: AppTextStyles.captionSm),
+                        ],
+                      ),
+                      Switch(
+                        value: _hideUnqualified,
+                        activeColor: AppColors.accent,
+                        onChanged: (val) {
+                          setDialogState(() {
+                            _hideUnqualified = val;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {});
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.accentOnDark,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -193,6 +428,65 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                   onRefresh: _load,
                   child: Column(
                     children: [
+                      // Search and Filter Bar
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _searchCtrl,
+                                onChanged: (val) => setState(() {}),
+                                decoration: InputDecoration(
+                                  hintText: 'Search campaigns...',
+                                  prefixIcon: const Icon(Iconsax.search_normal_1, size: 18),
+                                  suffixIcon: _searchCtrl.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear_rounded, size: 16),
+                                          onPressed: () {
+                                            _searchCtrl.clear();
+                                            setState(() {});
+                                          },
+                                        )
+                                      : null,
+                                  filled: true,
+                                  fillColor: AppColors.surface,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(100),
+                                    borderSide: BorderSide(color: AppColors.border),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(100),
+                                    borderSide: BorderSide(color: AppColors.border),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                                ),
+                                style: AppTextStyles.bodySm,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            IconButton(
+                              icon: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: _hasAnyFilterActive ? AppColors.accent.withOpacity(0.1) : AppColors.surface,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _hasAnyFilterActive ? AppColors.accent : AppColors.border,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Iconsax.filter_search,
+                                  size: 18,
+                                  color: _hasAnyFilterActive ? AppColors.accent : AppColors.textPrimary,
+                                ),
+                              ),
+                              onPressed: _showAdvancedFiltersBottomSheet,
+                            ),
+                          ],
+                        ),
+                      ),
+
                       // Category chips
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -223,6 +517,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                           ],
                         ),
                       ),
+
                       // Sort & count row
                       Padding(
                         padding: const EdgeInsets.fromLTRB(AppSpacing.pageMarginHorizontal, 10, AppSpacing.pageMarginHorizontal, 4),
@@ -265,6 +560,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                           ],
                         ),
                       ),
+                      
                       // Card list
                       Expanded(
                         child: filtered.isEmpty
@@ -278,7 +574,11 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                                 ),
                                 itemCount: filtered.length,
                                 separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                itemBuilder: (_, i) => CampaignCardWidget(card: filtered[i], onTap: () => context.push('/influencer/discover/${filtered[i]['id']}')),
+                                itemBuilder: (_, i) => CampaignCardWidget(
+                                  card: filtered[i],
+                                  isApplied: _appliedCardIds.contains(filtered[i]['id']),
+                                  onTap: () => context.push('/influencer/discover/${filtered[i]['id']}'),
+                                ),
                               ),
                       ),
                     ],

@@ -154,6 +154,7 @@ class InfluencerSavedScreen extends ConsumerStatefulWidget {
 
 class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
   List<Map<String, dynamic>> _saved = [];
+  Set<String> _appliedCardIds = {};
   bool _loading = true;
 
   @override
@@ -163,7 +164,14 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
     final data = await SavedService().getSavedCards(user.id);
-    if (mounted) setState(() { _saved = data; _loading = false; });
+    final appliedIds = await ApplicationService().getAppliedCardIds(user.id);
+    if (mounted) {
+      setState(() {
+        _saved = data;
+        _appliedCardIds = appliedIds.toSet();
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -215,6 +223,7 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
                           },
                           child: CampaignCardWidget(
                             card: card,
+                            isApplied: _appliedCardIds.contains(card['id']),
                             onTap: () => context.push('/influencer/discover/${card['id']}'),
                           ),
                         );

@@ -340,26 +340,82 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             // Profile Completeness
             if (_profileCompleteness < 100)
               Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.purple.withValues(alpha: 0.2), AppColors.indigo.withValues(alpha: 0.1)]),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                  border: Border.all(color: AppColors.purple.withValues(alpha: 0.3)),
-                ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text('Complete Your Profile', style: AppTextStyles.label.copyWith(fontSize: 14)),
-                    Text('$_profileCompleteness%', style: AppTextStyles.label.copyWith(color: AppColors.purple)),
-                  ]),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: LinearProgressIndicator(value: _profileCompleteness / 100, backgroundColor: AppColors.surface2, valueColor: AlwaysStoppedAnimation(AppColors.purple), minHeight: 6),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.purple.withOpacity(0.15),
+                      AppColors.indigo.withOpacity(0.08),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(height: 10),
-                  Text('A complete profile gets 3x more matches!', style: AppTextStyles.captionSm),
-                ]),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.purple.withOpacity(0.25), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.purple.withOpacity(0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Iconsax.profile_add, size: 18, color: AppColors.purple),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Complete Your Profile',
+                              style: AppTextStyles.label.copyWith(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '$_profileCompleteness%',
+                          style: AppTextStyles.label.copyWith(
+                            color: AppColors.purple,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: LinearProgressIndicator(
+                        value: _profileCompleteness / 100,
+                        backgroundColor: AppColors.isDarkMode ? const Color(0xFF141414) : const Color(0xFFE5E7EB),
+                        valueColor: AlwaysStoppedAnimation(AppColors.purple),
+                        minHeight: 8,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(Icons.stars_rounded, size: 14, color: AppColors.purple),
+                        const SizedBox(width: 6),
+                        Text(
+                          'A complete profile gets 3x more matches!',
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
   
 
@@ -373,7 +429,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 125,
+                height: 135,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -388,18 +444,39 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                         child: Column(
                           children: [
                             Container(
+                              padding: const EdgeInsets.all(3),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.border,
-                                  width: 2,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.accent,
+                                    AppColors.accent.withOpacity(0.2),
+                                    AppColors.accent,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withOpacity(0.12),
+                                    blurRadius: 8,
+                                  ),
+                                ],
                               ),
-                              child: AppAvatar(
-                                url: brand['avatar_url'],
-                                fallbackText: brand['display_name'] ?? 'B',
-                                size: 66,
-                                onTap: () => context.push('/influencer/brands/${brand['id']}'),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.surface,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: AppAvatar(
+                                  url: brand['avatar_url'],
+                                  fallbackText: brand['display_name'] ?? 'B',
+                                  size: 60,
+                                  onTap: () => context.push('/influencer/brands/${brand['id']}'),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -466,7 +543,9 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     value: '${_matchedCards.length}',
                     subtitle: 'Opportunities found',
                     icon: Iconsax.flash,
-                    gradientColors: [const Color(0xFFE0F2FE), const Color(0xFFBAE6FD)],
+                    lightGradient: [const Color(0xFFE0F2FE), const Color(0xFFBAE6FD)],
+                    darkGradient: [const Color(0xFF0C4A6E).withOpacity(0.85), const Color(0xFF075985).withOpacity(0.85)],
+                    accentColor: const Color(0xFF38BDF8),
                   ),
                 ),
                 _statHighlightCard(
@@ -474,7 +553,9 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   value: '${profile?['follower_count'] != null && profile!['follower_count'] > 5000 ? "5.4%" : "4.8%"}',
                   subtitle: 'Average organic',
                   icon: Iconsax.activity,
-                  gradientColors: [const Color(0xFFDCFCE7), const Color(0xFFBBF7D0)],
+                  lightGradient: [const Color(0xFFDCFCE7), const Color(0xFFBBF7D0)],
+                  darkGradient: [const Color(0xFF064E3B).withOpacity(0.85), const Color(0xFF065F46).withOpacity(0.85)],
+                  accentColor: const Color(0xFF4ADE80),
                 ),
                 GestureDetector(
                   onTap: () => context.push('/influencer/profile-views'),
@@ -483,7 +564,9 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     value: '$_profileViews',
                     subtitle: 'Views this week',
                     icon: Iconsax.eye,
-                    gradientColors: [const Color(0xFFFCE7F3), const Color(0xFFFBCFE8)],
+                    lightGradient: [const Color(0xFFFCE7F3), const Color(0xFFFBCFE8)],
+                    darkGradient: [const Color(0xFF500730).withOpacity(0.85), const Color(0xFF700B48).withOpacity(0.85)],
+                    accentColor: const Color(0xFFF472B6),
                   ),
                 ),
                 GestureDetector(
@@ -493,7 +576,9 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     value: '12',
                     subtitle: 'All campaigns on track',
                     icon: Iconsax.crown,
-                    gradientColors: [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
+                    lightGradient: [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
+                    darkGradient: [const Color(0xFF451A03).withOpacity(0.85), const Color(0xFF78350F).withOpacity(0.85)],
+                    accentColor: const Color(0xFFFBBF24),
                   ),
                 ),
               ],
@@ -1027,25 +1112,35 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     required String value,
     required String subtitle,
     required IconData icon,
-    required List<Color> gradientColors,
+    required List<Color> lightGradient,
+    required List<Color> darkGradient,
+    required Color accentColor,
   }) {
+    final isDark = AppColors.isDarkMode;
+    final grads = isDark ? darkGradient : lightGradient;
+    final textCol = isDark ? Colors.white : Colors.black.withOpacity(0.9);
+    final labelCol = isDark ? Colors.white.withOpacity(0.7) : Colors.black.withOpacity(0.65);
+    final subCol = isDark ? Colors.white.withOpacity(0.55) : Colors.black.withOpacity(0.55);
+    final iconCol = isDark ? accentColor : Colors.black.withOpacity(0.65);
+    final borderCol = isDark ? accentColor.withOpacity(0.15) : Colors.black.withOpacity(0.04);
+    
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: gradientColors,
+          colors: grads,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.black.withOpacity(0.04),
-          width: 1,
+          color: borderCol,
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.02),
+            blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
@@ -1061,7 +1156,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: Colors.black.withOpacity(0.65),
+                    color: labelCol,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1069,25 +1164,25 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(icon, color: Colors.black.withOpacity(0.65), size: 14),
+              Icon(icon, color: iconCol, size: 14),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.9),
+              color: textCol,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.55),
+              color: subCol,
               fontSize: 9,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

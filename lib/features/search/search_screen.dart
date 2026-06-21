@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/data_services.dart';
+import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -20,6 +21,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
   final _searchCtrl = TextEditingController();
   late TabController _tabCtrl;
   Map<String, List<Map<String, dynamic>>> _results = {'cards': [], 'brands': [], 'influencers': []};
+  Set<String> _appliedCardIds = {};
   bool _loading = false;
   Timer? _debounce;
 
@@ -39,7 +41,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
   Future<void> _doSearch(String query) async {
     setState(() => _loading = true);
     final results = await SearchService().search(query);
-    if (mounted) setState(() { _results = results; _loading = false; });
+    final user = ref.read(authProvider).user;
+    Set<String> applied = {};
+    if (user != null) {
+      final appliedIds = await ApplicationService().getAppliedCardIds(user.id);
+      applied = appliedIds.toSet();
+    }
+    if (mounted) {
+      setState(() {
+        _results = results;
+        _appliedCardIds = applied;
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -105,7 +119,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
           SectionHeader(title: 'Campaigns', actionLabel: '${_results['cards']!.length}'),
           ...List.generate(_results['cards']!.take(3).length, (i) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: CampaignCardWidget(card: _results['cards']![i], onTap: () => context.push('/influencer/discover/${_results['cards']![i]['id']}')),
+            child: CampaignCardWidget(
+              card: _results['cards']![i],
+              isApplied: _appliedCardIds.contains(_results['cards']![i]['id']),
+              onTap: () => context.push('/influencer/discover/${_results['cards']![i]['id']}'),
+            ),
           )),
         ],
         if (_results['brands']!.isNotEmpty) ...[
@@ -127,7 +145,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: cards.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (_, i) => CampaignCardWidget(card: cards[i], onTap: () => context.push('/influencer/discover/${cards[i]['id']}')),
+      itemBuilder: (_, i) => CampaignCardWidget(
+        card: cards[i],
+        isApplied: _appliedCardIds.contains(cards[i]['id']),
+        onTap: () => context.push('/influencer/discover/${cards[i]['id']}'),
+      ),
     );
   }
 
