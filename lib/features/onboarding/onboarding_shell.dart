@@ -7,6 +7,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -338,9 +339,86 @@ class OnboardingShell extends ConsumerWidget {
   }
 }
 
-class _Step1Welcome extends StatelessWidget {
+class _Step1Welcome extends ConsumerStatefulWidget {
   final String role;
   const _Step1Welcome({required this.role});
+
+  @override
+  ConsumerState<_Step1Welcome> createState() => _Step1WelcomeState();
+}
+
+class _Step1WelcomeState extends ConsumerState<_Step1Welcome> {
+  late String _selectedRole;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRole = widget.role;
+  }
+
+  Widget _roleCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected
+              ? (isDark ? Colors.white : const Color(0xFF000000))
+              : (isDark ? AppColors.surface : const Color(0xFFFFFFFF)),
+          border: Border.all(
+            color: selected
+                ? (isDark ? Colors.white : const Color(0xFF000000))
+                : (isDark ? AppColors.border : const Color(0xFFE7EAEB)),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              size: 24,
+              color: selected
+                  ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
+                  : AppColors.textPrimary,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: selected
+                    ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
+                    : AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w400,
+                color: selected
+                    ? (isDark ? const Color(0x99000000) : const Color(0x99FFFFFF))
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -352,14 +430,66 @@ class _Step1Welcome extends StatelessWidget {
         Text('Welcome to Brand!', style: AppTextStyles.h1, textAlign: TextAlign.center),
         const SizedBox(height: 12),
         Text(
-          role == 'brand'
-              ? 'Let\'s set up your brand profile to start finding perfect influencer matches.'
-              : 'Let\'s set up your creator profile to start discovering brand collaborations.',
+          'Please select your account type to proceed with onboarding.',
           style: AppTextStyles.caption.copyWith(fontSize: 14),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
-        AppButton(label: 'Get Started', onTap: () => context.go('/onboarding/2')),
+        Row(
+          children: [
+            Expanded(
+              child: _roleCard(
+                title: 'Creator',
+                description: 'I want to collaborate with brands',
+                icon: Iconsax.crown,
+                selected: _selectedRole == 'influencer',
+                onTap: () => setState(() => _selectedRole = 'influencer'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _roleCard(
+                title: 'Brand',
+                description: 'I want to hire creators for campaigns',
+                icon: Iconsax.briefcase,
+                selected: _selectedRole == 'brand',
+                onTap: () => setState(() => _selectedRole = 'brand'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 40),
+        AppButton(
+          label: 'Get Started',
+          isLoading: _isSaving,
+          onTap: () async {
+            setState(() {
+              _isSaving = true;
+            });
+            try {
+              final user = ref.read(authProvider).user;
+              if (user != null) {
+                await ProfileService().updateProfile(user.id, {'role': _selectedRole});
+                await ref.read(authProvider.notifier).refreshProfile();
+              }
+              if (mounted) {
+                context.go('/onboarding/2');
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to update account type: $e')),
+                );
+              }
+            } finally {
+              if (mounted) {
+                setState(() {
+                  _isSaving = false;
+                });
+              }
+            }
+          },
+        ),
       ],
     );
   }

@@ -190,16 +190,28 @@ class ChatService {
         .select()
         .eq('room_id', roomId)
         .order('created_at', ascending: true);
-    return List<Map<String, dynamic>>.from(data);
+    
+    final list = List<Map<String, dynamic>>.from(data);
+    for (var m in list) {
+      if (m['status'] == 'done') {
+        m['status'] = 'completed';
+      }
+    }
+    return list;
   }
 
   Future<void> createMilestone(Map<String, dynamic> data) async {
-    await _client.from('milestones').insert(data);
+    final Map<String, dynamic> dbData = Map.from(data);
+    if (dbData['status'] == 'completed') {
+      dbData['status'] = 'done';
+    }
+    await _client.from('milestones').insert(dbData);
   }
 
   Future<void> updateMilestoneStatus(String milestoneId, String status) async {
+    final dbStatus = status == 'completed' ? 'done' : status;
     await _client.from('milestones').update({
-      'status': status,
+      'status': dbStatus,
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', milestoneId);
   }
@@ -219,18 +231,50 @@ class ChatService {
   }
 
   Future<Map<String, dynamic>> getOrCreate1to1Room({required String brandId, required String influencerId, String? cardId}) async {
-    // Check if ANY 1-to-1 room exists between this brand and influencer
-    final existing = await _client
-        .from('rooms')
-        .select()
-        .eq('brand_id', brandId)
-        .eq('influencer_id', influencerId)
-        .order('created_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
-        
-    if (existing != null) {
-      return existing;
+    if (cardId != null) {
+      // 1. If cardId is specified, check if a room exists for this specific card first
+      final existingWithCard = await _client
+          .from('rooms')
+          .select()
+          .eq('brand_id', brandId)
+          .eq('influencer_id', influencerId)
+          .eq('card_id', cardId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+          
+      if (existingWithCard != null) {
+        return existingWithCard;
+      }
+    } else {
+      // 2. If cardId is not specified, check if a general room exists (card_id IS NULL)
+      final existingGeneral = await _client
+          .from('rooms')
+          .select()
+          .eq('brand_id', brandId)
+          .eq('influencer_id', influencerId)
+          .isFilter('card_id', null)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+          
+      if (existingGeneral != null) {
+        return existingGeneral;
+      }
+
+      // Fallback: Check if ANY room exists between this brand and influencer
+      final existingAny = await _client
+          .from('rooms')
+          .select()
+          .eq('brand_id', brandId)
+          .eq('influencer_id', influencerId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+          
+      if (existingAny != null) {
+        return existingAny;
+      }
     }
 
     // If none exists, find any accepted application to auto-link
@@ -238,23 +282,68 @@ class ChatService {
     String? linkedCardId = cardId;
 
     try {
-      var appQuery = _client
+      // Fetch all accepted applications for this influencer
+      final appsData = await _client
           .from('applications')
           .select('id, card_id')
           .eq('influencer_id', influencerId)
           .eq('status', 'accepted');
       
+      // Fetch all cards belonging to this brand
+      final brandCardsData = await _client
+          .from('cards')
+          .select('id')
+          .eq('brand_id', brandId);
+
+      final brandCardIds = List<Map<String, dynamic>>.from(brandCardsData)
+          .map((c) => c['id'] as String)
+          .toList();
+      
+      final apps = List<Map<String, dynamic>>.from(appsData);
+      Map<String, dynamic>? matchingApp;
+      
       if (cardId != null) {
-        appQuery = appQuery.eq('card_id', cardId);
+        // If a specific cardId was requested, prioritize that one
+        for (final app in apps) {
+          if (app['card_id'] == cardId) {
+            matchingApp = app;
+            break;
+          }
+        }
       }
       
-      final apps = await appQuery.limit(1);
-      if (apps.isNotEmpty) {
-        linkedAppId = apps[0]['id'] as String?;
-        linkedCardId = apps[0]['card_id'] as String?;
+      // Fallback to any matching card if no specific matchingApp was found yet
+      if (matchingApp == null) {
+        for (final app in apps) {
+          if (brandCardIds.contains(app['card_id'] as String)) {
+            matchingApp = app;
+            break;
+          }
+        }
+      }
+
+      if (matchingApp != null) {
+        linkedAppId = matchingApp['id'] as String?;
+        linkedCardId = matchingApp['card_id'] as String?;
       }
     } catch (e) {
       print('Error finding application to link: $e');
+    }
+
+    // Check if a room already exists for this application_id to avoid duplicate key violation
+    if (linkedAppId != null) {
+      try {
+        final existingAppRoom = await _client
+            .from('rooms')
+            .select()
+            .eq('application_id', linkedAppId)
+            .maybeSingle();
+        if (existingAppRoom != null) {
+          return existingAppRoom;
+        }
+      } catch (e) {
+        print('Error checking existing application room: $e');
+      }
     }
 
     final data = await _client.from('rooms').insert({

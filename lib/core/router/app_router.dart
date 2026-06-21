@@ -184,6 +184,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/brand/influencers/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => BrandInfluencerDetailScreen(influencerId: state.pathParameters['id']!)),
       GoRoute(path: '/influencer/brands/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => InfluencerBrandDetailScreen(brandId: state.pathParameters['id']!)),
       GoRoute(path: '/influencer/profile-views', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const ProfileViewsScreen()),
+      GoRoute(path: '/influencer/engagement-rate', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const EngagementRateScreen()),
       GoRoute(path: '/search', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const SearchScreen()),
       GoRoute(
         path: '/image-viewer',
@@ -241,7 +242,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/influencer/chats', builder: (_, _) => const ChatsListScreen(role: 'influencer')),
           GoRoute(path: '/influencer/analytics', builder: (_, _) => const InfluencerAnalyticsScreen()),
           GoRoute(path: '/influencer/notifications', builder: (_, _) => const NotificationsScreen()),
-          GoRoute(path: '/influencer/profile', builder: (_, _) => const InfluencerProfileScreen()),
+          GoRoute(
+            path: '/influencer/profile',
+            builder: (_, state) {
+              final editParam = state.uri.queryParameters['edit'] == 'true';
+              return InfluencerProfileScreen(startInEditMode: editParam);
+            },
+          ),
         ],
       ),
     ],

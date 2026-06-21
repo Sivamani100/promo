@@ -139,7 +139,7 @@ class AnalyticsService {
           .from('profile_views')
           .select('*, viewer:profiles!profile_views_viewer_id_fkey(*)')
           .eq('profile_id', profileId)
-          .order('created_at', ascending: false)
+          .order('viewed_at', ascending: false)
           .limit(30)
           .timeout(const Duration(seconds: 15));
       return List<Map<String, dynamic>>.from(data);
@@ -150,7 +150,7 @@ class AnalyticsService {
             .from('profile_views')
             .select('*, viewer:profiles(*)')
             .eq('profile_id', profileId)
-            .order('created_at', ascending: false)
+            .order('viewed_at', ascending: false)
             .limit(30)
             .timeout(const Duration(seconds: 15));
         return List<Map<String, dynamic>>.from(data);

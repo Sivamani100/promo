@@ -29,6 +29,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
   List<Map<String, dynamic>> _bestBrands = [];
   int _profileViews = 0;
   List<Map<String, dynamic>> _upcomingMilestones = [];
+  int _completedMilestonesCount = 0;
 
   @override
   void initState() { super.initState(); _load(); }
@@ -76,6 +77,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
 
     // Load deliverables/milestones
     List<Map<String, dynamic>> milestones = [];
+    int completedMilestonesCount = 0;
     try {
       final rooms = await ChatService().getRooms(user.id, 'influencer');
       final roomIds = rooms.map((r) => r['id'] as String).toList();
@@ -98,6 +100,14 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             });
           }
         }
+
+        // Fetch completed milestones count
+        final completedData = await SupabaseService.client
+            .from('milestones')
+            .select('id')
+            .inFilter('room_id', roomIds)
+            .inFilter('status', ['completed', 'done']);
+        completedMilestonesCount = completedData.length;
       }
     } catch (e) {
       print('Error loading milestones for dashboard: $e');
@@ -110,6 +120,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
         _bestBrands = brands;
         _profileViews = viewsCount;
         _upcomingMilestones = milestones;
+        _completedMilestonesCount = completedMilestonesCount;
         _loading = false;
       });
     }
@@ -339,82 +350,85 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
   
             // Profile Completeness
             if (_profileCompleteness < 100)
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.purple.withOpacity(0.15),
-                      AppColors.indigo.withOpacity(0.08),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.purple.withOpacity(0.25), width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.purple.withOpacity(0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Iconsax.profile_add, size: 18, color: AppColors.purple),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Complete Your Profile',
-                              style: AppTextStyles.label.copyWith(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '$_profileCompleteness%',
-                          style: AppTextStyles.label.copyWith(
-                            color: AppColors.purple,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+              GestureDetector(
+                onTap: () => _showCompletenessBottomSheet(context, profile),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.purple.withOpacity(0.15),
+                        AppColors.indigo.withOpacity(0.08),
                       ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    const SizedBox(height: 14),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
-                      child: LinearProgressIndicator(
-                        value: _profileCompleteness / 100,
-                        backgroundColor: AppColors.isDarkMode ? const Color(0xFF141414) : const Color(0xFFE5E7EB),
-                        valueColor: AlwaysStoppedAnimation(AppColors.purple),
-                        minHeight: 8,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.purple.withOpacity(0.25), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purple.withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Icon(Icons.stars_rounded, size: 14, color: AppColors.purple),
-                        const SizedBox(width: 6),
-                        Text(
-                          'A complete profile gets 3x more matches!',
-                          style: AppTextStyles.captionSm.copyWith(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Iconsax.profile_add, size: 18, color: AppColors.purple),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Complete Your Profile',
+                                style: AppTextStyles.label.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
+                          Text(
+                            '$_profileCompleteness%',
+                            style: AppTextStyles.label.copyWith(
+                              color: AppColors.purple,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: LinearProgressIndicator(
+                          value: _profileCompleteness / 100,
+                          backgroundColor: AppColors.isDarkMode ? const Color(0xFF141414) : const Color(0xFFE5E7EB),
+                          valueColor: AlwaysStoppedAnimation(AppColors.purple),
+                          minHeight: 8,
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(Icons.stars_rounded, size: 14, color: AppColors.purple),
+                          const SizedBox(width: 6),
+                          Text(
+                            'A complete profile gets 3x more matches!',
+                            style: AppTextStyles.captionSm.copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
   
@@ -548,14 +562,17 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     accentColor: const Color(0xFF38BDF8),
                   ),
                 ),
-                _statHighlightCard(
-                  title: 'Engagement Rate',
-                  value: '${profile?['follower_count'] != null && profile!['follower_count'] > 5000 ? "5.4%" : "4.8%"}',
-                  subtitle: 'Average organic',
-                  icon: Iconsax.activity,
-                  lightGradient: [const Color(0xFFDCFCE7), const Color(0xFFBBF7D0)],
-                  darkGradient: [const Color(0xFF064E3B).withOpacity(0.85), const Color(0xFF065F46).withOpacity(0.85)],
-                  accentColor: const Color(0xFF4ADE80),
+                GestureDetector(
+                  onTap: () => context.push('/influencer/engagement-rate'),
+                  child: _statHighlightCard(
+                    title: 'Engagement Rate',
+                    value: '${profile?['follower_count'] != null && profile!['follower_count'] > 5000 ? "5.4%" : "4.8%"}',
+                    subtitle: 'Average organic',
+                    icon: Iconsax.activity,
+                    lightGradient: [const Color(0xFFDCFCE7), const Color(0xFFBBF7D0)],
+                    darkGradient: [const Color(0xFF064E3B).withOpacity(0.85), const Color(0xFF065F46).withOpacity(0.85)],
+                    accentColor: const Color(0xFF4ADE80),
+                  ),
                 ),
                 GestureDetector(
                   onTap: () => context.push('/influencer/profile-views'),
@@ -573,7 +590,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   onTap: () => context.go('/influencer/milestones'),
                   child: _statHighlightCard(
                     title: 'Completed Milestones',
-                    value: '12',
+                    value: '$_completedMilestonesCount',
                     subtitle: 'All campaigns on track',
                     icon: Iconsax.crown,
                     lightGradient: [const Color(0xFFFEF3C7), const Color(0xFFFDE68A)],
@@ -1234,4 +1251,149 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
       return const SizedBox.shrink();
     }
   }
-}
+
+  void _showCompletenessBottomSheet(BuildContext context, Map<String, dynamic>? profile) {
+    if (profile == null) return;
+    
+    final avatarDone = profile['avatar_url'] != null;
+    final bioDone = profile['bio'] != null && (profile['bio'] as String).length > 10;
+    final locationDone = profile['location'] != null && (profile['location'] as String).isNotEmpty;
+    final nicheDone = profile['niche'] != null && (profile['niche'] as List).isNotEmpty;
+    final platformsDone = profile['platforms'] != null && (profile['platforms'] as List).isNotEmpty;
+    final followersDone = profile['follower_count'] != null && profile['follower_count'] > 0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(color: AppColors.border.withOpacity(0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.textMuted.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Profile Completion Checklist',
+                    style: AppTextStyles.h2.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.purple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$_profileCompleteness%',
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.purple,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Complete all items to get 3x more brand matches and build trust.',
+                style: AppTextStyles.caption.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              _buildChecklistItem('Profile Picture', avatarDone, '+15%'),
+              _buildChecklistItem('Bio / About Me (>10 chars)', bioDone, '+15%'),
+              _buildChecklistItem('Location (City, State)', locationDone, '+10%'),
+              _buildChecklistItem('Niches / Categories', nicheDone, '+20%'),
+              _buildChecklistItem('Social Media Platforms', platformsDone, '+20%'),
+              _buildChecklistItem('Follower Count', followersDone, '+20%'),
+              const SizedBox(height: 24),
+              SafeArea(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.push('/influencer/profile?edit=true');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Edit Profile Now',
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChecklistItem(String title, bool isCompleted, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            color: isCompleted ? AppColors.accent : AppColors.textMuted.withOpacity(0.6),
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.label.copyWith(
+                fontSize: 14,
+                fontWeight: isCompleted ? FontWeight.w600 : FontWeight.w400,
+                color: isCompleted ? AppColors.textPrimary : AppColors.textSecondary,
+                decoration: isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.captionSm.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isCompleted ? AppColors.accent : AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }}

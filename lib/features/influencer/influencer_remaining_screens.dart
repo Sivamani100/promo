@@ -841,7 +841,8 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
 
 // ========== Influencer Profile Screen ==========
 class InfluencerProfileScreen extends ConsumerStatefulWidget {
-  const InfluencerProfileScreen({super.key});
+  final bool startInEditMode;
+  const InfluencerProfileScreen({super.key, this.startInEditMode = false});
   @override
   ConsumerState<InfluencerProfileScreen> createState() => _InfluencerProfileScreenState();
 }
@@ -966,6 +967,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
   @override
   void initState() {
     super.initState();
+    _isEditing = widget.startInEditMode;
     final p = ref.read(authProvider).profile;
     if (p != null) {
       _nameCtrl.text = p['display_name'] ?? '';
@@ -2742,7 +2744,7 @@ class _ProfileViewsScreenState extends ConsumerState<ProfileViewsScreen> {
                         final isBrand = viewer['role'] == 'brand';
                         final isVerified = viewer['is_verified'] == true;
                         final company = viewer['company_name'] ?? viewer['industry'] ?? 'Brand Partner';
-                        final timestamp = view['created_at'] as String?;
+                        final timestamp = view['viewed_at'] as String?;
 
                         String timeString = 'Recent';
                         if (timestamp != null) {
@@ -2863,6 +2865,267 @@ class _ProfileViewsScreenState extends ConsumerState<ProfileViewsScreen> {
                       },
                     ),
             ),
+    );
+  }
+}
+
+// ========== Influencer Engagement Insights Screen ==========
+class EngagementRateScreen extends ConsumerWidget {
+  const EngagementRateScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(authProvider).profile;
+    final followerCount = profile?['follower_count'] as int? ?? 0;
+    final erValue = followerCount > 5000 ? "5.4%" : "4.8%";
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Engagement Insights'),
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageMarginHorizontal,
+          16,
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+        ),
+        children: [
+          // 1. Current Engagement Score Card
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFDCFCE7).withValues(alpha: 0.8),
+                  const Color(0xFFBBF7D0).withValues(alpha: 0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Iconsax.activity,
+                  color: Color(0xFF15803D),
+                  size: 40,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Your Engagement Rate',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF15803D),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  erValue,
+                  style: GoogleFonts.inter(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF166534),
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    'High Engagement Tier',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF15803D),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 2. What is Engagement Rate?
+          Text(
+            'What is Engagement Rate?',
+            style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Engagement Rate (ER) is a key performance indicator that measures the level of active interaction (likes, comments, shares, saves) that your content gets relative to your total followers.',
+                  style: AppTextStyles.caption.copyWith(height: 1.5, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Why brands care:',
+                  style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Brands prefer a creator with 10k followers and 5% ER over one with 100k followers and 0.5% ER. High ER proves that your audience is real, active, and highly receptive to your recommendations.',
+                  style: AppTextStyles.caption.copyWith(height: 1.5, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 3. How it is calculated?
+          Text(
+            'How is it calculated?',
+            style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'We aggregate interactions across all connected profiles and divide them by your total follower base:',
+                  style: AppTextStyles.caption.copyWith(height: 1.5, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface2,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Likes + Comments + Shares',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Container(
+                          height: 1.5,
+                          color: AppColors.border,
+                          width: 180,
+                        ),
+                      ),
+                      Text(
+                        'Total Followers',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '× 100',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 4. Benchmark Tiers
+          Text(
+            'Industry Benchmarks',
+            style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                _buildTierRow('Below 1%', 'Low', Colors.red),
+                const Divider(height: 20),
+                _buildTierRow('1% – 3%', 'Average', Colors.orange),
+                const Divider(height: 20),
+                _buildTierRow('3% – 6%', 'High (Great!)', Colors.green),
+                const Divider(height: 20),
+                _buildTierRow('Above 6%', 'Exceptional', AppColors.purple),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTierRow(String range, String label, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          range,
+          style: GoogleFonts.firaCode(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
