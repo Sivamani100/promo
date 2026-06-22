@@ -534,38 +534,10 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
-                    width: 1.2,
-                  ),
-                ),
-                child: ClipOval(
-                  child: avatarUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: avatarUrl,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.purple.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'C',
-                            style: GoogleFonts.inter(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.purple,
-                            ),
-                          ),
-                        ),
-                ),
+              AppAvatar(
+                url: avatarUrl,
+                fallbackText: displayName,
+                size: 56,
               ),
             ],
           ),
@@ -712,7 +684,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Top Row: Title & Outline Icon
             Row(
@@ -723,7 +695,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   child: Text(
                     title,
                     style: GoogleFonts.inter(
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: textColor,
                       letterSpacing: -0.2,
@@ -736,37 +708,32 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                 Icon(
                   displayIcon,
                   color: iconColor,
-                  size: 18,
+                  size: 20,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             // Value & Subtitle
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                    color: textColor,
-                    letterSpacing: -1.2,
-                    height: 1.0,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    color: subTextColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 42,
+                fontWeight: FontWeight.w900,
+                color: textColor,
+                letterSpacing: -1.2,
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: subTextColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1212,7 +1179,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   width: 72,
                   height: 72,
                   color: AppColors.surface2,
-                  child: card['cover_image_url'] != null
+                  child: isValidImageUrl(card['cover_image_url'])
                       ? CachedNetworkImage(
                           imageUrl: card['cover_image_url'],
                           fit: BoxFit.cover,
@@ -1503,7 +1470,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     width: 84,
                     height: 90,
                     color: AppColors.surface2,
-                    child: card['cover_image_url'] != null
+                    child: isValidImageUrl(card['cover_image_url'])
                         ? CachedNetworkImage(
                             imageUrl: card['cover_image_url'],
                             fit: BoxFit.cover,

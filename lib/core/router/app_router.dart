@@ -183,6 +183,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/influencer/support', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const SupportScreen()),
       GoRoute(path: '/brand/influencers/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => BrandInfluencerDetailScreen(influencerId: state.pathParameters['id']!)),
       GoRoute(path: '/influencer/brands/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => InfluencerBrandDetailScreen(brandId: state.pathParameters['id']!)),
+      GoRoute(
+        path: '/influencer/brands',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) {
+          final tab = state.uri.queryParameters['tab'];
+          return InfluencerBrandsScreen(initialTab: tab);
+        },
+      ),
       GoRoute(path: '/influencer/profile-views', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const ProfileViewsScreen()),
       GoRoute(path: '/influencer/engagement-rate', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const EngagementRateScreen()),
       GoRoute(path: '/search', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const SearchScreen()),
@@ -251,7 +259,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             },
           ),
           GoRoute(path: '/influencer/milestones', builder: (_, _) => const InfluencerMilestonesScreen()),
-          GoRoute(path: '/influencer/brands', builder: (_, _) => const InfluencerBrandsScreen()),
           GoRoute(path: '/influencer/saved', builder: (_, _) => const InfluencerSavedScreen()),
           GoRoute(path: '/influencer/portfolio', builder: (_, _) => const InfluencerPortfolioScreen()),
           GoRoute(path: '/influencer/chats', builder: (_, _) => const ChatsListScreen(role: 'influencer')),

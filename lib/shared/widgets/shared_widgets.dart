@@ -131,9 +131,9 @@ class AppAvatar extends StatelessWidget {
         border: Border.all(color: AppColors.border, width: 1),
       ),
       child: ClipOval(
-        child: url != null && url!.isNotEmpty
+        child: isValidImageUrl(url)
             ? CachedNetworkImage(
-                imageUrl: url!,
+                imageUrl: url!.trim(),
                 fit: BoxFit.cover,
                 errorWidget: (_, _, _) => _fallback(),
               )
@@ -1199,11 +1199,18 @@ class ShimmerChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppShimmer(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         child: Row(
           children: [
-            Container(width: 50, height: 50, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+            Container(
+              width: 50,
+              height: 50,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

@@ -211,7 +211,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 const SizedBox(height: 16),
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.accent.withOpacity(0.1),
+                    backgroundColor: AppColors.accent.withValues(alpha: 0.1),
                     child: Icon(Iconsax.user, color: AppColors.accent),
                   ),
                   title: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -224,7 +224,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 const Divider(),
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.purple.withOpacity(0.1),
+                    backgroundColor: AppColors.purple.withValues(alpha: 0.1),
                     child: Icon(Iconsax.people, color: AppColors.purple),
                   ),
                   title: const Text('New Group', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -237,7 +237,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 const Divider(),
                 ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.success.withOpacity(0.1),
+                    backgroundColor: AppColors.success.withValues(alpha: 0.1),
                     child: Icon(Iconsax.briefcase, color: AppColors.success),
                   ),
                   title: const Text('Campaign Group', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -781,6 +781,43 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     );
   }
 
+  Widget _buildAppBarIcon({
+    required IconData icon,
+    int badgeCount = 0,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 24, color: AppColors.textPrimary),
+            if (badgeCount > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 7,
+                    minHeight: 7,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
@@ -851,8 +888,10 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     });
 
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
+    final isDark = AppColors.isDarkMode;
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -888,48 +927,22 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             elevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
-              if (widget.role == 'brand')
-                IconButton(
-                  icon: const Icon(Icons.add_rounded, size: 24),
-                  onPressed: _showGroupCreationFABOptions,
+              if (widget.role == 'brand') ...[
+                _buildAppBarIcon(
+                  icon: Icons.add_rounded,
+                  onTap: _showGroupCreationFABOptions,
                 ),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Iconsax.notification, size: 20),
-                    onPressed: () => context.push('/${widget.role}/notifications'),
-                  ),
-                  if (unreadNotifications > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
-                        child: Text(
-                          unreadNotifications > 9 ? '9+' : '$unreadNotifications',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 7,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
+                const SizedBox(width: 8),
+              ],
+              _buildAppBarIcon(
+                icon: Iconsax.notification,
+                badgeCount: unreadNotifications,
+                onTap: () => context.push('/${widget.role}/notifications'),
               ),
-              IconButton(
-                icon: const Icon(Iconsax.setting_2, size: 20),
-                onPressed: () => context.push('/${widget.role}/settings'),
+              const SizedBox(width: 8),
+              _buildAppBarIcon(
+                icon: Iconsax.setting_2,
+                onTap: () => context.push('/${widget.role}/settings'),
               ),
             ],
           ),
@@ -939,7 +952,11 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
               itemCount: 6,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (context, __) => Divider(
+                height: 1,
+                thickness: 0.8,
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              ),
               itemBuilder: (_, __) => const ShimmerChatTile(),
             )
           : RefreshIndicator(
@@ -958,140 +975,153 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                               subtitle: 'Your chats with collaborators will appear here',
                             )
                           : ListView.separated(
-                              padding: const EdgeInsets.only(
-                                top: AppSpacing.sm,
-                                bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
-                              ),
-                              itemCount: filteredRooms.length,
-                              separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
-                              itemBuilder: (_, i) {
-                                final room = filteredRooms[i];
-                                final roomId = room['id'] as String;
-                                final isGroup = room['influencer_id'] == null;
-                                final isPinned = pinnedRoomIds.contains(roomId);
+                                padding: const EdgeInsets.only(
+                                  top: AppSpacing.sm,
+                                  bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
+                                ),
+                                itemCount: filteredRooms.length,
+                                separatorBuilder: (context, _) => Divider(
+                                  height: 1,
+                                  thickness: 0.8,
+                                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                ),
+                                itemBuilder: (_, i) {
+                                  final room = filteredRooms[i];
+                                  final roomId = room['id'] as String;
+                                  final isGroup = room['influencer_id'] == null;
+                                  final isPinned = pinnedRoomIds.contains(roomId);
 
-                                final otherUser = widget.role == 'brand'
-                                    ? room['influencer'] as Map<String, dynamic>?
-                                    : room['brand'] as Map<String, dynamic>?;
-                                final cardTitle = (room['card'] as Map<String, dynamic>?)?['title'] ?? '';
-                                final lastMsg = _lastMessages[roomId];
-                                final unreadCount = _unreadCounts[roomId] ?? 0;
-                                final lastTime = lastMsg?['created_at'] != null
-                                    ? DateTime.tryParse(lastMsg!['created_at'])
-                                    : null;
+                                  final otherUser = widget.role == 'brand'
+                                      ? room['influencer'] as Map<String, dynamic>?
+                                      : room['brand'] as Map<String, dynamic>?;
+                                  final cardTitle = (room['card'] as Map<String, dynamic>?)?['title'] ?? '';
+                                  final lastMsg = _lastMessages[roomId];
+                                  final unreadCount = _unreadCounts[roomId] ?? 0;
+                                  final lastTime = lastMsg?['created_at'] != null
+                                      ? DateTime.tryParse(lastMsg!['created_at'])
+                                      : null;
 
-                                // Online check
-                                final lastSeenStr = otherUser?['last_seen'] as String?;
-                                bool isOnline = false;
-                                if (lastSeenStr != null && !isGroup) {
-                                  final lastSeen = DateTime.tryParse(lastSeenStr);
-                                  if (lastSeen != null) {
-                                    isOnline = DateTime.now().toUtc().difference(lastSeen).inMinutes < 2;
+                                  // Online check
+                                  final lastSeenStr = otherUser?['last_seen'] as String?;
+                                  bool isOnline = false;
+                                  if (lastSeenStr != null && !isGroup) {
+                                    final lastSeen = DateTime.tryParse(lastSeenStr);
+                                    if (lastSeen != null) {
+                                      isOnline = DateTime.now().toUtc().difference(lastSeen).inMinutes < 2;
+                                    }
                                   }
-                                }
 
-                                final typingName = _typingNames[roomId];
+                                  final typingName = _typingNames[roomId];
 
-                                final user = ref.read(authProvider).user;
-                                if (user != null && room['membership_status'] == 'pending_invite') {
-                                  final brandName = room['brand']?['display_name'] ?? 'A Brand';
-                                  final groupName = room['title'] ?? (cardTitle.isNotEmpty ? cardTitle : 'Group Chat');
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(vertical: 4),
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accent.withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.accent.withOpacity(0.2)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: AppColors.accent.withOpacity(0.1),
-                                              child: Icon(Iconsax.notification_bing, color: AppColors.accent, size: 20),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '$brandName invited you to join:',
-                                                    style: AppTextStyles.caption.copyWith(
-                                                      fontWeight: FontWeight.w600,
-                                                      color: AppColors.textSecondary,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    groupName,
-                                                    style: AppTextStyles.label.copyWith(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                  final user = ref.read(authProvider).user;
+                                  if (user != null && room['membership_status'] == 'pending_invite') {
+                                    final brandName = room['brand']?['display_name'] ?? 'A Brand';
+                                    final groupName = room['title'] ?? (cardTitle.isNotEmpty ? cardTitle : 'Group Chat');
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent.withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppColors.accent.withValues(alpha: 0.25),
+                                          width: 1.4,
                                         ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            OutlinedButton(
-                                              onPressed: () async {
-                                                setState(() => _loading = true);
-                                                try {
-                                                  await ChatService().respondToGroupInvite(roomId, user.id, false);
-                                                  _load();
-                                                } catch (e) {
-                                                  print('Error declining group invite: $e');
-                                                  setState(() => _loading = false);
-                                                }
-                                              },
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor: AppColors.error,
-                                                side: BorderSide(color: AppColors.error.withOpacity(0.5)),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.all(8),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.accent.withValues(alpha: 0.1),
+                                                  shape: BoxShape.circle,
                                                 ),
-                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                child: Icon(Iconsax.notification_bing, color: AppColors.accent, size: 20),
                                               ),
-                                              child: const Text('Reject', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            ElevatedButton(
-                                              onPressed: () async {
-                                                setState(() => _loading = true);
-                                                try {
-                                                  await ChatService().respondToGroupInvite(roomId, user.id, true);
-                                                  _load();
-                                                } catch (e) {
-                                                  print('Error accepting group invite: $e');
-                                                  setState(() => _loading = false);
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: AppColors.accent,
-                                                foregroundColor: Colors.white,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      '$brandName invited you to join:',
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 11,
+                                                        color: AppColors.textSecondary,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      groupName,
+                                                      style: GoogleFonts.inter(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 14,
+                                                        color: AppColors.textPrimary,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                                elevation: 0,
                                               ),
-                                              child: const Text('Accept', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }
+                                            ],
+                                          ),
+                                          const SizedBox(height: 14),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              OutlinedButton(
+                                                onPressed: () async {
+                                                  setState(() => _loading = true);
+                                                  try {
+                                                    await ChatService().respondToGroupInvite(roomId, user.id, false);
+                                                    _load();
+                                                  } catch (e) {
+                                                    print('Error declining group invite: $e');
+                                                    setState(() => _loading = false);
+                                                  }
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: AppColors.error,
+                                                  side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(100),
+                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                ),
+                                                child: Text('Reject', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              ElevatedButton(
+                                                onPressed: () async {
+                                                  setState(() => _loading = true);
+                                                  try {
+                                                    await ChatService().respondToGroupInvite(roomId, user.id, true);
+                                                    _load();
+                                                  } catch (e) {
+                                                    print('Error accepting group invite: $e');
+                                                    setState(() => _loading = false);
+                                                  }
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppColors.accent,
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(100),
+                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                  elevation: 0,
+                                                ),
+                                                child: Text('Accept', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
 
                                   return InkWell(
                                     onTap: () async {
@@ -1099,194 +1129,199 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                       _load();
                                     },
                                     onLongPress: () => _showRoomOptions(room),
-                                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                                    child: Row(
-                                      children: [
-                                        if (isGroup)
-                                          Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.accent.withOpacity(0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(Icons.group_rounded, color: AppColors.accent, size: 26),
-                                          )
-                                        else
-                                          Stack(
-                                            children: [
-                                              AppAvatar(
-                                                url: otherUser?['avatar_url'],
-                                                fallbackText: otherUser?['display_name'] ?? '?',
-                                                size: 50,
-                                                onTap: () {
-                                                  final otherId = otherUser?['id'];
-                                                  if (otherId != null) {
-                                                    if (widget.role == 'brand') {
-                                                      context.push('/brand/influencers/$otherId');
-                                                    } else {
-                                                      context.push('/influencer/brands/$otherId');
-                                                    }
-                                                  }
-                                                },
-                                              ),
-                                              if (isOnline)
-                                                Positioned(
-                                                  right: 0,
-                                                  bottom: 0,
-                                                  child: Container(
-                                                    width: 14,
-                                                    height: 14,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors.success,
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(color: AppColors.surface, width: 2),
-                                                    ),
-                                                  ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                      child: Row(
+                                        children: [
+                                          if (isGroup)
+                                            Container(
+                                              width: 50,
+                                              height: 50,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.accent.withValues(alpha: 0.08),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: AppColors.accent.withValues(alpha: 0.15),
+                                                  width: 1,
                                                 ),
-                                            ],
-                                          ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Flexible(
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Flexible(
-                                                          child: Text(
-                                                            isGroup
-                                                                ? (room['title'] != null && (room['title'] as String).isNotEmpty
-                                                                    ? room['title'] as String
-                                                                    : (cardTitle.isNotEmpty ? cardTitle : 'Group Chat'))
-                                                                : (otherUser?['display_name'] ?? 'User'),
-                                                            style: AppTextStyles.label.copyWith(
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                        ),
-                                                        if (!isGroup && otherUser?['is_verified'] == true) ...[
-                                                          const SizedBox(width: 4),
-                                                          const VerificationBadge(size: 14),
-                                                        ],
-                                                      ],
+                                              ),
+                                              child: Icon(Icons.group_rounded, color: AppColors.accent, size: 24),
+                                            )
+                                          else
+                                            Stack(
+                                              children: [
+                                                AppAvatar(
+                                                  url: otherUser?['avatar_url'],
+                                                  fallbackText: otherUser?['display_name'] ?? '?',
+                                                  size: 50,
+                                                  onTap: () {
+                                                    final otherId = otherUser?['id'];
+                                                    if (otherId != null) {
+                                                      if (widget.role == 'brand') {
+                                                        context.push('/brand/influencers/$otherId');
+                                                      } else {
+                                                        context.push('/influencer/brands/$otherId');
+                                                      }
+                                                    }
+                                                  },
+                                                ),
+                                                if (isOnline)
+                                                  Positioned(
+                                                    right: 0,
+                                                    bottom: 0,
+                                                    child: Container(
+                                                      width: 14,
+                                                      height: 14,
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.success,
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(color: isDark ? const Color(0xFF0F0F11) : Colors.white, width: 2),
+                                                      ),
                                                     ),
                                                   ),
-                                                  if (lastTime != null)
-                                                    Text(
-                                                      timeago.format(lastTime, locale: 'en_short'),
-                                                      style: AppTextStyles.captionSm.copyWith(
-                                                        fontSize: 10,
-                                                        fontWeight: unreadCount > 0
-                                                            ? FontWeight.bold
-                                                            : FontWeight.normal,
-                                                        color: unreadCount > 0
-                                                            ? AppColors.accent
-                                                            : AppColors.textMuted,
+                                              ],
+                                            ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Flexible(
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Flexible(
+                                                            child: Text(
+                                                              isGroup
+                                                                  ? (room['title'] != null && (room['title'] as String).isNotEmpty
+                                                                      ? room['title'] as String
+                                                                      : (cardTitle.isNotEmpty ? cardTitle : 'Group Chat'))
+                                                                  : (otherUser?['display_name'] ?? 'User'),
+                                                              style: GoogleFonts.inter(
+                                                                fontSize: 14,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: AppColors.textPrimary,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          ),
+                                                          if (!isGroup && otherUser?['is_verified'] == true) ...[
+                                                            const SizedBox(width: 4),
+                                                            const VerificationBadge(size: 13),
+                                                          ],
+                                                        ],
                                                       ),
                                                     ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    if (cardTitle.isNotEmpty && !isGroup)
-                                                      TextSpan(
-                                                        text: 'Re: $cardTitle  •  ',
-                                                        style: AppTextStyles.captionSm.copyWith(
-                                                          color: AppColors.textMuted,
-                                                          fontSize: 11,
-                                                          fontWeight: FontWeight.normal,
-                                                        ),
-                                                      ),
-                                                    if (typingName != null)
-                                                      TextSpan(
-                                                        text: '$typingName is typing...',
-                                                        style: AppTextStyles.caption.copyWith(
-                                                          color: AppColors.success,
-                                                          fontStyle: FontStyle.italic,
-                                                          fontWeight: FontWeight.w600,
-                                                          fontSize: 13,
-                                                        ),
-                                                      )
-                                                    else
-                                                      TextSpan(
-                                                        text: lastMsg?['content'] ?? 'No messages yet',
-                                                        style: AppTextStyles.caption.copyWith(
-                                                          fontSize: 13,
-                                                          color: unreadCount > 0
-                                                              ? AppColors.textPrimary
-                                                              : AppColors.textMuted,
+                                                    if (lastTime != null)
+                                                      Text(
+                                                        timeago.format(lastTime, locale: 'en_short'),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 10,
                                                           fontWeight: unreadCount > 0
                                                               ? FontWeight.bold
                                                               : FontWeight.normal,
+                                                          color: unreadCount > 0
+                                                              ? AppColors.accent
+                                                              : AppColors.textMuted,
                                                         ),
                                                       ),
                                                   ],
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
+                                                const SizedBox(height: 4),
+                                                Text.rich(
+                                                  TextSpan(
+                                                    children: [
+                                                      if (cardTitle.isNotEmpty && !isGroup)
+                                                        TextSpan(
+                                                          text: 'Re: $cardTitle  •  ',
+                                                          style: GoogleFonts.inter(
+                                                            color: AppColors.textMuted,
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.normal,
+                                                          ),
+                                                        ),
+                                                      if (typingName != null)
+                                                        TextSpan(
+                                                          text: '$typingName is typing...',
+                                                          style: GoogleFonts.inter(
+                                                            color: AppColors.success,
+                                                            fontStyle: FontStyle.italic,
+                                                            fontWeight: FontWeight.w600,
+                                                            fontSize: 12,
+                                                          ),
+                                                        )
+                                                      else
+                                                        TextSpan(
+                                                          text: lastMsg?['content'] ?? 'No messages yet',
+                                                          style: GoogleFonts.inter(
+                                                            fontSize: 12.5,
+                                                            color: unreadCount > 0
+                                                                ? AppColors.textPrimary
+                                                                : AppColors.textMuted,
+                                                            fontWeight: unreadCount > 0
+                                                                ? FontWeight.w600
+                                                                : FontWeight.normal,
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              if (mutedRoomIds.contains(roomId)) ...[
+                                                Icon(
+                                                  Icons.volume_off_rounded,
+                                                  size: 15,
+                                                  color: AppColors.textMuted,
+                                                ),
+                                                const SizedBox(width: 4),
+                                              ],
+                                              if (isPinned)
+                                                Icon(
+                                                  Icons.push_pin_rounded,
+                                                  size: 15,
+                                                  color: AppColors.accent,
+                                                )
+                                              else if (unreadCount > 0 || unreadOverrides.contains(roomId))
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.accent,
+                                                    borderRadius: BorderRadius.circular(100),
+                                                  ),
+                                                  child: Text(
+                                                    unreadCount > 0 ? '$unreadCount' : ' ',
+                                                    style: GoogleFonts.inter(
+                                                      color: AppColors.accentOnDark,
+                                                      fontSize: 9,
+                                                      fontWeight: FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                )
+                                              else
+                                                Icon(
+                                                  Icons.chevron_right_rounded,
+                                                  size: 18,
+                                                  color: AppColors.textMuted,
+                                                ),
                                             ],
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            if (mutedRoomIds.contains(roomId)) ...[
-                                              Icon(
-                                                Icons.volume_off_rounded,
-                                                size: 16,
-                                                color: AppColors.textMuted,
-                                              ),
-                                              const SizedBox(width: 4),
-                                            ],
-                                            if (isPinned)
-                                              Icon(
-                                                Icons.push_pin_rounded,
-                                                size: 16,
-                                                color: AppColors.accent,
-                                              )
-                                            else if (unreadCount > 0 || unreadOverrides.contains(roomId))
-                                              Container(
-                                                padding: const EdgeInsets.all(6),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.accent,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Text(
-                                                  unreadCount > 0 ? '$unreadCount' : '',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              )
-                                            else
-                                              Icon(
-                                                Icons.chevron_right_rounded,
-                                                size: 20,
-                                                color: AppColors.textMuted,
-                                              ),
-                                          ],
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  );
+                                },
+                              ),
                     ),
                   ],
                 ),
@@ -1296,24 +1331,135 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
   }
 
   Widget _buildSearchField() {
+    final isDark = AppColors.isDarkMode;
     return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.surface2,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm, top: 4),
       child: TextField(
         controller: _searchCtrl,
         onChanged: (val) => setState(() {}),
-        style: AppTextStyles.body,
+        style: AppTextStyles.bodySm,
         decoration: InputDecoration(
           hintText: 'Search chats...',
-          hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-          prefixIcon: Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-          suffixIcon: Icon(Icons.tune_rounded, color: AppColors.textMuted, size: 20),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          hintStyle: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+          prefixIcon: Icon(Iconsax.search_normal_1, size: 18, color: AppColors.textSecondary),
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_searchCtrl.text.isNotEmpty)
+                IconButton(
+                  icon: Icon(Icons.clear_rounded, size: 16, color: AppColors.textSecondary),
+                  onPressed: () {
+                    _searchCtrl.clear();
+                    setState(() {});
+                  },
+                ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF101012) : const Color(0xFFF3F4F6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Iconsax.message_search, size: 16, color: AppColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(100),
+            borderSide: BorderSide(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1.2,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(100),
+            borderSide: BorderSide(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1.2,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(100),
+            borderSide: BorderSide(
+              color: AppColors.accent,
+              width: 1.5,
+            ),
+          ),
+          filled: true,
+          fillColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String key, String label, int count) {
+    final isSelected = _selectedFilter == key;
+    final isDark = AppColors.isDarkMode;
+    
+    Color activeColor = AppColors.accent;
+    Color activeTextColor = AppColors.accentOnDark;
+    
+    if (key == 'Groups' && isSelected) {
+      activeColor = AppColors.purple;
+    } else if (key == 'Campaigns' && isSelected) {
+      activeColor = AppColors.info;
+    } else if (key == 'Unread' && isSelected) {
+      activeColor = AppColors.warning;
+      activeTextColor = Colors.black;
+    } else if (key == 'Archived' && isSelected) {
+      activeColor = AppColors.textSecondary;
+    }
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedFilter = key),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? activeColor 
+              : (isDark ? const Color(0xFF0F0F11) : Colors.white),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected 
+                ? Colors.transparent 
+                : (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? activeTextColor : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (activeTextColor == Colors.black ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.15))
+                    : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$count',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? activeTextColor : AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1333,11 +1479,11 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     final totalArchived = _rooms.where((room) => archivedRoomIds.contains(room['id'])).length;
 
     final filters = [
-      {'key': 'All', 'label': 'All'},
-      {'key': 'Groups', 'label': 'Groups ($totalGroups)'},
-      {'key': 'Campaigns', 'label': 'Campaign Chats ($totalCampaigns)'},
-      {'key': 'Unread', 'label': 'Unread ($totalUnreadChats)'},
-      {'key': 'Archived', 'label': 'Archived ($totalArchived)'},
+      {'key': 'All', 'label': 'All', 'count': _rooms.where((r) => !archivedRoomIds.contains(r['id'])).length},
+      {'key': 'Groups', 'label': 'Groups', 'count': totalGroups},
+      {'key': 'Campaigns', 'label': 'Campaign Chats', 'count': totalCampaigns},
+      {'key': 'Unread', 'label': 'Unread', 'count': totalUnreadChats},
+      {'key': 'Archived', 'label': 'Archived', 'count': totalArchived},
     ];
 
     return Container(
@@ -1349,37 +1495,10 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, idx) {
           final filter = filters[idx];
-          final key = filter['key']!;
-          final label = filter['label']!;
-          final selected = _selectedFilter == key;
-
-          return ChoiceChip(
-            showCheckmark: false,
-            label: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                color: selected ? AppColors.textPrimary : AppColors.textSecondary,
-              ),
-            ),
-            selected: selected,
-            onSelected: (val) {
-              if (val) {
-                setState(() {
-                  _selectedFilter = key;
-                });
-              }
-            },
-            selectedColor: AppColors.surface3,
-            backgroundColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color: selected ? AppColors.accent : AppColors.border,
-                width: 1.5,
-              ),
-            ),
+          return _buildFilterChip(
+            filter['key'] as String,
+            filter['label'] as String,
+            filter['count'] as int,
           );
         },
       ),

@@ -625,6 +625,43 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   @override
   void dispose() { _nameCtrl.dispose(); _companyCtrl.dispose(); _bioCtrl.dispose(); _websiteCtrl.dispose(); super.dispose(); }
 
+  Widget _buildAppBarIcon({
+    required IconData icon,
+    int badgeCount = 0,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 24, color: AppColors.textPrimary),
+            if (badgeCount > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 7,
+                    minHeight: 7,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
@@ -644,6 +681,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -690,48 +728,20 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             backgroundColor: Colors.transparent,
             actions: [
               if (_isEditing)
-                IconButton(
-                  icon: const Icon(Iconsax.close_circle),
-                  onPressed: () => setState(() => _isEditing = false),
+                _buildAppBarIcon(
+                  icon: Iconsax.close_circle,
+                  onTap: () => setState(() => _isEditing = false),
                 )
               else ...[
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Iconsax.notification, size: 20),
-                      onPressed: () => context.push('/brand/notifications'),
-                    ),
-                    if (unreadNotifications > 0)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 12,
-                            minHeight: 12,
-                          ),
-                          child: Text(
-                            unreadNotifications > 9 ? '9+' : '$unreadNotifications',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 7,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
+                _buildAppBarIcon(
+                  icon: Iconsax.notification,
+                  badgeCount: unreadNotifications,
+                  onTap: () => context.push('/brand/notifications'),
                 ),
-                IconButton(
-                  icon: const Icon(Iconsax.setting_2, size: 20),
-                  onPressed: () => context.push('/brand/settings'),
+                const SizedBox(width: 8),
+                _buildAppBarIcon(
+                  icon: Iconsax.setting_2,
+                  onTap: () => context.push('/brand/settings'),
                 ),
               ],
             ],
@@ -795,9 +805,19 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF14141E) : const Color(0xFFF2F2F7),
+                            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                            child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -816,7 +836,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF2ECC71),
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: isDark ? const Color(0xFF14141E) : Colors.white, width: 2),
+                                            border: Border.all(color: isDark ? const Color(0xFF0F0F11) : Colors.white, width: 2),
                                           ),
                                         ),
                                       ),
@@ -871,7 +891,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(Iconsax.edit, size: 16, color: AppColors.accent),
@@ -881,15 +901,15 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                               ),
                               const SizedBox(height: 16),
                               if (profile?['bio'] != null && (profile!['bio'] as String).isNotEmpty) ...[
-                                Text(
-                                  profile['bio'],
-                                  style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted, fontSize: 12),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              Divider(color: AppColors.border, height: 1),
+                                  Text(
+                                    profile['bio'],
+                                    style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted, fontSize: 12),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              Divider(color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB), height: 1),
                               const SizedBox(height: 16),
                               // Stats (divided by vertical lines)
                               Row(
@@ -914,7 +934,6 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             _capsuleButton(
                               'Campaigns',
                               Iconsax.briefcase,
-                              isDark ? const Color(0xFF2C2815) : const Color(0xFFFFF9E6),
                               isDark ? const Color(0xFFF5C518) : const Color(0xFFDDA600),
                               () => context.go('/brand/campaigns'),
                             ),
@@ -922,7 +941,6 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             _capsuleButton(
                               'Chats',
                               Iconsax.message,
-                              isDark ? const Color(0xFF152C22) : const Color(0xFFE6F7F0),
                               isDark ? const Color(0xFF2ECC71) : const Color(0xFF1E8449),
                               () => context.go('/brand/chats'),
                             ),
@@ -930,7 +948,6 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             _capsuleButton(
                               'Settings',
                               Iconsax.setting_2,
-                              isDark ? const Color(0xFF15222C) : const Color(0xFFE6F0FA),
                               isDark ? const Color(0xFF3498DB) : const Color(0xFF21618C),
                               () => context.push('/brand/settings'),
                             ),
@@ -1070,25 +1087,37 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     );
   }
 
-  Widget _capsuleButton(String label, IconData icon, Color bg, Color fg, VoidCallback onTap) {
+  Widget _capsuleButton(String label, IconData icon, Color accentColor, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(16),
+            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: fg, size: 16),
+              Icon(icon, color: accentColor, size: 16),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: TextStyle(
-                  color: fg,
+                style: GoogleFonts.inter(
+                  color: isDark ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -1113,18 +1142,35 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   }
 
   Widget _menuDivider() {
-    return Divider(color: AppColors.border, height: 1, indent: 16, endIndent: 16);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Divider(
+      color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+      height: 1,
+      indent: 16,
+      endIndent: 16,
+    );
   }
 
   Widget _buildBrandCard(BuildContext context, Map<String, dynamic> card) {
     final coverUrl = card['cover_image_url'] as String?;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AspectRatio(
       aspectRatio: 0.85,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? const Color(0xFF0F0F11) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(

@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -25,9 +26,13 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
   int _activeCards = 0, _totalApps = 0, _activeChats = 0, _acceptedDeals = 0;
   List<Map<String, dynamic>> _activities = [];
   List<Map<String, dynamic>> _bestCreators = [];
+  int _profileCompleteness = 0;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   Future<void> _loadData() async {
     final user = ref.read(authProvider).user;
@@ -44,6 +49,18 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
         ProfileService().getInfluencers(limit: 10).timeout(const Duration(seconds: 15)),
       ]);
 
+      final profile = ref.read(authProvider).profile;
+      int score = 0;
+      if (profile != null) {
+        if (profile['avatar_url'] != null && (profile['avatar_url'] as String).isNotEmpty) score += 20;
+        if (profile['bio'] != null && (profile['bio'] as String).length > 10) score += 20;
+        if (profile['location'] != null && (profile['location'] as String).isNotEmpty) score += 15;
+        if (profile['industry'] != null && (profile['industry'] as String).isNotEmpty) score += 15;
+        if (profile['company_name'] != null && (profile['company_name'] as String).isNotEmpty) score += 15;
+        if (profile['website_url'] != null && (profile['website_url'] as String).isNotEmpty) score += 15;
+        if (score > 100) score = 100;
+      }
+
       if (mounted) {
         setState(() {
           _activeCards = (futures[0] as PostgrestResponse).count;
@@ -52,6 +69,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           _acceptedDeals = (futures[3] as PostgrestResponse).count;
           _activities = List<Map<String, dynamic>>.from(futures[4] as List);
           _bestCreators = List<Map<String, dynamic>>.from(futures[5] as List);
+          _profileCompleteness = score;
           _loading = false;
         });
       }
@@ -65,6 +83,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           _acceptedDeals = 0;
           _activities = [];
           _bestCreators = [];
+          _profileCompleteness = 0;
           _loading = false;
         });
       }
@@ -90,7 +109,12 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     if (_loading) {
+      final isDark = AppColors.isDarkMode;
+      final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
+      final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
+
       return Scaffold(
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
           child: Padding(
@@ -101,7 +125,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             ),
             child: AppBar(
               titleSpacing: 0,
-              title: const AppShimmer(child: ShimmerBox(width: 80, height: 24)),
+              title: const AppShimmer(child: ShimmerBox(width: 100, height: 24)),
               elevation: 0,
               backgroundColor: Colors.transparent,
             ),
@@ -115,81 +139,105 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
-            const AppShimmer(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            // Welcome Bento Box Shimmer
+            AppShimmer(
+              child: Container(
+                height: 160,
+                decoration: BoxDecoration(
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Stats Grid Shimmer
+            AppShimmer(
+              child: Row(
                 children: [
-                  ShimmerBox(width: 120, height: 14),
-                  SizedBox(height: 8),
-                  ShimmerBox(width: 180, height: 28),
+                  Expanded(
+                    child: Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            // Grid of metric tiles
-            GridView.count(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 1.6,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              children: List.generate(4, (_) => AppShimmer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                ),
-              )),
-            ),
-            const SizedBox(height: 28),
-            // Featured Creators
-            const AppShimmer(child: ShimmerBox(width: 140, height: 18)),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 130,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 4,
-                itemBuilder: (_, __) => AppShimmer(
-                  child: Container(
-                    width: 90,
-                    margin: const EdgeInsets.only(right: 16),
-                    child: Column(
-                      children: [
-                        Container(width: 66, height: 66, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                        const SizedBox(height: 8),
-                        const ShimmerBox(width: 60, height: 10),
-                      ],
+            AppShimmer(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: shimmerBg,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: borderCol, width: 1.2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Quick Actions Shimmer
+            AppShimmer(
+              child: Container(
+                height: 150,
+                decoration: BoxDecoration(
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
                 ),
               ),
             ),
-            const SizedBox(height: 28),
-            // Recent Activity Feed
-            const AppShimmer(child: ShimmerBox(width: 140, height: 18)),
-            const SizedBox(height: 12),
-            ...List.generate(3, (_) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: AppShimmer(
-                child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
+            const SizedBox(height: 16),
+            // Featured Creators Shimmer
+            AppShimmer(
+              child: Container(
+                height: 190,
+                decoration: BoxDecoration(
+                  color: shimmerBg,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: borderCol, width: 1.2),
                 ),
               ),
-            )),
+            ),
           ],
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -267,15 +315,6 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 icon: const Icon(Iconsax.setting_2, size: 24),
                 onPressed: () => context.push('/brand/settings'),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => context.go('/brand/profile'),
-                child: AppAvatar(
-                  url: profile?['avatar_url'],
-                  fallbackText: profile?['display_name'] ?? 'P',
-                  size: 32,
-                ),
-              ),
             ],
           ),
         ),
@@ -291,393 +330,81 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
-            // Greeting
-            Text('${_greeting()}, ${profile?['display_name'] ?? 'Partner'}', style: AppTextStyles.h1.copyWith(fontSize: 26)),
-            const SizedBox(height: 4),
-            Text(DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now()), style: AppTextStyles.caption),
-            const SizedBox(height: 24),
-  
-            // Stats
-            GridView.count(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 1.6,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+            _buildWelcomeBentoBox(profile, 0),
+            const SizedBox(height: 20),
+
+            // Stats grid
+            Row(
               children: [
-                StatCard(
-                  label: 'Active Cards',
-                  value: '$_activeCards',
-                  icon: Iconsax.cards,
-                  preset: StatCardPreset.indigo,
-                  onTap: () => context.go('/brand/cards'),
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Active Cards',
+                    value: '$_activeCards',
+                    subtitle: 'Visible to creators',
+                    icon: Iconsax.cards,
+                    color: const Color(0xFF6366F1),
+                    onTap: () => context.go('/brand/cards'),
+                    delayIndex: 1,
+                  ),
                 ),
-                StatCard(
-                  label: 'Applications',
-                  value: '$_totalApps',
-                  icon: Iconsax.profile_2user,
-                  preset: StatCardPreset.rose,
-                  onTap: () => context.go('/brand/applications'),
-                ),
-                StatCard(
-                  label: 'Active Chats',
-                  value: '$_activeChats',
-                  icon: Iconsax.message,
-                  preset: StatCardPreset.emerald,
-                  onTap: () => context.go('/brand/chats'),
-                ),
-                StatCard(
-                  label: 'Accepted Deals',
-                  value: '$_acceptedDeals',
-                  icon: Iconsax.tick_circle,
-                  preset: StatCardPreset.amber,
-                  onTap: () => context.go('/brand/campaigns'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Applications',
+                    value: '$_totalApps',
+                    subtitle: 'Pending review',
+                    icon: Iconsax.profile_2user,
+                    color: const Color(0xFFF43F5E),
+                    onTap: () => context.go('/brand/applications'),
+                    delayIndex: 2,
+                  ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Active Chats',
+                    value: '$_activeChats',
+                    subtitle: 'Influencer threads',
+                    icon: Iconsax.message,
+                    color: const Color(0xFF10B981),
+                    onTap: () => context.go('/brand/chats'),
+                    delayIndex: 3,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _statHighlightBento(
+                    title: 'Accepted Deals',
+                    value: '$_acceptedDeals',
+                    subtitle: 'Deals in progress',
+                    icon: Iconsax.tick_circle,
+                    color: const Color(0xFFF59E0B),
+                    onTap: () => context.go('/brand/campaigns'),
+                    delayIndex: 4,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Quick Actions Bento
+            _buildQuickActionsBento(5),
             const SizedBox(height: 16),
-  
-            // Quick Actions
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: AppColors.isDarkMode 
-                      ? [const Color(0xFF0F0F12), const Color(0xFF16161C)] 
-                      : [const Color(0xFFFFFFFF), const Color(0xFFF9FAFB)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.border.withOpacity(AppColors.isDarkMode ? 0.4 : 0.8),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(AppColors.isDarkMode ? 0.3 : 0.03),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent.withOpacity(0.08),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Iconsax.flash, size: 16, color: AppColors.accent),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Quick Actions',
-                        style: AppTextStyles.h4.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  AppButton(
-                    label: 'Post a New Card',
-                    icon: Iconsax.add_circle,
-                    onTap: () => context.push('/brand/cards/new'),
-                  ),
-                  const SizedBox(height: 10),
-                  AppButton(
-                    label: 'View Applications',
-                    icon: Iconsax.receive_square,
-                    isPrimary: false,
-                    onTap: () => context.go('/brand/applications'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
 
-            // Featured Creators (Spotify Artist Style)
-            if (_bestCreators.isNotEmpty) ...[
-              SectionHeader(
-                title: 'Featured Creators',
-                icon: Iconsax.star5,
-                actionLabel: 'See All',
-                onAction: () => context.go('/brand/influencers'),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 135,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _bestCreators.length,
-                  itemBuilder: (context, i) {
-                    final creator = _bestCreators[i];
-                    final followerCount = creator['follower_count'] ?? 0;
-                    String followerText = '${followerCount}';
-                    if (followerCount >= 1000) {
-                      followerText = '${(followerCount / 1000).toStringAsFixed(1)}K';
-                    }
-                    return GestureDetector(
-                      onTap: () => _showCreatorDetails(creator),
-                      child: Container(
-                        width: 90,
-                        margin: const EdgeInsets.only(right: 16),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.accent,
-                                    AppColors.accent.withOpacity(0.2),
-                                    AppColors.accent,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.accent.withOpacity(0.12),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.surface,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: AppAvatar(
-                                  url: creator['avatar_url'],
-                                  fallbackText: creator['display_name'] ?? 'C',
-                                  size: 60,
-                                  onTap: () => context.push('/brand/influencers/${creator['id']}'),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    creator['display_name'] ?? 'Creator',
-                                    style: AppTextStyles.labelSm.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (creator['is_verified'] == true) ...[
-                                  const SizedBox(width: 4),
-                                  const VerificationBadge(size: 11),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$followerText followers',
-                              style: AppTextStyles.captionSm.copyWith(
-                                fontSize: 9,
-                                color: AppColors.textMuted,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            // Featured Creators Bento
+            _buildFeaturedCreatorsBento(6),
+            const SizedBox(height: 16),
 
-            // Creator Academy / Tip of the Day Slide
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: AppColors.isDarkMode
-                      ? [const Color(0xFF1A1A24).withOpacity(0.95), const Color(0xFF12121A).withOpacity(0.95)]
-                      : [const Color(0xFFF5F3FF), const Color(0xFFEDE9FE)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppColors.isDarkMode 
-                      ? const Color(0xFF3B0764).withOpacity(0.2) 
-                      : const Color(0xFFC084FC).withOpacity(0.3),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.isDarkMode 
-                        ? Colors.black.withOpacity(0.35) 
-                        : const Color(0xFFC084FC).withOpacity(0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFA855F7).withOpacity(0.12),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFA855F7).withOpacity(0.25),
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Iconsax.lamp_on,
-                      color: Color(0xFFA855F7),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Brand Tip of the Day',
-                          style: AppTextStyles.label.copyWith(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.isDarkMode ? Colors.white : const Color(0xFF6B21A8),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Keeping milestones clear and verifying submissions within 24 hours boosts creator performance by 85%.',
-                          style: AppTextStyles.captionSm.copyWith(
-                            fontSize: 11,
-                            height: 1.45,
-                            color: AppColors.isDarkMode 
-                                ? Colors.white.withOpacity(0.7) 
-                                : const Color(0xFF701A75),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-  
-            // Activity Timeline
-            SectionHeader(title: 'Recent Activity', icon: Iconsax.notification),
-            if (_activities.isEmpty)
-              const AppEmptyState(icon: Iconsax.document_text, title: 'No recent activity')
-            else
-              ...List.generate(_activities.length, (i) {
-                final a = _activities[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 0),
-                  child: IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Timeline line and glowing indicator node
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 4),
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.accent.withOpacity(0.2),
-                                  border: Border.all(color: AppColors.accent, width: 2),
-                                ),
-                              ),
-                              if (i < _activities.length - 1)
-                                Expanded(
-                                  child: Container(
-                                    width: 1.5,
-                                    color: AppColors.border,
-                                    margin: const EdgeInsets.symmetric(vertical: 4),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Activity contents
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  a['title'] ?? '',
-                                  style: AppTextStyles.label.copyWith(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                if (a['body'] != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    a['body'],
-                                    style: AppTextStyles.caption.copyWith(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                      height: 1.45,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                                const SizedBox(height: 6),
-                                Text(
-                                  a['created_at'] != null 
-                                      ? DateFormat('MMM d, h:mm a').format(DateTime.parse(a['created_at'])) 
-                                      : '',
-                                  style: AppTextStyles.captionSm.copyWith(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+            // Tip of the Day Bento
+            _buildTipOfTheDayBento(7),
+            const SizedBox(height: 16),
+
+            // Recent Activity Bento
+            _buildRecentActivityBento(8),
 
             // Footer (Jio Style)
             const SizedBox(height: 56),
@@ -715,6 +442,768 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeBentoBox(Map<String, dynamic>? profile, int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    final avatarUrl = profile?['avatar_url'];
+    final displayName = profile?['display_name'] ?? 'Partner';
+    
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_greeting()},',
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            displayName,
+                            style: AppTextStyles.h2.copyWith(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (profile?['is_verified'] == true) ...[
+                          const SizedBox(width: 6),
+                          const VerificationBadge(size: 20),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('EEEE, MMMM d').format(DateTime.now()),
+                      style: AppTextStyles.captionSm.copyWith(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTap: () => context.go('/brand/profile'),
+                child: AppAvatar(
+                  url: avatarUrl,
+                  fallbackText: displayName,
+                  size: 56,
+                ),
+              ),
+            ],
+          ),
+          if (_profileCompleteness < 100) ...[
+            const SizedBox(height: 18),
+            Container(
+              height: 1,
+              color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => _showCompletenessBottomSheet(context, profile),
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Complete Your Brand Profile',
+                        style: AppTextStyles.label.copyWith(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        '$_profileCompleteness%',
+                        style: AppTextStyles.label.copyWith(
+                          color: AppColors.purple,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: LinearProgressIndicator(
+                      value: _profileCompleteness / 100,
+                      backgroundColor: isDark ? const Color(0xFF1C1C21) : const Color(0xFFE5E7EB),
+                      valueColor: AlwaysStoppedAnimation(AppColors.purple),
+                      minHeight: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'A complete profile helps creators know you better!',
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppColors.textMuted,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Your brand profile is fully complete and verified!',
+                      style: AppTextStyles.labelSm.copyWith(
+                        color: AppColors.success,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showCompletenessBottomSheet(BuildContext context, Map<String, dynamic>? profile) {
+    if (profile == null) return;
+    
+    final avatarDone = profile['avatar_url'] != null && (profile['avatar_url'] as String).isNotEmpty;
+    final bioDone = profile['bio'] != null && (profile['bio'] as String).length > 10;
+    final locationDone = profile['location'] != null && (profile['location'] as String).isNotEmpty;
+    final industryDone = profile['industry'] != null && (profile['industry'] as String).isNotEmpty;
+    final companyDone = profile['company_name'] != null && (profile['company_name'] as String).isNotEmpty;
+    final websiteDone = profile['website_url'] != null && (profile['website_url'] as String).isNotEmpty;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.textMuted.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Profile Completion Checklist',
+                    style: AppTextStyles.h2.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.purple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$_profileCompleteness%',
+                      style: AppTextStyles.label.copyWith(
+                        color: AppColors.purple,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Complete all items to build trust with content creators.',
+                style: AppTextStyles.caption.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              _buildChecklistItem('Logo / Profile Picture', avatarDone, '+20%'),
+              _buildChecklistItem('Brand Bio (>10 chars)', bioDone, '+20%'),
+              _buildChecklistItem('Location (City, State)', locationDone, '+15%'),
+              _buildChecklistItem('Industry / Category', industryDone, '+15%'),
+              _buildChecklistItem('Company Name', companyDone, '+15%'),
+              _buildChecklistItem('Website URL', websiteDone, '+15%'),
+              const SizedBox(height: 24),
+              SafeArea(
+                child: AppButton(
+                  label: 'Edit Profile Now',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/brand/profile?edit=true');
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChecklistItem(String title, bool isCompleted, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            isCompleted ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            color: isCompleted ? AppColors.accent : AppColors.textMuted.withValues(alpha: 0.6),
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.label.copyWith(
+                fontSize: 14,
+                fontWeight: isCompleted ? FontWeight.w600 : FontWeight.w400,
+                color: isCompleted ? AppColors.textPrimary : AppColors.textSecondary,
+                decoration: isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.captionSm.copyWith(
+              fontWeight: FontWeight.bold,
+              color: isCompleted ? AppColors.accent : AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statHighlightBento({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+    required int delayIndex,
+  }) {
+    final isDark = AppColors.isDarkMode;
+    Color bgColor;
+    IconData displayIcon;
+    Color textColor = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF1E293B);
+    Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    Color iconColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+
+    if (title == 'Active Cards') {
+      bgColor = isDark ? const Color(0xFF1E1B4B) : const Color(0xFFE0E7FF);
+      displayIcon = Iconsax.cards;
+    } else if (title == 'Applications') {
+      bgColor = isDark ? const Color(0xFF4C0519) : const Color(0xFFFFE4E6);
+      displayIcon = Iconsax.profile_2user;
+    } else if (title == 'Active Chats') {
+      bgColor = isDark ? const Color(0xFF064E3B) : const Color(0xFFD1FAE5);
+      displayIcon = Iconsax.message;
+    } else { // Accepted Deals
+      bgColor = isDark ? const Color(0xFF78350F) : const Color(0xFFFEF3C7);
+      displayIcon = Iconsax.tick_circle;
+    }
+
+    return AspectRatio(
+      aspectRatio: 1.0,
+      child: _BentoBox(
+        animationDelayIndex: delayIndex,
+        onTap: onTap,
+        color: bgColor,
+        borderColor: Colors.transparent,
+        borderRadius: 28.0,
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  displayIcon,
+                  color: iconColor,
+                  size: 20,
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 42,
+                fontWeight: FontWeight.w900,
+                color: textColor,
+                letterSpacing: -1.2,
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: subTextColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsBento(int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Iconsax.flash, size: 16, color: AppColors.accent),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Quick Actions',
+                style: AppTextStyles.h4.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          AppButton(
+            label: 'Post a New Card',
+            icon: Iconsax.add_circle,
+            onTap: () => context.push('/brand/cards/new'),
+          ),
+          const SizedBox(height: 10),
+          AppButton(
+            label: 'View Applications',
+            icon: Iconsax.receive_square,
+            isPrimary: false,
+            onTap: () => context.go('/brand/applications'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedCreatorsBento(int delayIndex) {
+    if (_bestCreators.isEmpty) return const SizedBox.shrink();
+    final isDark = AppColors.isDarkMode;
+
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.only(top: 18, bottom: 18, left: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: isDark ? 0.15 : 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Iconsax.star5,
+                        color: AppColors.warning,
+                        size: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Featured Creators',
+                      style: AppTextStyles.label.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => context.go('/brand/influencers'),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1C1C21) : const Color(0xFFF1F1F5),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      'See All',
+                      style: AppTextStyles.labelSm.copyWith(
+                        fontSize: 10.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 135,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _bestCreators.length,
+              itemBuilder: (context, i) {
+                final creator = _bestCreators[i];
+                final followerCount = creator['follower_count'] ?? 0;
+                String followerText = '${followerCount}';
+                if (followerCount >= 1000) {
+                  followerText = '${(followerCount / 1000).toStringAsFixed(1)}K';
+                }
+                return GestureDetector(
+                  onTap: () => _showCreatorDetails(creator),
+                  child: Container(
+                    width: 90,
+                    margin: const EdgeInsets.only(right: 16),
+                    child: Column(
+                      children: [
+                        AppAvatar(
+                          url: creator['avatar_url'],
+                          fallbackText: creator['display_name'] ?? 'C',
+                          size: 60,
+                          onTap: () => context.push('/brand/influencers/${creator['id']}'),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                creator['display_name'] ?? 'Creator',
+                                style: AppTextStyles.labelSm.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (creator['is_verified'] == true) ...[
+                              const SizedBox(width: 3),
+                              const VerificationBadge(size: 10),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$followerText followers',
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontSize: 9,
+                            color: AppColors.textMuted,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipOfTheDayBento(int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(20),
+      gradient: isDark
+          ? [const Color(0xFF1E1B4B).withValues(alpha: 0.95), const Color(0xFF0F0F17).withValues(alpha: 0.95)]
+          : [const Color(0xFFF5F3FF), const Color(0xFFEDE9FE)],
+      borderColor: isDark 
+          ? const Color(0xFF3B0764).withValues(alpha: 0.2) 
+          : const Color(0xFFC084FC).withValues(alpha: 0.3),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFA855F7).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFFA855F7).withValues(alpha: 0.25),
+                width: 1,
+              ),
+            ),
+            child: const Icon(
+              Iconsax.lamp_on,
+              color: Color(0xFFA855F7),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Brand Tip of the Day',
+                  style: AppTextStyles.label.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF6B21A8),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Keeping milestones clear and verifying submissions within 24 hours boosts creator performance by 85%.',
+                  style: AppTextStyles.captionSm.copyWith(
+                    fontSize: 11,
+                    height: 1.45,
+                    color: isDark 
+                        ? Colors.white.withValues(alpha: 0.7) 
+                        : const Color(0xFF701A75),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityBento(int delayIndex) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: delayIndex,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: isDark ? 0.15 : 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Iconsax.notification,
+                  color: AppColors.accent,
+                  size: 15,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Recent Activity',
+                style: AppTextStyles.label.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_activities.isEmpty)
+            const AppEmptyState(icon: Iconsax.document_text, title: 'No recent activity')
+          else
+            ListView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _activities.take(5).length,
+              itemBuilder: (context, i) {
+                final a = _activities[i];
+                return IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 4),
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.accent.withValues(alpha: 0.2),
+                                border: Border.all(color: AppColors.accent, width: 2),
+                              ),
+                            ),
+                            if (i < _activities.take(5).length - 1)
+                              Expanded(
+                                child: Container(
+                                  width: 1.5,
+                                  color: AppColors.border,
+                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                a['title'] ?? '',
+                                style: AppTextStyles.label.copyWith(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (a['body'] != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  a['body'],
+                                  style: AppTextStyles.caption.copyWith(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                    height: 1.45,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              const SizedBox(height: 6),
+                              Text(
+                                a['created_at'] != null 
+                                    ? DateFormat('MMM d, h:mm a').format(DateTime.parse(a['created_at'])) 
+                                    : '',
+                                style: AppTextStyles.captionSm.copyWith(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
       ),
     );
   }
@@ -867,5 +1356,89 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
       },
     );
   }
+}
 
+class _BentoBox extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final double? height;
+  final double? width;
+  final EdgeInsetsGeometry padding;
+  final List<Color>? gradient;
+  final Color? color;
+  final Color? borderColor;
+  final int animationDelayIndex;
+  final double borderRadius;
+
+  const _BentoBox({
+    required this.child,
+    this.onTap,
+    this.height,
+    this.width,
+    this.padding = const EdgeInsets.all(18),
+    this.gradient,
+    this.color,
+    this.borderColor,
+    this.animationDelayIndex = 0,
+    this.borderRadius = 24.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+    final boxColor = color ?? (isDark ? const Color(0xFF0F0F11) : Colors.white);
+    final borderCol = borderColor ?? (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB));
+
+    Widget content = Container(
+      height: height,
+      width: width,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: gradient == null ? boxColor : null,
+        gradient: gradient != null ? LinearGradient(
+          colors: gradient!,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ) : null,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: borderCol,
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: child,
+    );
+
+    if (onTap != null) {
+      content = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: content,
+        ),
+      );
+    }
+
+    return content
+        .animate()
+        .fadeIn(
+          duration: const Duration(milliseconds: 500),
+          delay: Duration(milliseconds: 50 * animationDelayIndex),
+        )
+        .slideY(
+          begin: 0.15,
+          end: 0.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 500),
+          delay: Duration(milliseconds: 50 * animationDelayIndex),
+        );
+  }
 }

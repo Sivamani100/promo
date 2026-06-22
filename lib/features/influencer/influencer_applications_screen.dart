@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -42,24 +44,124 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
 
   List<Map<String, dynamic>> get _filtered => _filter == 'all' ? _apps : _apps.where((a) => a['status'] == _filter).toList();
 
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'accepted': return AppColors.success;
-      case 'shortlisted': return AppColors.info;
-      case 'rejected': return AppColors.error;
-      case 'pending': return AppColors.warning;
-      default: return AppColors.textMuted;
-    }
+  int _getCountForFilter(String filterKey) {
+    if (filterKey == 'all') return _apps.length;
+    return _apps.where((a) => a['status'] == filterKey).length;
   }
 
-  IconData _statusIcon(String status) {
-    switch (status) {
-      case 'accepted': return Icons.check_circle_rounded;
-      case 'shortlisted': return Icons.star_rounded;
-      case 'rejected': return Icons.cancel_rounded;
-      case 'pending': return Icons.schedule_rounded;
-      default: return Icons.circle;
+  Widget _buildFilterChip(String filterKey) {
+    final isSelected = _filter == filterKey;
+    final count = _getCountForFilter(filterKey);
+    final isDark = AppColors.isDarkMode;
+    
+    String label = filterKey[0].toUpperCase() + filterKey.substring(1);
+    
+    Color activeColor = AppColors.accent;
+    Color activeTextColor = AppColors.accentOnDark;
+    if (filterKey == 'pending' && isSelected) {
+      activeColor = AppColors.warning;
+      activeTextColor = Colors.black;
+    } else if (filterKey == 'shortlisted' && isSelected) {
+      activeColor = AppColors.info;
+      activeTextColor = Colors.black;
+    } else if (filterKey == 'accepted' && isSelected) {
+      activeColor = AppColors.success;
+      activeTextColor = Colors.black;
+    } else if (filterKey == 'rejected' && isSelected) {
+      activeColor = AppColors.error;
+      activeTextColor = Colors.white;
     }
+
+    return GestureDetector(
+      onTap: () => setState(() => _filter = filterKey),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? activeColor 
+              : (isDark ? const Color(0xFF0F0F11) : Colors.white),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected 
+                ? Colors.transparent 
+                : (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected 
+                    ? activeTextColor 
+                    : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? activeTextColor.withValues(alpha: 0.15) 
+                    : (isDark ? const Color(0xFF1F1F24) : const Color(0xFFF3F4F6)),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Text(
+                '$count',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? activeTextColor : AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBarIcon({
+    required IconData icon,
+    int badgeCount = 0,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 24, color: AppColors.textPrimary),
+            if (badgeCount > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 10,
+                    minHeight: 10,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -73,6 +175,7 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -90,7 +193,7 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                 Text(
                   'Applied',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -98,7 +201,7 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                 Text(
                   '.',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,
                   ),
@@ -108,43 +211,15 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
             elevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Iconsax.notification, size: 20),
-                    onPressed: () => context.push('/influencer/notifications'),
-                  ),
-                  if (unreadNotifications > 0)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 12,
-                          minHeight: 12,
-                        ),
-                        child: Text(
-                          unreadNotifications > 9 ? '9+' : '$unreadNotifications',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 7,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
+              _buildAppBarIcon(
+                icon: Iconsax.notification,
+                badgeCount: unreadNotifications,
+                onTap: () => context.push('/influencer/notifications'),
               ),
-              IconButton(
-                icon: const Icon(Iconsax.setting_2, size: 20),
-                onPressed: () => context.push('/influencer/settings'),
+              const SizedBox(width: 8),
+              _buildAppBarIcon(
+                icon: Iconsax.setting_2,
+                onTap: () => context.push('/influencer/settings'),
               ),
             ],
           ),
@@ -152,10 +227,15 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
       ),
       body: _loading
           ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical,
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+              ),
               itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const _ShimmerBentoApplicationCard(),
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -163,32 +243,16 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                 children: [
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
                     child: Row(
-                      children: ['all', 'pending', 'shortlisted', 'accepted', 'rejected'].map((f) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: AppChip(
-                          label: f[0].toUpperCase() + f.substring(1),
-                          selected: _filter == f,
-                          onTap: () => setState(() => _filter = f),
-                        ),
-                      )).toList(),
+                      children: ['all', 'pending', 'accepted', 'rejected']
+                          .map((f) => Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _buildFilterChip(f),
+                              ))
+                          .toList(),
                     ),
                   ),
-                  // Stats row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                    child: Row(
-                      children: [
-                        _miniStat('Total', '${_apps.length}', AppColors.textPrimary),
-                        const SizedBox(width: 8),
-                        _miniStat('Pending', '${_apps.where((a) => a['status'] == 'pending').length}', AppColors.warning),
-                        const SizedBox(width: 8),
-                        _miniStat('Accepted', '${_apps.where((a) => a['status'] == 'accepted').length}', AppColors.success),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   Expanded(
                     child: _filtered.isEmpty
                         ? const AppEmptyState(icon: Icons.assignment_rounded, title: 'No applications', subtitle: 'Your submitted applications will appear here')
@@ -208,132 +272,16 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                               final status = app['status'] ?? 'pending';
                               final isHighlighted = widget.cardId != null && card?['id'] == widget.cardId;
 
-                              return Container(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(
-                                  color: isHighlighted 
-                                      ? AppColors.accent.withOpacity(0.05) 
-                                      : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                                  border: Border.all(
-                                    color: isHighlighted ? AppColors.accent : AppColors.border,
-                                    width: isHighlighted ? 2.0 : 1.0,
-                                  ),
-                                  boxShadow: isHighlighted ? [
-                                    BoxShadow(
-                                      color: AppColors.accent.withOpacity(0.2),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    )
-                                  ] : null,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Brand + status row
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              final bId = brand?['id'];
-                                              if (bId != null) {
-                                                context.push('/influencer/brands/$bId');
-                                              }
-                                            },
-                                            behavior: HitTestBehavior.opaque,
-                                            child: Row(
-                                              children: [
-                                                AppAvatar(
-                                                  url: brand?['avatar_url'],
-                                                  fallbackText: brand?['display_name'] ?? 'B',
-                                                  size: 36,
-                                                  onTap: () {
-                                                    final bId = brand?['id'];
-                                                    if (bId != null) {
-                                                      context.push('/influencer/brands/$bId');
-                                                    }
-                                                  },
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(brand?['display_name'] ?? 'Brand', style: AppTextStyles.labelSm),
-                                                      Text(card?['category'] ?? '', style: AppTextStyles.captionSm),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: _statusColor(status).withOpacity(0.15),
-                                            borderRadius: BorderRadius.circular(100),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(_statusIcon(status), size: 12, color: _statusColor(status)),
-                                              const SizedBox(width: 4),
-                                              Text(status[0].toUpperCase() + status.substring(1), style: AppTextStyles.captionSm.copyWith(color: _statusColor(status), fontWeight: FontWeight.w700)),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    // Card title
-                                    Text(card?['title'] ?? 'Campaign', style: AppTextStyles.label.copyWith(fontSize: 15)),
-                                    const SizedBox(height: 6),
-                                    // Pitch preview
-                                    Text(
-                                      app['pitch_message'] ?? '',
-                                      style: AppTextStyles.caption.copyWith(height: 1.5),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    if (app['proposed_rate'] != null) ...[
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.payments_rounded, size: 14, color: AppColors.textMuted),
-                                          const SizedBox(width: 4),
-                                          Text('Rate: ${app['proposed_rate']}', style: AppTextStyles.captionSm.copyWith(color: AppColors.warning, fontWeight: FontWeight.w600)),
-                                        ],
-                                      ),
-                                    ],
-                                    if (app['brand_note'] != null && app['brand_note'].isNotEmpty) ...[
-                                      const SizedBox(height: 10),
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(AppSpacing.md),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.surface2,
-                                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('BRAND NOTE', style: AppTextStyles.overline),
-                                            const SizedBox(height: 4),
-                                            Text(app['brand_note'], style: AppTextStyles.captionSm),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                    if (status == 'accepted') ...[
-                                      _MilestoneTrackerWidget(
+                              return _BentoApplicationCard(
+                                app: app,
+                                isHighlighted: isHighlighted,
+                                animationDelayIndex: i,
+                                milestoneTracker: status == 'accepted'
+                                    ? _MilestoneTrackerWidget(
                                         brandId: brand?['id'] ?? '',
                                         cardId: card?['id'] ?? '',
-                                      ),
-                                    ],
-                                  ],
-                                ),
+                                      )
+                                    : null,
                               );
                             },
                           ),
@@ -341,26 +289,6 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                 ],
               ),
             ),
-    );
-  }
-
-  Widget _miniStat(String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          children: [
-            Text(value, style: AppTextStyles.h4.copyWith(color: color)),
-            const SizedBox(height: 2),
-            Text(label, style: AppTextStyles.captionSm),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -450,8 +378,8 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                 decoration: InputDecoration(
                   hintText: 'e.g. Draft Content for review',
                   labelText: 'Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
               const SizedBox(height: 16),
@@ -475,7 +403,7 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -579,13 +507,17 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
     final totalCount = _milestones.length;
     final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
 
+    final isDark = AppColors.isDarkMode;
     return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface2,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.borderSubtle),
+        color: isDark ? const Color(0xFF0D0D0E) : const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1.2,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,9 +537,9 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
             borderRadius: BorderRadius.circular(100),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: AppColors.surface,
+              backgroundColor: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
               valueColor: AlwaysStoppedAnimation(AppColors.accent),
-              minHeight: 4,
+              minHeight: 6,
             ),
           ),
           const SizedBox(height: 12),
@@ -618,10 +550,30 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('No deliverables set yet.', style: AppTextStyles.captionSm.copyWith(fontStyle: FontStyle.italic)),
-                  TextButton.icon(
-                    onPressed: _addMilestone,
-                    icon: const Icon(Icons.add, size: 14),
-                    label: const Text('Add', style: TextStyle(fontSize: 11)),
+                  GestureDetector(
+                    onTap: _addMilestone,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, size: 12, color: AppColors.accent),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Add',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -634,36 +586,59 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
               final ext = MilestoneHelper.getExtension(rawTitle);
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         GestureDetector(
                           onTap: () => _toggleMilestone(m),
-                          child: Icon(
-                            done ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-                            size: 20,
-                            color: done ? AppColors.success : AppColors.textMuted,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: done ? AppColors.success : Colors.transparent,
+                              border: Border.all(
+                                color: done ? Colors.transparent : (isDark ? const Color(0xFF333336) : const Color(0xFFD1D5DB)),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: done 
+                                ? const Icon(Icons.check, size: 13, color: Colors.black) 
+                                : null,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 displayTitle,
-                                style: AppTextStyles.bodySm.copyWith(
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
                                   decoration: done ? TextDecoration.lineThrough : null,
                                   color: done ? AppColors.textMuted : AppColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Text(
-                                'Due: ${_formatDate(m['due_date'])}',
-                                style: AppTextStyles.captionSm.copyWith(fontSize: 10),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Icon(Iconsax.calendar, size: 10, color: AppColors.textMuted),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Due: ${_formatDate(m['due_date'])}',
+                                    style: AppTextStyles.captionSm.copyWith(
+                                      fontSize: 10,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -671,18 +646,26 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                       ],
                     ),
                     if (ext != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Padding(
-                        padding: const EdgeInsets.only(left: 28.0),
+                        padding: const EdgeInsets.only(left: 32.0),
                         child: Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: ext.status == 'pending'
-                                ? AppColors.warning.withValues(alpha: 0.1)
+                                ? AppColors.warning.withValues(alpha: 0.08)
                                 : ext.status == 'approved'
-                                    ? AppColors.success.withValues(alpha: 0.1)
-                                    : AppColors.error.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+                                    ? AppColors.success.withValues(alpha: 0.08)
+                                    : AppColors.error.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: ext.status == 'pending'
+                                  ? AppColors.warning.withValues(alpha: 0.15)
+                                  : ext.status == 'approved'
+                                      ? AppColors.success.withValues(alpha: 0.15)
+                                      : AppColors.error.withValues(alpha: 0.15),
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             ext.status == 'pending'
@@ -690,9 +673,9 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
                                 : ext.status == 'approved'
                                     ? '✅ Extension Approved: ${_formatDate(ext.newDueDate.toIso8601String())}'
                                     : '❌ Extension Rejected',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
+                            style: GoogleFonts.inter(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
                               color: ext.status == 'pending'
                                   ? AppColors.warning
                                   : ext.status == 'approved'
@@ -710,15 +693,505 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: _addMilestone,
-                icon: const Icon(Icons.add, size: 14),
-                label: const Text('Add Deliverable', style: TextStyle(fontSize: 11)),
-                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 24)),
+              child: GestureDetector(
+                onTap: _addMilestone,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, size: 12, color: AppColors.accent),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Add Deliverable',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             )
           ]
         ],
+      ),
+    );
+  }
+}
+
+// ---------- _BentoApplicationCard ----------
+class _BentoApplicationCard extends StatelessWidget {
+  final Map<String, dynamic> app;
+  final bool isHighlighted;
+  final Widget? milestoneTracker;
+  final int animationDelayIndex;
+
+  const _BentoApplicationCard({
+    required this.app,
+    required this.isHighlighted,
+    this.milestoneTracker,
+    this.animationDelayIndex = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final card = app['card'] as Map<String, dynamic>?;
+    final brand = card?['brand'] as Map<String, dynamic>?;
+    final status = app['status'] ?? 'pending';
+    final category = card?['category'] as String? ?? '';
+    final categoryColor = AppColors.getCategoryColor(category);
+    final isDark = AppColors.isDarkMode;
+    
+    // Status colors and icons
+    Color statusColor;
+    IconData statusIcon;
+    switch (status) {
+      case 'accepted':
+        statusColor = AppColors.success;
+        statusIcon = Icons.check_circle_rounded;
+        break;
+      case 'shortlisted':
+        statusColor = AppColors.info;
+        statusIcon = Icons.star_rounded;
+        break;
+      case 'rejected':
+        statusColor = AppColors.error;
+        statusIcon = Icons.cancel_rounded;
+        break;
+      case 'pending':
+      default:
+        statusColor = AppColors.warning;
+        statusIcon = Icons.schedule_rounded;
+        break;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isHighlighted 
+            ? (isDark ? const Color(0xFF2A1E05) : const Color(0xFFFFFDF5))
+            : (isDark ? const Color(0xFF0F0F11) : Colors.white),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isHighlighted 
+              ? AppColors.warning 
+              : (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+          width: isHighlighted ? 1.8 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isHighlighted 
+                ? AppColors.warning.withValues(alpha: 0.12)
+                : (isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.02)),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Brand Avatar, Name, Category and Status Badge
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (brand != null) ...[
+                    AppAvatar(
+                      url: brand['avatar_url'],
+                      fallbackText: brand['display_name'] ?? 'B',
+                      size: 32,
+                      onTap: () {
+                        final bId = brand['id'];
+                        if (bId != null) {
+                          context.push('/influencer/brands/$bId');
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  final bId = brand['id'];
+                                  if (bId != null) {
+                                    context.push('/influencer/brands/$bId');
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        brand['display_name'] ?? 'Brand',
+                                        style: AppTextStyles.labelSm.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (brand['is_verified'] == true) ...[
+                                      const SizedBox(width: 3),
+                                      const VerificationBadge(size: 11),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              if (category.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: categoryColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: categoryColor.withValues(alpha: 0.15),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    category.toUpperCase(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 7.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: categoryColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            brand['industry'] ?? 'Industry',
+                            style: AppTextStyles.captionSm.copyWith(
+                              fontSize: 10,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (app['pitch_message'] != null && (app['pitch_message'] as String).isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                width: 1.2,
+                              ),
+                            ),
+                            title: Row(
+                              children: [
+                                Icon(Iconsax.message_text5, color: AppColors.accent, size: 22),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Your Pitch',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: SingleChildScrollView(
+                              child: Text(
+                                app['pitch_message'],
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.5,
+                                  height: 1.5,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(
+                                  'Close',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.08),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.accent.withValues(alpha: 0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Iconsax.message_text,
+                          size: 14,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(statusIcon, size: 12, color: statusColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          status[0].toUpperCase() + status.substring(1),
+                          style: GoogleFonts.inter(
+                            color: statusColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              
+              // Campaign section (horizontal layout with cover image and title)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                        width: 1,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: isValidImageUrl(card?['cover_image_url'])
+                          ? CachedNetworkImage(
+                              imageUrl: card?['cover_image_url'] ?? '',
+                              fit: BoxFit.cover,
+                            )
+                          : Center(
+                              child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          card?['title'] ?? 'Campaign',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (app['proposed_rate'] != null) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Iconsax.empty_wallet, size: 13, color: AppColors.warning),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Proposed Rate: ₹${app['proposed_rate']}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+
+              
+              // Brand note
+              if (app['brand_note'] != null && (app['brand_note'] as String).isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF16120E) : const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF2C1F0E) : const Color(0xFFFDE68A),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Iconsax.note_2, size: 12, color: AppColors.warning),
+                          const SizedBox(width: 6),
+                          Text(
+                            'BRAND NOTE',
+                            style: GoogleFonts.inter(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.warning,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        app['brand_note'],
+                        style: AppTextStyles.captionSm.copyWith(
+                          fontSize: 11,
+                          color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFB45309),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              
+              // Milestone tracker
+              if (milestoneTracker != null) ...[
+                milestoneTracker!,
+              ],
+            ],
+          ),
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(
+          duration: const Duration(milliseconds: 400),
+          delay: Duration(milliseconds: 30 * animationDelayIndex),
+        )
+        .slideY(
+          begin: 0.1,
+          end: 0.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 400),
+          delay: Duration(milliseconds: 30 * animationDelayIndex),
+        );
+  }
+}
+
+// ---------- _ShimmerBentoApplicationCard ----------
+class _ShimmerBentoApplicationCard extends StatelessWidget {
+  const _ShimmerBentoApplicationCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+    final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
+
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: shimmerBg,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: borderCol, width: 1.2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const ShimmerBox(width: 32, height: 32, borderRadius: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ShimmerBox(width: 80, height: 12),
+                      const SizedBox(height: 4),
+                      const ShimmerBox(width: 40, height: 10),
+                    ],
+                  ),
+                ),
+                const ShimmerBox(width: 60, height: 20, borderRadius: 10),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const ShimmerBox(width: 64, height: 64, borderRadius: 14),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ShimmerBox(width: double.infinity, height: 14),
+                      const SizedBox(height: 6),
+                      const ShimmerBox(width: 120, height: 12),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const ShimmerBox(width: double.infinity, height: 12),
+            const SizedBox(height: 6),
+            const ShimmerBox(width: 180, height: 12),
+          ],
+        ),
       ),
     );
   }

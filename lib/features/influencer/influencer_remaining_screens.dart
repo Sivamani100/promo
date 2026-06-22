@@ -17,10 +17,13 @@ import '../../core/services/application_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ========== Influencer Brands Screen ==========
 class InfluencerBrandsScreen extends ConsumerStatefulWidget {
-  const InfluencerBrandsScreen({super.key});
+  final String? initialTab;
+  const InfluencerBrandsScreen({super.key, this.initialTab});
   @override
   ConsumerState<InfluencerBrandsScreen> createState() => _InfluencerBrandsScreenState();
 }
@@ -30,9 +33,16 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
   Set<String> _followingIds = {};
   bool _loading = true;
   final _followService = FollowService();
+  String _selectedTab = 'browse';
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    if (widget.initialTab == 'following') {
+      _selectedTab = 'following';
+    }
+    _load();
+  }
 
   Future<void> _load() async {
     final user = ref.read(authProvider).user;
@@ -57,9 +67,87 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
     }
   }
 
+  Widget _buildTabChip(String label, String value, int count) {
+    final isSelected = _selectedTab == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = AppColors.accent;
+    final activeTextColor = AppColors.accentOnDark;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTab = value;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? activeColor 
+              : (isDark ? const Color(0xFF0F0F11) : Colors.white),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: isSelected 
+                ? activeColor 
+                : (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected 
+                  ? activeColor.withValues(alpha: 0.2) 
+                  : Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected 
+                    ? activeTextColor 
+                    : AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? activeTextColor.withValues(alpha: 0.15) 
+                    : (isDark ? const Color(0xFF1F1F24) : const Color(0xFFF3F4F6)),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Text(
+                '$count',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? activeTextColor : AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filteredBrands = _selectedTab == 'following'
+        ? _brands.where((b) => _followingIds.contains(b['id'] as String? ?? '')).toList()
+        : _brands;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left),
@@ -76,76 +164,109 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
             )
           : RefreshIndicator(
               onRefresh: _load,
-              child: _brands.isEmpty
-                  ? const AppEmptyState(icon: Iconsax.briefcase, title: 'No brands found')
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.pageMarginHorizontal,
-                        AppSpacing.pageMarginVertical,
-                        AppSpacing.pageMarginHorizontal,
-                        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                      ),
-                      itemCount: _brands.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (_, i) {
-                        final b = _brands[i];
-                        final brandId = b['id'] as String? ?? '';
-                        final isFollowing = _followingIds.contains(brandId);
-                        return Container(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () => context.push('/influencer/brands/$brandId'),
-                                child: AppAvatar(url: b['avatar_url'], fallbackText: b['display_name'] ?? 'B', size: 48),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => context.push('/influencer/brands/$brandId'),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(children: [
-                                        Flexible(child: Text(b['display_name'] ?? '', style: AppTextStyles.label, overflow: TextOverflow.ellipsis)),
-                                        if (b['is_verified'] == true) ...[const SizedBox(width: 4), const VerificationBadge(size: 14)],
-                                      ]),
-                                      if (b['company_name'] != null) Text(b['company_name'], style: AppTextStyles.captionSm),
-                                      const SizedBox(height: 4),
-                                      Text(b['industry'] ?? '', style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted)),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              isFollowing
-                                  ? OutlinedButton(
-                                      onPressed: () => _toggleFollow(brandId),
-                                      style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        side: BorderSide(color: AppColors.accent),
-                                        backgroundColor: AppColors.accent.withValues(alpha: 0.1),
-                                      ),
-                                      child: Text('Following', style: TextStyle(fontSize: 12, color: AppColors.accent)),
-                                    )
-                                  : ElevatedButton(
-                                      onPressed: () => _toggleFollow(brandId),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        backgroundColor: AppColors.accent,
-                                        elevation: 0,
-                                      ),
-                                      child: Text('Follow', style: TextStyle(fontSize: 12, color: AppColors.accentOnDark)),
-                                    ),
-                            ],
-                          ),
-                        );
-                      },
+              child: Column(
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 12),
+                    child: Row(
+                      children: [
+                        _buildTabChip('Browse All', 'browse', _brands.length),
+                        const SizedBox(width: 8),
+                        _buildTabChip('Following', 'following', _followingIds.length),
+                      ],
                     ),
+                  ),
+                  Expanded(
+                    child: filteredBrands.isEmpty
+                        ? AppEmptyState(
+                            icon: _selectedTab == 'following' ? Iconsax.people : Iconsax.briefcase,
+                            title: _selectedTab == 'following' ? 'No followed brands' : 'No brands found',
+                            subtitle: _selectedTab == 'following'
+                                ? 'Brands you follow will appear here. Switch to Browse to find brands.'
+                                : 'We couldn\'t find any brands at the moment.',
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.pageMarginHorizontal,
+                              0,
+                              AppSpacing.pageMarginHorizontal,
+                              AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                            ),
+                            itemCount: filteredBrands.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (_, i) {
+                              final b = filteredBrands[i];
+                              final brandId = b['id'] as String? ?? '';
+                              final isFollowing = _followingIds.contains(brandId);
+                              return Container(
+                                padding: const EdgeInsets.all(AppSpacing.lg),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                                  border: Border.all(
+                                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                    width: 1.2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => context.push('/influencer/brands/$brandId'),
+                                      child: AppAvatar(url: b['avatar_url'], fallbackText: b['display_name'] ?? 'B', size: 48),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => context.push('/influencer/brands/$brandId'),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(children: [
+                                              Flexible(child: Text(b['display_name'] ?? '', style: AppTextStyles.label, overflow: TextOverflow.ellipsis)),
+                                              if (b['is_verified'] == true) ...[const SizedBox(width: 4), const VerificationBadge(size: 14)],
+                                            ]),
+                                            if (b['company_name'] != null) Text(b['company_name'], style: AppTextStyles.captionSm),
+                                            const SizedBox(height: 4),
+                                            Text(b['industry'] ?? '', style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    isFollowing
+                                        ? OutlinedButton(
+                                            onPressed: () => _toggleFollow(brandId),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                              side: BorderSide(color: AppColors.accent),
+                                              backgroundColor: AppColors.accent.withValues(alpha: 0.1),
+                                            ),
+                                            child: Text('Following', style: TextStyle(fontSize: 12, color: AppColors.accent)),
+                                          )
+                                        : ElevatedButton(
+                                            onPressed: () => _toggleFollow(brandId),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                              backgroundColor: AppColors.accent,
+                                              elevation: 0,
+                                            ),
+                                            child: Text('Follow', style: TextStyle(fontSize: 12, color: AppColors.accentOnDark)),
+                                          ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
     );
   }
@@ -334,51 +455,62 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                       itemCount: _items.length,
                       itemBuilder: (context, i) {
                         final item = _items[i];
+                        final postUrl = item['post_url'] as String?;
                         return Stack(
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      color: AppColors.surface2,
-                                      width: double.infinity,
-                                      child: AppImage(
-                                        url: item['media_url'],
-                                        fit: BoxFit.cover,
-                                        fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                            GestureDetector(
+                              onTap: () => _showEditDialog(item),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        color: AppColors.surface2,
+                                        width: double.infinity,
+                                        child: AppImage(
+                                          url: item['media_url'],
+                                          fit: BoxFit.cover,
+                                          fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(AppSpacing.md),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
-                                        const SizedBox(height: 2),
-                                        Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
-                                        if (item['engagement_rate'] != null) ...[
-                                          const SizedBox(height: 4),
+                                    Padding(
+                                      padding: const EdgeInsets.all(AppSpacing.md),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                          const SizedBox(height: 2),
                                           Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
-                                              const SizedBox(width: 4),
-                                              Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                                              Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
+                                              if (postUrl != null && postUrl.trim().isNotEmpty)
+                                                Icon(Iconsax.link, size: 12, color: AppColors.accent),
                                             ],
                                           ),
+                                          if (item['engagement_rate'] != null) ...[
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
+                                                const SizedBox(width: 4),
+                                                Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                                              ],
+                                            ),
+                                          ],
                                         ],
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                             Positioned(
@@ -435,6 +567,18 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
     final titleCtrl = TextEditingController();
     final platformCtrl = TextEditingController();
     final urlCtrl = TextEditingController();
+    final postUrlCtrl = TextEditingController();
+
+    // Extract unique existing photos from current portfolio items
+    final existingPhotos = _items
+        .map((e) => e['media_url'] as String?)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toSet()
+        .toList();
+
+    String? selectedMediaUrl;
+    bool uploading = false;
 
     showModalBottomSheet(
       context: context,
@@ -442,38 +586,516 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
       useRootNavigator: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Add Portfolio Item', style: AppTextStyles.h3),
-            const SizedBox(height: 20),
-            AppTextField(label: 'Title', hint: 'My Instagram Reel', controller: titleCtrl),
-            const SizedBox(height: 12),
-            AppTextField(label: 'Platform', hint: 'Instagram', controller: platformCtrl),
-            const SizedBox(height: 12),
-            AppTextField(label: 'Media URL', hint: 'https://...', controller: urlCtrl),
-            const SizedBox(height: 20),
-            AppButton(
-              label: 'Add Item',
-              onTap: () async {
-                if (titleCtrl.text.isNotEmpty) {
-                  final user = ref.read(authProvider).user!;
-                  await PortfolioService().addPortfolioItem({
-                    'owner_id': user.id,
-                    'title': titleCtrl.text.trim(),
-                    'platform': platformCtrl.text.trim(),
-                    'media_url': urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
-                    'sort_order': _items.length,
-                  });
-                  if (mounted) Navigator.pop(ctx);
-                  _load();
-                }
-              },
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.85,
             ),
-          ],
-        ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Add Portfolio Item', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                  const SizedBox(height: 20),
+                  AppTextField(label: 'Title', hint: 'My Instagram Reel', controller: titleCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Platform', hint: 'Instagram', controller: platformCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Reel / Post URL', hint: 'https://instagram.com/p/...', controller: postUrlCtrl),
+                  const SizedBox(height: 16),
+                  
+                  // Cover Photo Section
+                  Text('COVER PHOTO', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  
+                  // Selected Cover Preview
+                  Container(
+                    height: 120,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: selectedMediaUrl != null && selectedMediaUrl!.isNotEmpty
+                        ? AppImage(
+                            url: selectedMediaUrl!,
+                            fit: BoxFit.cover,
+                            fallback: Center(child: Icon(Iconsax.gallery, size: 40, color: AppColors.textMuted)),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Iconsax.image, size: 36, color: AppColors.textMuted),
+                                const SizedBox(height: 8),
+                                Text('No cover photo selected', style: AppTextStyles.captionSm),
+                              ],
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Horizontal Photo Selector
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // Upload Button
+                        GestureDetector(
+                          onTap: uploading
+                              ? null
+                              : () async {
+                                  final ImageSource? source = await showModalBottomSheet<ImageSource>(
+                                    context: context,
+                                    backgroundColor: AppColors.surface,
+                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                                    builder: (ctx2) => SafeArea(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(Iconsax.camera),
+                                            title: const Text('Take Photo'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.camera),
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Iconsax.image),
+                                            title: const Text('Choose from Gallery'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.gallery),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                  if (source == null) return;
+                                  setDialogState(() => uploading = true);
+                                  try {
+                                    final user = ref.read(authProvider).user!;
+                                    final picker = ImagePicker();
+                                    final XFile? image = await picker.pickImage(source: source, imageQuality: 80);
+                                    if (image != null) {
+                                      final bytes = await image.readAsBytes();
+                                      final fileExt = image.name.split('.').last.toLowerCase();
+                                      final cleanExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(fileExt) ? fileExt : 'jpg';
+                                      final fileName = 'portfolio_${DateTime.now().microsecondsSinceEpoch}.$cleanExt';
+                                      final path = '${user.id}/$fileName';
+                                      final publicUrl = await StorageService().uploadFile(
+                                        'portfolio',
+                                        path,
+                                        bytes,
+                                        'image/$cleanExt',
+                                      );
+                                      setDialogState(() {
+                                        selectedMediaUrl = publicUrl;
+                                        urlCtrl.text = publicUrl;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    print('Error uploading photo: $e');
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to upload photo: $e')),
+                                      );
+                                    }
+                                  } finally {
+                                    setDialogState(() => uploading = false);
+                                  }
+                                },
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface2,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Center(
+                              child: uploading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Iconsax.document_upload, size: 20, color: AppColors.accent),
+                                        const SizedBox(height: 4),
+                                        const Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ),
+                        // Existing Photos
+                        ...existingPhotos.map((photoUrl) {
+                          final isSelected = selectedMediaUrl == photoUrl;
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                selectedMediaUrl = photoUrl;
+                                urlCtrl.text = photoUrl;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 10),
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.accent : AppColors.border,
+                                  width: isSelected ? 2.0 : 1.0,
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  AppImage(
+                                    url: photoUrl,
+                                    fit: BoxFit.cover,
+                                    fallback: Center(child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted)),
+                                  ),
+                                  if (isSelected)
+                                    Container(
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      child: const Center(
+                                        child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  AppTextField(
+                    label: 'Or Custom Image URL',
+                    hint: 'https://...',
+                    controller: urlCtrl,
+                    onChanged: (val) {
+                      setDialogState(() {
+                        selectedMediaUrl = val.trim();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  AppButton(
+                    label: 'Add Item',
+                    onTap: () async {
+                      if (titleCtrl.text.isNotEmpty) {
+                        final user = ref.read(authProvider).user!;
+                        await PortfolioService().addPortfolioItem({
+                          'owner_id': user.id,
+                          'title': titleCtrl.text.trim(),
+                          'platform': platformCtrl.text.trim(),
+                          'media_url': urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
+                          'post_url': postUrlCtrl.text.trim().isEmpty ? null : postUrlCtrl.text.trim(),
+                          'sort_order': _items.length,
+                        });
+                        if (mounted) Navigator.pop(ctx);
+                        _load();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog(Map<String, dynamic> item) async {
+    final titleCtrl = TextEditingController(text: item['title'] ?? '');
+    final platformCtrl = TextEditingController(text: item['platform'] ?? '');
+    final urlCtrl = TextEditingController(text: item['media_url'] ?? '');
+    final postUrlCtrl = TextEditingController(text: item['post_url'] ?? '');
+
+    final existingPhotos = _items
+        .map((e) => e['media_url'] as String?)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toSet()
+        .toList();
+
+    String? selectedMediaUrl = item['media_url'];
+    bool uploading = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Edit Portfolio Item', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                  const SizedBox(height: 20),
+                  AppTextField(label: 'Title', hint: 'My Instagram Reel', controller: titleCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Platform', hint: 'Instagram', controller: platformCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Reel / Post URL', hint: 'https://instagram.com/p/...', controller: postUrlCtrl),
+                  const SizedBox(height: 16),
+                  
+                  Text('COVER PHOTO', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  
+                  Container(
+                    height: 120,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: selectedMediaUrl != null && selectedMediaUrl!.isNotEmpty
+                        ? AppImage(
+                            url: selectedMediaUrl!,
+                            fit: BoxFit.cover,
+                            fallback: Center(child: Icon(Iconsax.gallery, size: 40, color: AppColors.textMuted)),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Iconsax.image, size: 36, color: AppColors.textMuted),
+                                const SizedBox(height: 8),
+                                Text('No cover photo selected', style: AppTextStyles.captionSm),
+                              ],
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: uploading
+                              ? null
+                              : () async {
+                                  final ImageSource? source = await showModalBottomSheet<ImageSource>(
+                                    context: context,
+                                    backgroundColor: AppColors.surface,
+                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                                    builder: (ctx2) => SafeArea(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(Iconsax.camera),
+                                            title: const Text('Take Photo'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.camera),
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Iconsax.image),
+                                            title: const Text('Choose from Gallery'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.gallery),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                  if (source == null) return;
+                                  setDialogState(() => uploading = true);
+                                  try {
+                                    final user = ref.read(authProvider).user!;
+                                    final picker = ImagePicker();
+                                    final XFile? image = await picker.pickImage(source: source, imageQuality: 80);
+                                    if (image != null) {
+                                      final bytes = await image.readAsBytes();
+                                      final fileExt = image.name.split('.').last.toLowerCase();
+                                      final cleanExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(fileExt) ? fileExt : 'jpg';
+                                      final fileName = 'portfolio_${DateTime.now().microsecondsSinceEpoch}.$cleanExt';
+                                      final path = '${user.id}/$fileName';
+                                      final publicUrl = await StorageService().uploadFile(
+                                        'portfolio',
+                                        path,
+                                        bytes,
+                                        'image/$cleanExt',
+                                      );
+                                      setDialogState(() {
+                                        selectedMediaUrl = publicUrl;
+                                        urlCtrl.text = publicUrl;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    print('Error uploading photo: $e');
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to upload photo: $e')),
+                                      );
+                                    }
+                                  } finally {
+                                    setDialogState(() => uploading = false);
+                                  }
+                                },
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface2,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Center(
+                              child: uploading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Iconsax.document_upload, size: 20, color: AppColors.accent),
+                                        const SizedBox(height: 4),
+                                        const Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ),
+                        ...existingPhotos.map((photoUrl) {
+                          final isSelected = selectedMediaUrl == photoUrl;
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                selectedMediaUrl = photoUrl;
+                                urlCtrl.text = photoUrl;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 10),
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.accent : AppColors.border,
+                                  width: isSelected ? 2.0 : 1.0,
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  AppImage(
+                                    url: photoUrl,
+                                    fit: BoxFit.cover,
+                                    fallback: Center(child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted)),
+                                  ),
+                                  if (isSelected)
+                                    Container(
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      child: const Center(
+                                        child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  AppTextField(
+                    label: 'Or Custom Image URL',
+                    hint: 'https://...',
+                    controller: urlCtrl,
+                    onChanged: (val) {
+                      setDialogState(() {
+                        selectedMediaUrl = val.trim();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppButton(
+                          label: 'Delete',
+                          isPrimary: false,
+                          onTap: () async {
+                            final confirmed = await showPremiumConfirmDialog(
+                              context: context,
+                              title: 'Delete Portfolio Item',
+                              message: 'Are you sure you want to delete "${item['title'] ?? 'Untitled'}"?',
+                              confirmLabel: 'Delete',
+                              isDestructive: true,
+                              icon: Iconsax.trash,
+                            );
+                            if (confirmed == true) {
+                              try {
+                                await PortfolioService().deletePortfolioItem(item['id'] as String);
+                                if (mounted) Navigator.pop(ctx);
+                                _load();
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to delete: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppButton(
+                          label: 'Save',
+                          onTap: () async {
+                            if (titleCtrl.text.isNotEmpty) {
+                              try {
+                                await PortfolioService().updatePortfolioItem(item['id'] as String, {
+                                  'title': titleCtrl.text.trim(),
+                                  'platform': platformCtrl.text.trim(),
+                                  'media_url': urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
+                                  'post_url': postUrlCtrl.text.trim().isEmpty ? null : postUrlCtrl.text.trim(),
+                                });
+                                if (mounted) Navigator.pop(ctx);
+                                _load();
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to save: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1187,6 +1809,43 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     super.dispose();
   }
 
+  Widget _buildAppBarIcon({
+    required IconData icon,
+    int badgeCount = 0,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(icon, size: 24, color: AppColors.textPrimary),
+            if (badgeCount > 0)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 7,
+                    minHeight: 7,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
@@ -1226,6 +1885,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     }
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -1237,9 +1897,9 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
           child: AppBar(
             automaticallyImplyLeading: false,
             leading: _isEditing
-                ? IconButton(
-                    icon: const Icon(Iconsax.arrow_left),
-                    onPressed: () {
+                ? _buildAppBarIcon(
+                    icon: Iconsax.arrow_left,
+                    onTap: () {
                       setState(() => _isEditing = false);
                     },
                   )
@@ -1272,48 +1932,20 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
             backgroundColor: Colors.transparent,
             actions: [
               if (_isEditing)
-                IconButton(
-                  icon: const Icon(Iconsax.close_circle),
-                  onPressed: () => setState(() => _isEditing = false),
+                _buildAppBarIcon(
+                  icon: Iconsax.close_circle,
+                  onTap: () => setState(() => _isEditing = false),
                 )
               else ...[
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Iconsax.notification, size: 20),
-                      onPressed: () => context.push('/influencer/notifications'),
-                    ),
-                    if (unreadNotifications > 0)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 12,
-                            minHeight: 12,
-                          ),
-                          child: Text(
-                            unreadNotifications > 9 ? '9+' : '$unreadNotifications',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 7,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
+                _buildAppBarIcon(
+                  icon: Iconsax.notification,
+                  badgeCount: unreadNotifications,
+                  onTap: () => context.push('/influencer/notifications'),
                 ),
-                IconButton(
-                  icon: const Icon(Iconsax.setting_2, size: 20),
-                  onPressed: () => context.push('/influencer/settings'),
+                const SizedBox(width: 8),
+                _buildAppBarIcon(
+                  icon: Iconsax.setting_2,
+                  onTap: () => context.push('/influencer/settings'),
                 ),
               ],
             ],
@@ -1457,9 +2089,19 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF14141E) : const Color(0xFFF2F2F7),
+                            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark ? Colors.black.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1478,7 +2120,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF2ECC71),
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: isDark ? const Color(0xFF14141E) : Colors.white, width: 2),
+                                            border: Border.all(color: isDark ? const Color(0xFF0F0F11) : Colors.white, width: 2),
                                           ),
                                         ),
                                       ),
@@ -1533,7 +2175,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(Iconsax.edit, size: 16, color: AppColors.accent),
@@ -1551,14 +2193,21 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 ),
                                 const SizedBox(height: 16),
                               ],
-                              Divider(color: AppColors.border, height: 1),
+                              Divider(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                height: 1,
+                              ),
                               const SizedBox(height: 16),
                               // Stats (divided by vertical lines)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   _profileStatItem('Followers', followersText),
-                                  Container(width: 1, height: 28, color: AppColors.border),
+                                  Container(
+                                    width: 1,
+                                    height: 28,
+                                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                  ),
                                   _profileStatItem(
                                     'Niches',
                                     '${niches.length}',
@@ -1571,7 +2220,11 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                       );
                                     },
                                   ),
-                                  Container(width: 1, height: 28, color: AppColors.border),
+                                  Container(
+                                    width: 1,
+                                    height: 28,
+                                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                  ),
                                   _profileStatItem(
                                     'Platforms',
                                     '${platforms.length}',
@@ -1588,7 +2241,11 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                       );
                                     },
                                   ),
-                                  Container(width: 1, height: 28, color: AppColors.border),
+                                  Container(
+                                    width: 1,
+                                    height: 28,
+                                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                  ),
                                   _profileStatItem('Applied', '$_appsCount'),
                                 ],
                               ),
@@ -1602,16 +2259,16 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF8E2DE2), Color(0xFF4A00E0)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                              color: isDark ? const Color(0xFF0F0F11) : Colors.white,
                               borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                width: 1.2,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4A00E0).withOpacity(0.3),
-                                  blurRadius: 10,
+                                  color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                                  blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
@@ -1621,10 +2278,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: AppColors.purple.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Iconsax.star5, color: Colors.white, size: 20),
+                                  child: Icon(Iconsax.cards, color: AppColors.purple, size: 20),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
@@ -1632,18 +2289,18 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'My Digital Media Kit',
-                                        style: AppTextStyles.label.copyWith(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                        'My Digital Card',
+                                        style: AppTextStyles.label.copyWith(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         'Showcase your stats and portfolio to brands',
-                                        style: AppTextStyles.captionSm.copyWith(color: Colors.white.withOpacity(0.8), fontSize: 11),
+                                        style: AppTextStyles.captionSm.copyWith(color: AppColors.textSecondary, fontSize: 11),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+                                Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textSecondary, size: 16),
                               ],
                             ),
                           ),
@@ -1656,7 +2313,6 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             _capsuleButton(
                               'Portfolio',
                               Iconsax.gallery,
-                              isDark ? const Color(0xFF2C2815) : const Color(0xFFFFF9E6),
                               isDark ? const Color(0xFFF5C518) : const Color(0xFFDDA600),
                               () => context.push('/influencer/portfolio'),
                             ),
@@ -1664,7 +2320,6 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             _capsuleButton(
                               'Chats',
                               Iconsax.message,
-                              isDark ? const Color(0xFF152C22) : const Color(0xFFE6F7F0),
                               isDark ? const Color(0xFF2ECC71) : const Color(0xFF1E8449),
                               () => context.go('/influencer/chats'),
                             ),
@@ -1672,7 +2327,6 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             _capsuleButton(
                               'Settings',
                               Iconsax.setting_2,
-                              isDark ? const Color(0xFF15222C) : const Color(0xFFE6F0FA),
                               isDark ? const Color(0xFF3498DB) : const Color(0xFF21618C),
                               () => context.push('/influencer/settings'),
                             ),
@@ -1702,9 +2356,12 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             width: double.infinity,
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: isDark ? const Color(0xFF0F0F11) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                width: 1.2,
+                              ),
                             ),
                             child: Column(
                               children: [
@@ -1756,17 +2413,40 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                         Text('Menu', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
                         Material(
-                          color: AppColors.surface,
+                          color: isDark ? const Color(0xFF0F0F11) : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           clipBehavior: Clip.antiAlias,
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                width: 1.2,
+                              ),
                             ),
                             child: Column(
                               children: [
                                 _menuTile('Discover Brands', Iconsax.briefcase, () => context.go('/influencer/brands')),
+                                _menuDivider(),
+                                _menuTile(
+                                  'Following',
+                                  Iconsax.people,
+                                  () => context.push('/influencer/brands?tab=following'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '${_followingBrands.length} ${_followingBrands.length == 1 ? 'brand' : 'brands'}',
+                                        style: AppTextStyles.captionSm.copyWith(
+                                          color: AppColors.accent,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+                                    ],
+                                  ),
+                                ),
                                 _menuDivider(),
                                 _menuTile('Help Center', Iconsax.info_circle, () => context.push('/support')),
                                 _menuDivider(),
@@ -1792,126 +2472,6 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Following', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
-                            Text(
-                              '${_followingBrands.length} ${_followingBrands.length == 1 ? 'brand' : 'brands'}',
-                              style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (_followingBrands.isEmpty)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(Iconsax.people, color: AppColors.textMuted, size: 36),
-                                const SizedBox(height: 12),
-                                Text('Not following any brands yet', style: AppTextStyles.label),
-                                const SizedBox(height: 4),
-                                Text('Follow brands to stay updated with their latest campaigns.',
-                                    style: AppTextStyles.captionSm, textAlign: TextAlign.center),
-                                const SizedBox(height: 12),
-                                OutlinedButton.icon(
-                                  icon: const Icon(Iconsax.briefcase, size: 16),
-                                  label: const Text('Discover Brands'),
-                                  onPressed: () => context.go('/influencer/brands'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.accent,
-                                    side: BorderSide(color: AppColors.accent),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          SizedBox(
-                            height: 130,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _followingBrands.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 12),
-                              itemBuilder: (context, i) {
-                                final brand = _followingBrands[i];
-                                final brandId = brand['id'] as String? ?? '';
-                                return Container(
-                                  width: 120,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surface,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: AppColors.border),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () => context.push('/influencer/brands/$brandId'),
-                                            child: AppAvatar(
-                                              url: brand['avatar_url'],
-                                              fallbackText: brand['display_name'] ?? 'B',
-                                              size: 48,
-                                            ),
-                                          ),
-                                          Positioned(
-                                            top: -2,
-                                            right: -2,
-                                            child: GestureDetector(
-                                              onTap: () => _unfollowBrand(brandId),
-                                              child: Container(
-                                                padding: const EdgeInsets.all(3),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.error,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.close,
-                                                  size: 10,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      GestureDetector(
-                                        onTap: () => context.push('/influencer/brands/$brandId'),
-                                        child: Text(
-                                          brand['display_name'] ?? '',
-                                          style: AppTextStyles.label.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        brand['industry'] ?? '',
-                                        style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted, fontSize: 10),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
                       ],
               ),
             ),
@@ -1950,25 +2510,37 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     );
   }
 
-  Widget _capsuleButton(String label, IconData icon, Color bg, Color fg, VoidCallback onTap) {
+  Widget _capsuleButton(String label, IconData icon, Color accentColor, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(16),
+            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: fg, size: 16),
+              Icon(icon, color: accentColor, size: 16),
               const SizedBox(width: 6),
               Text(
                 label,
-                style: TextStyle(
-                  color: fg,
+                style: GoogleFonts.inter(
+                  color: isDark ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -1980,12 +2552,12 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     );
   }
 
-  Widget _menuTile(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false}) {
+  Widget _menuTile(String title, IconData icon, VoidCallback onTap, {bool isDestructive = false, Widget? trailing}) {
     final color = isDestructive ? AppColors.error : AppColors.textPrimary;
     return ListTile(
       leading: Icon(icon, color: isDestructive ? AppColors.error : AppColors.accent, size: 20),
       title: Text(title, style: AppTextStyles.label.copyWith(color: color, fontSize: 13, fontWeight: FontWeight.w600)),
-      trailing: Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+      trailing: trailing ?? Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
       onTap: onTap,
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1993,66 +2565,382 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
   }
 
   Widget _menuDivider() {
-    return Divider(color: AppColors.border, height: 1, indent: 16, endIndent: 16);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Divider(
+      color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+      height: 1,
+      indent: 16,
+      endIndent: 16,
+    );
   }
 
   Widget _buildPortfolioCard(BuildContext context, Map<String, dynamic> item) {
     final mediaUrl = item['media_url'] as String?;
+    final postUrl = item['post_url'] as String?;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AspectRatio(
       aspectRatio: 0.85,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AppImage(
-                url: mediaUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                fallback: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.purple.withValues(alpha: 0.1),
-                        AppColors.indigo.withValues(alpha: 0.1),
-                      ],
+      child: GestureDetector(
+        onTap: () => _showEditDialog(item),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AppImage(
+                  url: mediaUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  fallback: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.purple.withValues(alpha: 0.1),
+                          AppColors.indigo.withValues(alpha: 0.1),
+                        ],
+                      ),
                     ),
-                  ),
-                  child: Center(
-                    child: Icon(Iconsax.gallery, color: AppColors.textMuted),
+                    child: Center(
+                      child: Icon(Iconsax.gallery, color: AppColors.textMuted),
+                    ),
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item['title'] ?? 'Portfolio Item',
+                            style: AppTextStyles.label.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (postUrl != null && postUrl.trim().isNotEmpty)
+                          Icon(Iconsax.link, size: 12, color: AppColors.accent),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item['platform'] ?? item['description'] ?? '',
+                      style: AppTextStyles.captionSm.copyWith(fontSize: 10),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog(Map<String, dynamic> item) async {
+    final titleCtrl = TextEditingController(text: item['title'] ?? '');
+    final platformCtrl = TextEditingController(text: item['platform'] ?? '');
+    final urlCtrl = TextEditingController(text: item['media_url'] ?? '');
+    final postUrlCtrl = TextEditingController(text: item['post_url'] ?? '');
+
+    final existingPhotos = _portfolio
+        .map((e) => e['media_url'] as String?)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toSet()
+        .toList();
+
+    String? selectedMediaUrl = item['media_url'];
+    bool uploading = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.85,
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.xl),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    item['title'] ?? 'Portfolio Item',
-                    style: AppTextStyles.label.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Text('Edit Portfolio Item', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                  const SizedBox(height: 20),
+                  AppTextField(label: 'Title', hint: 'My Instagram Reel', controller: titleCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Platform', hint: 'Instagram', controller: platformCtrl),
+                  const SizedBox(height: 12),
+                  AppTextField(label: 'Reel / Post URL', hint: 'https://instagram.com/p/...', controller: postUrlCtrl),
+                  const SizedBox(height: 16),
+                  
+                  Text('COVER PHOTO', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  
+                  Container(
+                    height: 120,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: selectedMediaUrl != null && selectedMediaUrl!.isNotEmpty
+                        ? AppImage(
+                            url: selectedMediaUrl!,
+                            fit: BoxFit.cover,
+                            fallback: Center(child: Icon(Iconsax.gallery, size: 40, color: AppColors.textMuted)),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Iconsax.image, size: 36, color: AppColors.textMuted),
+                                const SizedBox(height: 8),
+                                Text('No cover photo selected', style: AppTextStyles.captionSm),
+                              ],
+                            ),
+                          ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item['description'] ?? '',
-                    style: AppTextStyles.captionSm.copyWith(fontSize: 10),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 12),
+                  
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: uploading
+                              ? null
+                              : () async {
+                                  final ImageSource? source = await showModalBottomSheet<ImageSource>(
+                                    context: context,
+                                    backgroundColor: AppColors.surface,
+                                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                                    builder: (ctx2) => SafeArea(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(Iconsax.camera),
+                                            title: const Text('Take Photo'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.camera),
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(Iconsax.image),
+                                            title: const Text('Choose from Gallery'),
+                                            onTap: () => Navigator.pop(ctx2, ImageSource.gallery),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                  if (source == null) return;
+                                  setDialogState(() => uploading = true);
+                                  try {
+                                    final user = ref.read(authProvider).user!;
+                                    final picker = ImagePicker();
+                                    final XFile? image = await picker.pickImage(source: source, imageQuality: 80);
+                                    if (image != null) {
+                                      final bytes = await image.readAsBytes();
+                                      final fileExt = image.name.split('.').last.toLowerCase();
+                                      final cleanExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(fileExt) ? fileExt : 'jpg';
+                                      final fileName = 'portfolio_${DateTime.now().microsecondsSinceEpoch}.$cleanExt';
+                                      final path = '${user.id}/$fileName';
+                                      final publicUrl = await StorageService().uploadFile(
+                                        'portfolio',
+                                        path,
+                                        bytes,
+                                        'image/$cleanExt',
+                                      );
+                                      setDialogState(() {
+                                        selectedMediaUrl = publicUrl;
+                                        urlCtrl.text = publicUrl;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    print('Error uploading photo: $e');
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to upload photo: $e')),
+                                      );
+                                    }
+                                  } finally {
+                                    setDialogState(() => uploading = false);
+                                  }
+                                },
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: AppColors.surface2,
+                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Center(
+                              child: uploading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Iconsax.document_upload, size: 20, color: AppColors.accent),
+                                        const SizedBox(height: 4),
+                                        const Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ),
+                        ...existingPhotos.map((photoUrl) {
+                          final isSelected = selectedMediaUrl == photoUrl;
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                selectedMediaUrl = photoUrl;
+                                urlCtrl.text = photoUrl;
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(left: 10),
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.accent : AppColors.border,
+                                  width: isSelected ? 2.0 : 1.0,
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  AppImage(
+                                    url: photoUrl,
+                                    fit: BoxFit.cover,
+                                    fallback: Center(child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted)),
+                                  ),
+                                  if (isSelected)
+                                    Container(
+                                      color: Colors.black.withValues(alpha: 0.3),
+                                      child: const Center(
+                                        child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  AppTextField(
+                    label: 'Or Custom Image URL',
+                    hint: 'https://...',
+                    controller: urlCtrl,
+                    onChanged: (val) {
+                      setDialogState(() {
+                        selectedMediaUrl = val.trim();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppButton(
+                          label: 'Delete',
+                          isPrimary: false,
+                          onTap: () async {
+                            final confirmed = await showPremiumConfirmDialog(
+                              context: context,
+                              title: 'Delete Portfolio Item',
+                              message: 'Are you sure you want to delete "${item['title'] ?? 'Untitled'}"?',
+                              confirmLabel: 'Delete',
+                              isDestructive: true,
+                              icon: Iconsax.trash,
+                            );
+                            if (confirmed == true) {
+                              try {
+                                await PortfolioService().deletePortfolioItem(item['id'] as String);
+                                if (mounted) Navigator.pop(ctx);
+                                _loadDashboardData();
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to delete: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppButton(
+                          label: 'Save',
+                          onTap: () async {
+                            if (titleCtrl.text.isNotEmpty) {
+                              try {
+                                await PortfolioService().updatePortfolioItem(item['id'] as String, {
+                                  'title': titleCtrl.text.trim(),
+                                  'platform': platformCtrl.text.trim(),
+                                  'media_url': urlCtrl.text.trim().isEmpty ? null : urlCtrl.text.trim(),
+                                  'post_url': postUrlCtrl.text.trim().isEmpty ? null : postUrlCtrl.text.trim(),
+                                });
+                                if (mounted) Navigator.pop(ctx);
+                                _loadDashboardData();
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to save: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -2073,7 +2961,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F0F1A) : Colors.white,
+            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: EdgeInsets.fromLTRB(
@@ -2091,7 +2979,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -2102,18 +2990,15 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isDark 
-                        ? [const Color(0xFF1F1F35), const Color(0xFF151525)] 
-                        : [const Color(0xFFF9F9FB), Colors.white],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: isDark ? const Color(0xFF16161A) : const Color(0xFFF9F9FB),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                    width: 1.2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -2150,9 +3035,17 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _mediaKitStatItem('FOLLOWERS', followersText),
-                        Container(width: 1, height: 24, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                        ),
                         _mediaKitStatItem('ENGAGEMENT', '4.8%'),
-                        Container(width: 1, height: 24, color: AppColors.border),
+                        Container(
+                          width: 1,
+                          height: 24,
+                          color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                        ),
                         _mediaKitStatItem('CHANNELS', '${platforms.length}'),
                       ],
                     ),
@@ -2171,7 +3064,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                 ),
                 const SizedBox(height: 20),
               ],
-
+ 
               // Niches Section
               if (niches.isNotEmpty) ...[
                 Text('NICHES & INDUSTRIES', style: AppTextStyles.overline.copyWith(color: AppColors.textMuted)),
@@ -2183,7 +3076,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                 ),
                 const SizedBox(height: 20),
               ],
-
+ 
               // Portfolio Highlights Section
               Text('PORTFOLIO HIGHLIGHTS', style: AppTextStyles.overline.copyWith(color: AppColors.textMuted)),
               const SizedBox(height: 8),
@@ -2207,9 +3100,12 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                         width: 100,
                         margin: const EdgeInsets.only(right: 12),
                         decoration: BoxDecoration(
-                          color: AppColors.surface2,
+                          color: isDark ? const Color(0xFF16161A) : const Color(0xFFF9F9FB),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.border),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                            width: 1.2,
+                          ),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: AppImage(
@@ -2227,12 +3123,12 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                 children: [
                   Expanded(
                     child: AppButton(
-                      label: 'Share Media Kit',
+                      label: 'Share Digital Card',
                       icon: Iconsax.export_1,
                       onTap: () {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Media kit link copied to clipboard!')),
+                          const SnackBar(content: Text('Digital card link copied to clipboard!')),
                         );
                       },
                     ),
@@ -2253,7 +3149,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       },
     );
   }
-
+ 
   Widget _mediaKitStatItem(String label, String value) {
     return Column(
       children: [

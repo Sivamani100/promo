@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -547,49 +548,67 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
       itemCount: _portfolio.length,
       itemBuilder: (context, i) {
         final item = _portfolio[i];
-        return Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  color: AppColors.surface2,
-                  width: double.infinity,
-                  child: AppImage(
-                    url: item['media_url'],
-                    fit: BoxFit.cover,
-                    fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+        final postUrl = item['post_url'] as String?;
+        return GestureDetector(
+          onTap: () async {
+            if (postUrl != null && postUrl.trim().isNotEmpty) {
+              final uri = Uri.tryParse(postUrl.trim());
+              if (uri != null && await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              border: Border.all(color: AppColors.border),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    color: AppColors.surface2,
+                    width: double.infinity,
+                    child: AppImage(
+                      url: item['media_url'],
+                      fit: BoxFit.cover,
+                      fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 2),
-                    Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
-                    if (item['engagement_rate'] != null) ...[
-                      const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
-                          const SizedBox(width: 4),
-                          Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                          Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
+                          if (postUrl != null && postUrl.trim().isNotEmpty)
+                            Icon(Iconsax.link, size: 12, color: AppColors.accent),
                         ],
                       ),
+                      if (item['engagement_rate'] != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
+                            const SizedBox(width: 4),
+                            Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,11 +92,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
                 const Duration(seconds: 6),
                 onTimeout: () {
                   print('[AUTH] _loadProfile manual exchange timed out');
-                  state = AuthState(
-                    user: response.session.user,
-                    isLoading: false,
-                    error: 'Profile load timeout',
-                  );
+                  if (state.profile == null) {
+                    state = AuthState(
+                      user: response.session.user,
+                      isLoading: false,
+                      error: 'Profile load timeout',
+                    );
+                  }
                 },
               );
             }
@@ -117,15 +120,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
               isRecoveryMode: true,
             );
           } else {
+            // Restore from SharedPreferences first to bypass network call delay
+            try {
+              final prefs = await SharedPreferences.getInstance();
+              final cachedProfileStr = prefs.getString('cached_profile_${user.id}');
+              if (cachedProfileStr != null) {
+                final cachedProfile = jsonDecode(cachedProfileStr) as Map<String, dynamic>;
+                final cachedRole = cachedProfile['role'] as String?;
+                final cachedOnboarding = prefs.getBool('onboarding_complete_${user.id}') ?? (cachedProfile['onboarding_complete'] == true);
+                print('[AUTH] Restored cached profile on startup: role=$cachedRole');
+                state = AuthState(
+                  user: user,
+                  profile: cachedProfile,
+                  role: cachedRole,
+                  isLoading: false,
+                  isOnboardingComplete: cachedOnboarding,
+                );
+              }
+            } catch (e) {
+              print('[AUTH] Startup cache restore error: $e');
+            }
+
             await _loadProfile(user).timeout(
               const Duration(seconds: 6),
               onTimeout: () {
                 print('[AUTH] _loadProfile startup timed out');
-                state = AuthState(
-                  user: user,
-                  isLoading: false,
-                  error: 'Profile load timeout',
-                );
+                if (state.profile == null) {
+                  state = AuthState(
+                    user: user,
+                    isLoading: false,
+                    error: 'Profile load timeout',
+                  );
+                }
               },
             );
           }
@@ -165,12 +191,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
               const Duration(seconds: 6),
               onTimeout: () {
                 print('[AUTH] _loadProfile listener timed out');
-                state = AuthState(
-                  user: newUser,
-                  isLoading: false,
-                  isRecoveryMode: isRecovery,
-                  error: 'Profile load timeout',
-                );
+                if (state.profile == null) {
+                  state = AuthState(
+                    user: newUser,
+                    isLoading: false,
+                    isRecoveryMode: isRecovery,
+                    error: 'Profile load timeout',
+                  );
+                }
               },
             );
           }
@@ -185,11 +213,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _loadProfile(User user, {bool isRecoveryMode = false}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    // If we don't have a profile in state, try reading cache first to avoid flashing loading
+    if (state.profile == null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedProfileStr = prefs.getString('cached_profile_${user.id}');
+        if (cachedProfileStr != null) {
+          final cachedProfile = jsonDecode(cachedProfileStr) as Map<String, dynamic>;
+          final cachedRole = cachedProfile['role'] as String?;
+          final cachedOnboarding = prefs.getBool('onboarding_complete_${user.id}') ?? (cachedProfile['onboarding_complete'] == true);
+          state = state.copyWith(
+            user: user,
+            profile: cachedProfile,
+            role: cachedRole,
+            isLoading: false,
+            isOnboardingComplete: cachedOnboarding,
+          );
+        }
+      } catch (e) {
+        print('[AUTH] Error loading cached profile in _loadProfile: $e');
+      }
+    }
+
+    state = state.copyWith(isLoading: state.profile == null, error: null);
     try {
       final profile = await _authService.fetchProfile(user.id);
       
       final prefs = await SharedPreferences.getInstance();
+      if (profile != null) {
+        await prefs.setString('cached_profile_${user.id}', jsonEncode(profile));
+      }
       final localComplete = prefs.getBool('onboarding_complete_${user.id}') ?? false;
       final bio = profile?['bio']?.toString().trim();
       final hasBio = bio != null && bio.isNotEmpty;
@@ -299,6 +352,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
+    final userId = state.user?.id;
+    if (userId != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('cached_profile_$userId');
+        await prefs.remove('onboarding_complete_$userId');
+      } catch (e) {
+        print('[AUTH] Error clearing cache on signOut: $e');
+      }
+    }
     try {
       if (!kIsWeb) {
         final googleSignIn = GoogleSignIn();

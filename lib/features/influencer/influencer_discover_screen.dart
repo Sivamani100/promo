@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -334,6 +337,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
@@ -351,7 +355,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                 Text(
                   'Discover',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -359,7 +363,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                 Text(
                   '.',
                   style: GoogleFonts.inter(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,
                   ),
@@ -370,20 +374,24 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
             backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: Icon(_showMap ? Iconsax.menu : Iconsax.map, color: _showMap ? AppColors.accent : AppColors.textPrimary),
+                icon: Icon(
+                  _showMap ? Iconsax.menu : Iconsax.map,
+                  size: 24,
+                  color: _showMap ? AppColors.accent : AppColors.textPrimary,
+                ),
                 onPressed: () => setState(() => _showMap = !_showMap),
               ),
               Stack(
                 alignment: Alignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Iconsax.notification, size: 20),
+                    icon: const Icon(Iconsax.notification, size: 24),
                     onPressed: () => context.push('/influencer/notifications'),
                   ),
                   if (unreadNotifications > 0)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 6,
+                      top: 6,
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: const BoxDecoration(
@@ -408,7 +416,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                 ],
               ),
               IconButton(
-                icon: const Icon(Iconsax.setting_2, size: 20),
+                icon: const Icon(Iconsax.setting_2, size: 24),
                 onPressed: () => context.push('/influencer/settings'),
               ),
             ],
@@ -417,10 +425,15 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
       ),
       body: _loading
           ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: AppSpacing.pageMarginVertical),
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerCampaignCard(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical,
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+              ),
+              itemCount: 6,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const _ShimmerBentoListCard(),
             )
           : _showMap
               ? const DiscoverMapView()
@@ -428,93 +441,74 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                   onRefresh: _load,
                   child: Column(
                     children: [
-                      // Search and Filter Bar
+                      // Combined Search and Filter Bar
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _searchCtrl,
-                                onChanged: (val) => setState(() {}),
-                                decoration: InputDecoration(
-                                  hintText: 'Search campaigns...',
-                                  prefixIcon: const Icon(Iconsax.search_normal_1, size: 18),
-                                  suffixIcon: _searchCtrl.text.isNotEmpty
-                                      ? IconButton(
-                                          icon: const Icon(Icons.clear_rounded, size: 16),
-                                          onPressed: () {
-                                            _searchCtrl.clear();
-                                            setState(() {});
-                                          },
-                                        )
-                                      : null,
-                                  filled: true,
-                                  fillColor: AppColors.surface,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                    borderSide: BorderSide(color: AppColors.border),
+                        child: TextField(
+                          controller: _searchCtrl,
+                          onChanged: (val) => setState(() {}),
+                          decoration: InputDecoration(
+                            hintText: 'Search campaigns...',
+                            hintStyle: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+                            prefixIcon: Icon(Iconsax.search_normal_1, size: 18, color: AppColors.textSecondary),
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_searchCtrl.text.isNotEmpty)
+                                  IconButton(
+                                    icon: Icon(Icons.clear_rounded, size: 16, color: AppColors.textSecondary),
+                                    onPressed: () {
+                                      _searchCtrl.clear();
+                                      setState(() {});
+                                    },
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                    borderSide: BorderSide(color: AppColors.border),
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: GestureDetector(
+                                    onTap: _showAdvancedFiltersBottomSheet,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: _hasAnyFilterActive 
+                                            ? AppColors.accent.withOpacity(0.1) 
+                                            : AppColors.surface2,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: _hasAnyFilterActive 
+                                              ? AppColors.accent 
+                                              : AppColors.border,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Iconsax.filter_search,
+                                        size: 16,
+                                        color: _hasAnyFilterActive 
+                                            ? AppColors.accent 
+                                            : AppColors.textSecondary,
+                                      ),
+                                    ),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
                                 ),
-                                style: AppTextStyles.bodySm,
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 10),
-                            IconButton(
-                              icon: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: _hasAnyFilterActive ? AppColors.accent.withOpacity(0.1) : AppColors.surface,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: _hasAnyFilterActive ? AppColors.accent : AppColors.border,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Iconsax.filter_search,
-                                  size: 18,
-                                  color: _hasAnyFilterActive ? AppColors.accent : AppColors.textPrimary,
-                                ),
-                              ),
-                              onPressed: _showAdvancedFiltersBottomSheet,
+                            filled: true,
+                            fillColor: AppColors.surface,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: AppColors.border, width: 1.2),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // Category chips
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AppChip(
-                                label: '✨ Matched Only',
-                                selected: _matchedOnly,
-                                color: _matchedOnly ? AppColors.accent : null,
-                                onTap: () => setState(() => _matchedOnly = !_matchedOnly),
-                              ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: AppColors.border, width: 1.2),
                             ),
-                            ...[null, 'Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'].map((c) => Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: AppChip(
-                                label: c ?? 'All',
-                                selected: !_matchedOnly && _categoryFilter == c,
-                                color: c != null ? AppColors.getCategoryColor(c) : null,
-                                onTap: () => setState(() {
-                                  _categoryFilter = c;
-                                  _matchedOnly = false;
-                                }),
-                              ),
-                            )).toList(),
-                          ],
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: AppColors.accent, width: 1.2),
+                            ),
+                          ),
+                          style: AppTextStyles.bodySm,
                         ),
                       ),
 
@@ -561,7 +555,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                         ),
                       ),
                       
-                      // Card list
+                      // Bento List Card list
                       Expanded(
                         child: filtered.isEmpty
                             ? const AppEmptyState(icon: Icons.campaign_rounded, title: 'No campaigns found')
@@ -573,17 +567,330 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                                   AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
                                 ),
                                 itemCount: filtered.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                                itemBuilder: (_, i) => CampaignCardWidget(
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (context, i) => _BentoCampaignListCard(
                                   card: filtered[i],
                                   isApplied: _appliedCardIds.contains(filtered[i]['id']),
                                   onTap: () => context.push('/influencer/discover/${filtered[i]['id']}'),
+                                  animationDelayIndex: i,
                                 ),
                               ),
                       ),
                     ],
                   ),
                 ),
+    );
+  }
+}
+
+// ---------- _BentoCampaignListCard ----------
+class _BentoCampaignListCard extends StatelessWidget {
+  final Map<String, dynamic> card;
+  final bool isApplied;
+  final VoidCallback? onTap;
+  final int animationDelayIndex;
+
+  const _BentoCampaignListCard({
+    required this.card,
+    required this.isApplied,
+    this.onTap,
+    this.animationDelayIndex = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final brand = card['brand'] as Map<String, dynamic>?;
+    final category = card['category'] as String? ?? '';
+    final categoryColor = AppColors.getCategoryColor(category);
+    final budgetRange = card['budget_range'] as String? ?? 'Open';
+    final preferredLocation = card['preferred_location'] as String? ?? 'Anywhere';
+    final isDark = AppColors.isDarkMode;
+
+    // Platform requirements icon
+    final platforms = (card['platform_requirements'] as List?)?.cast<String>() ?? [];
+    Widget platformIcon = const SizedBox.shrink();
+    if (platforms.isNotEmpty) {
+      final p = platforms.first.toLowerCase();
+      if (p.contains('instagram')) {
+        platformIcon = Icon(Iconsax.instagram, size: 13, color: AppColors.textSecondary);
+      } else if (p.contains('youtube')) {
+        platformIcon = Icon(Icons.video_library_outlined, size: 13, color: AppColors.textSecondary);
+      } else if (p.contains('tiktok')) {
+        platformIcon = Icon(Icons.music_note_outlined, size: 13, color: AppColors.textSecondary);
+      } else if (p.contains('twitter') || p.contains('x')) {
+        platformIcon = Icon(Icons.close_rounded, size: 13, color: AppColors.textSecondary);
+      } else {
+        platformIcon = Icon(Iconsax.global, size: 13, color: AppColors.textSecondary);
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.02),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  // Cover Image on left
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          width: 88,
+                          height: 88,
+                          color: AppColors.surface2,
+                          child: isValidImageUrl(card['cover_image_url'])
+                              ? CachedNetworkImage(
+                                  imageUrl: card['cover_image_url'],
+                                  fit: BoxFit.cover,
+                                )
+                              : Center(
+                                  child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
+                                ),
+                        ),
+                      ),
+                      if (isApplied)
+                        Positioned(
+                          top: -4,
+                          left: -4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'APPLIED',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 7.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  // Details on right
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Brand and category row
+                        Row(
+                          children: [
+                            if (brand != null) ...[
+                              AppAvatar(
+                                url: brand['avatar_url'],
+                                fallbackText: brand['display_name'] ?? 'B',
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        brand['display_name'] ?? 'Brand',
+                                        style: AppTextStyles.captionSm.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 11,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (brand['is_verified'] == true) ...[
+                                      const SizedBox(width: 3),
+                                      const VerificationBadge(size: 9),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: categoryColor.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: categoryColor.withOpacity(0.15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w800,
+                                  color: categoryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        // Title
+                        Text(
+                          card['title'] ?? '',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        // Location, Platform & Budget
+                        Row(
+                          children: [
+                            Icon(
+                              Iconsax.location,
+                              size: 11,
+                              color: AppColors.textMuted,
+                            ),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: Text(
+                                preferredLocation,
+                                style: AppTextStyles.captionSm.copyWith(
+                                  fontSize: 10,
+                                  color: AppColors.textMuted,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (platforms.isNotEmpty) ...[
+                              platformIcon,
+                              const SizedBox(width: 8),
+                            ],
+                            Text(
+                              budgetRange,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(
+          duration: const Duration(milliseconds: 400),
+          delay: Duration(milliseconds: 30 * animationDelayIndex),
+        )
+        .slideY(
+          begin: 0.1,
+          end: 0.0,
+          curve: Curves.easeOutCubic,
+          duration: const Duration(milliseconds: 400),
+          delay: Duration(milliseconds: 30 * animationDelayIndex),
+        );
+  }
+}
+
+// ---------- _ShimmerBentoListCard ----------
+class _ShimmerBentoListCard extends StatelessWidget {
+  const _ShimmerBentoListCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+    final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
+
+    return AppShimmer(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: shimmerBg,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: borderCol, width: 1.2),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const ShimmerBox(width: 18, height: 18, borderRadius: 9),
+                          const SizedBox(width: 6),
+                          const ShimmerBox(width: 50, height: 10),
+                        ],
+                      ),
+                      const ShimmerBox(width: 45, height: 16, borderRadius: 6),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const ShimmerBox(width: double.infinity, height: 14),
+                  const SizedBox(height: 4),
+                  const ShimmerBox(width: 100, height: 14),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const ShimmerBox(width: 60, height: 10),
+                      const ShimmerBox(width: 50, height: 12),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
