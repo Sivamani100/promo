@@ -29,6 +29,9 @@ serve(async (req) => {
     }
 
     const firebaseConfig = JSON.parse(firebaseConfigString);
+    if (firebaseConfig.private_key) {
+      firebaseConfig.private_key = firebaseConfig.private_key.replace(/\\n/g, "\n");
+    }
     const projectId = firebaseConfig.project_id;
     if (!projectId) {
       throw new Error("Missing project_id in FIREBASE_SERVICE_ACCOUNT.");
@@ -89,28 +92,44 @@ serve(async (req) => {
     }
 
     const fcmEndpoint = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+    const results: any[] = [];
+    
     const pushPromises = pushTokens.map(async (t) => {
       const fcmToken = t.fcm_token;
       
-      const payload = {
-        message: {
-          token: fcmToken,
-          notification: {
-            title: title,
-            body: content,
-          },
-          data: {
-            type: type,
-            reference_id: refId,
-            title: title,
-            body: content,
-          },
-          android: {
-            notification: {
-              click_action: "FLUTTER_NOTIFICATION_CLICK",
+      const messagePayload: any = {
+        token: fcmToken,
+        data: {
+          type: type,
+          reference_id: refId,
+          title: title,
+          body: content,
+        },
+        android: {
+          priority: "HIGH",
+        },
+        apns: {
+          payload: {
+            aps: {
+              "content-available": 1,
             },
           },
         },
+      };
+
+      // For non-message notifications (e.g. general updates, approvals, campaign details),
+      // we include the notification block so the OS displays it automatically with max reliability.
+      // For message notifications (type = new_message), we omit it so the app can show it manually
+      // with custom action buttons (Reply, Mark as Read).
+      if (type !== "new_message") {
+        messagePayload.notification = {
+          title: title,
+          body: content,
+        };
+      }
+
+      const payload = {
+        message: messagePayload,
       };
 
       try {
@@ -127,6 +146,12 @@ serve(async (req) => {
         
         if (!response.ok) {
           console.error(`[PUSH ERROR] Failed sending to token ${fcmToken.substring(0, 10)}...:`, resData);
+          results.push({
+            token: fcmToken.substring(0, 15) + "...",
+            success: false,
+            status: response.status,
+            error: resData,
+          });
           
           // If the token is unregistered/invalid, remove it from the DB
           if (
@@ -142,15 +167,34 @@ serve(async (req) => {
           }
         } else {
           console.log(`[PUSH SUCCESS] Message sent to device with token prefix: ${fcmToken.substring(0, 10)}...`);
+          results.push({
+            token: fcmToken.substring(0, 15) + "...",
+            success: true,
+            messageId: resData.name,
+          });
         }
       } catch (err) {
         console.error(`[PUSH CRITICAL] Error invoking FCM for token ${fcmToken.substring(0, 10)}...:`, err);
+        results.push({
+          token: fcmToken.substring(0, 15) + "...",
+          success: false,
+          error: err.message || err,
+        });
       }
     });
 
     await Promise.all(pushPromises);
 
-    return new Response(JSON.stringify({ success: true, devicesPushed: pushTokens.length }), {
+    const successCount = results.filter(r => r.success).length;
+    const failureCount = results.length - successCount;
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      devicesPushed: pushTokens.length,
+      successCount,
+      failureCount,
+      details: results 
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
