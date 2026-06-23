@@ -260,37 +260,84 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
                   // Custom Bento Filter Tabs with counts
                   _buildFilterChips(),
                   Expanded(
-                    child: _filtered.isEmpty
-                        ? AppEmptyState(
-                            icon: Iconsax.cards,
-                            title: 'No cards found',
-                            subtitle: 'Create your first campaign card',
-                            actionLabel: 'Create Card',
-                            onAction: () => context.push('/brand/cards/new'),
-                          )
-                        : ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.xs,
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                            ),
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 16),
-                            itemBuilder: (_, i) {
-                              final card = _filtered[i];
-                              return _BentoBrandCard(
-                                card: card,
-                                animationDelayIndex: i,
-                                onTap: () => context.push('/brand/cards/${card['id']}'),
-                              );
-                            },
-                          ),
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.xs,
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                      ),
+                      itemCount: _filtered.isEmpty ? 2 : _filtered.length + 1,
+                      separatorBuilder: (context, i) {
+                        if (_filtered.isEmpty) return const SizedBox.shrink();
+                        if (i == _filtered.length - 1) return const SizedBox.shrink();
+                        return const SizedBox(height: 16);
+                      },
+                      itemBuilder: (context, i) {
+                        if (_filtered.isEmpty) {
+                          if (i == 0) {
+                            return AppEmptyState(
+                              icon: Iconsax.cards,
+                              title: 'No cards found',
+                              subtitle: 'Create your first campaign card',
+                              actionLabel: 'Create Card',
+                              onAction: () => context.push('/brand/cards/new'),
+                            );
+                          } else {
+                            return _buildFooter();
+                          }
+                        }
+                        if (i == _filtered.length) {
+                          return _buildFooter();
+                        }
+                        final card = _filtered[i];
+                        return _BentoBrandCard(
+                          card: card,
+                          animationDelayIndex: i,
+                          onTap: () => context.push('/brand/cards/${card['id']}'),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Launch your',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'next campaign.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -26,6 +26,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   late TabController _tabController;
   late ScrollController _scrollController;
   bool _isCollapsed = false;
+  double _headerOpacity = 1.0;
   Map<String, dynamic>? _brand;
   List<Map<String, dynamic>> _campaigns = [];
   List<Map<String, dynamic>> _reviews = [];
@@ -46,9 +47,12 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
 
   void _onScroll() {
     final collapsed = _scrollController.hasClients && _scrollController.offset > 80;
-    if (collapsed != _isCollapsed) {
+    final offset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+    final double opacity = (1.0 - (offset / 80.0)).clamp(0.0, 1.0);
+    if (collapsed != _isCollapsed || opacity != _headerOpacity) {
       setState(() {
         _isCollapsed = collapsed;
+        _headerOpacity = opacity;
       });
     }
   }
@@ -83,7 +87,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
         });
       }
     } catch (e) {
-      print('[BRAND_DETAIL] Error loading details: $e');
+      debugPrint('[BRAND_DETAIL] Error loading details: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -115,9 +119,11 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update follow status: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update follow status: $e')),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _togglingFollow = false);
@@ -178,276 +184,244 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     final website = b['website_url'] ?? preferences['website'] ?? '';
 
     return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 140.0,
-              floating: false,
-              pinned: true,
-              backgroundColor: isDark ? const Color(0xFF0F0F16) : Colors.white,
-              title: AnimatedOpacity(
-                opacity: _isCollapsed ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Row(
-                  children: [
-                    AppAvatar(
-                      url: b['avatar_url'],
-                      fallbackText: b['display_name'] ?? 'B',
-                      size: 32,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      b['display_name'] ?? 'Brand Name',
-                      style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    if (b['is_verified'] == true) ...[
-                      const SizedBox(width: 4),
-                      const VerificationBadge(size: 14),
-                    ],
-                  ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Image & Overlay avatar stack
+          SizedBox(
+            height: 140.0 + MediaQuery.of(context).padding.top,
+            child: Stack(
+              clipBehavior: Clip.none,
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/Logo.png',
+                  fit: BoxFit.cover,
                 ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient Cover Background
-                    Container(
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.accent.withValues(alpha: 0.2),
+                        AppColors.purple.withValues(alpha: 0.15),
+                        Colors.transparent,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+                // Back button
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 12,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 36,
+                      height: 36,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.accent.withOpacity(0.4),
-                            AppColors.purple.withOpacity(0.3),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    // Glassmorphic layer at bottom
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 50,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              isDark ? const Color(0xFF0F0F16) : Colors.white,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Overlapping avatar & display details Stack
-                  Stack(
-                    clipBehavior: Clip.none,
+                Positioned(
+                  bottom: -45, // half of avatar size (80 + 8 border/padding) to overlap cover
+                  left: AppSpacing.pageMarginHorizontal,
+                  right: AppSpacing.pageMarginHorizontal,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Container(height: 45), // spacing for avatar bottom
-                      Positioned(
-                        top: -45, // half of avatar size (80 + 8 border/padding) to overlap cover
-                        left: AppSpacing.pageMarginHorizontal,
-                        right: AppSpacing.pageMarginHorizontal,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF0F0F16) : Colors.white,
-                                  width: 4,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: AppAvatar(
-                                url: b['avatar_url'],
-                                fallbackText: b['display_name'] ?? 'B',
-                                size: 80,
-                              ),
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF0F0F16) : Colors.white,
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            b['display_name'] ?? 'Brand Name',
-                                            style: AppTextStyles.h4.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (b['is_verified'] == true) ...[
-                                          const SizedBox(width: 4),
-                                          const VerificationBadge(size: 18),
-                                        ],
-                                      ],
-                                    ),
-                                    Text(
-                                      b['company_name'] ?? industry,
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                        child: AppAvatar(
+                          url: b['avatar_url'],
+                          fallbackText: b['display_name'] ?? 'B',
+                          size: 80,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      b['display_name'] ?? 'Brand Name',
+                                      style: AppTextStyles.h4.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
                                       ),
                                       overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
                                     ),
+                                  ),
+                                  if (b['is_verified'] == true) ...[
+                                    const SizedBox(width: 4),
+                                    const VerificationBadge(size: 18),
                                   ],
-                                ),
+                                ],
                               ),
-                            ),
-                          ],
+                              Text(
+                                b['company_name'] ?? industry,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.pageMarginHorizontal,
-                      vertical: 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Brand details row (Location & Industry Tags)
-                        Row(
-                          children: [
-                            Icon(Iconsax.location, size: 14, color: AppColors.textMuted),
-                            const SizedBox(width: 4),
-                            Text(location, style: AppTextStyles.captionSm),
-                        const SizedBox(width: 16),
-                        Icon(Iconsax.tag, size: 14, color: AppColors.textMuted),
-                        const SizedBox(width: 4),
-                        Text(industry, style: AppTextStyles.captionSm),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Action buttons (Follow & Message)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _following
-                              ? OutlinedButton.icon(
-                                  onPressed: _togglingFollow ? null : _toggleFollow,
-                                  icon: _togglingFollow
-                                      ? const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        )
-                                      : const Icon(Iconsax.user_minus, size: 16),
-                                  label: const Text('Following'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.accent,
-                                    side: BorderSide(color: AppColors.accent),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                                    ),
-                                  ),
-                                )
-                              : ElevatedButton.icon(
-                                  onPressed: _togglingFollow ? null : _toggleFollow,
-                                  icon: _togglingFollow
-                                      ? const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                                          ),
-                                        )
-                                      : const Icon(Iconsax.user_add, size: 16),
-                                  label: const Text('Follow'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.accent,
-                                    foregroundColor: AppColors.accentOnDark,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                                    ),
-                                  ),
-                                ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: AppButton(
-                            label: 'Message',
-                            icon: Iconsax.message,
-                            isPrimary: false,
-                            onTap: _startChat,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
                 ),
-              ),
-            ],
-          ),
-        ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverTabHeaderDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppColors.accent,
-                  unselectedLabelColor: AppColors.textMuted,
-                  indicatorColor: AppColors.accent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: AppTextStyles.label,
-                  unselectedLabelStyle: AppTextStyles.labelSm,
-                  tabs: const [
-                    Tab(text: 'About'),
-                    Tab(text: 'Campaigns'),
-                    Tab(text: 'Reviews'),
-                  ],
-                ),
-                isDark: isDark,
-              ),
+              ],
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildAboutTab(b, website),
-            _buildCampaignsTab(),
-            _buildReviewsTab(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 45), // spacing for avatar bottom
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.pageMarginHorizontal,
+              vertical: 16,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                // Brand details row (Location & Industry Tags)
+                Row(
+                  children: [
+                    Icon(Iconsax.location, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Text(location, style: AppTextStyles.captionSm),
+                    const SizedBox(width: 16),
+                    Icon(Iconsax.tag, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 4),
+                    Text(industry, style: AppTextStyles.captionSm),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Action buttons (Follow & Message)
+                Row(
+                  children: [
+                    Expanded(
+                      child: _following
+                          ? OutlinedButton.icon(
+                              onPressed: _togglingFollow ? null : _toggleFollow,
+                              icon: _togglingFollow
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Iconsax.user_minus, size: 16),
+                              label: const Text('Following'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.accent,
+                                side: BorderSide(color: AppColors.accent),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                ),
+                              ),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: _togglingFollow ? null : _toggleFollow,
+                              icon: _togglingFollow
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                                      ),
+                                    )
+                                  : const Icon(Iconsax.user_add, size: 16),
+                              label: const Text('Follow'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
+                                foregroundColor: AppColors.accentOnDark,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                ),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppButton(
+                        label: 'Message',
+                        icon: Iconsax.message,
+                        isPrimary: false,
+                        onTap: _startChat,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+          Container(
+            color: isDark ? const Color(0xFF0F0F16) : Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.accent,
+              unselectedLabelColor: AppColors.textMuted,
+              indicatorColor: AppColors.accent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelStyle: AppTextStyles.label,
+              unselectedLabelStyle: AppTextStyles.labelSm,
+              tabs: const [
+                Tab(text: 'About'),
+                Tab(text: 'Campaigns'),
+                Tab(text: 'Reviews'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildAboutTab(b, website),
+                _buildCampaignsTab(),
+                _buildReviewsTab(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -534,7 +508,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: _campaigns.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, i) {
         final card = _campaigns[i];
         return CampaignCardWidget(
@@ -595,7 +569,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
                 ],
               ),
               const Spacer(),
-              Icon(Iconsax.award, size: 64, color: AppColors.accent.withOpacity(0.2)),
+              Icon(Iconsax.award, size: 64, color: AppColors.accent.withValues(alpha: 0.2)),
             ],
           ),
         ),

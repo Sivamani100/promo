@@ -133,6 +133,22 @@ class AnalyticsService {
     return List<Map<String, dynamic>>.from(data);
   }
 
+  Future<void> submitReview({
+    required String reviewerId,
+    required String reviewedId,
+    required int rating,
+    required String comment,
+    required String roomId,
+  }) async {
+    await _client.from('reviews').insert({
+      'reviewer_id': reviewerId,
+      'reviewed_id': reviewedId,
+      'rating': rating,
+      'comment': comment.trim(),
+      'room_id': roomId,
+    });
+  }
+
   Future<List<Map<String, dynamic>>> getProfileViews(String profileId) async {
     try {
       final data = await _client

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -70,16 +71,77 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       }
     });
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasUnread = _notifications.any((n) => n['is_read'] == false);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        actions: [
-          if (_notifications.any((n) => n['is_read'] == false))
-            TextButton(
-              onPressed: _markAllRead,
-              child: Text('Mark all read', style: AppTextStyles.labelSm.copyWith(color: AppColors.textSecondary)),
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.pageMarginHorizontal,
+            right: AppSpacing.pageMarginHorizontal,
+            top: AppSpacing.pageMarginVertical,
+          ),
+          child: AppBar(
+            leading: IconButton(
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: () => context.pop(),
             ),
-        ],
+            leadingWidth: 30,
+            centerTitle: false,
+            titleSpacing: 0,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Notifications',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '.',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ],
+            ),
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            actions: [
+              if (hasUnread)
+                TextButton(
+                  onPressed: _markAllRead,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    backgroundColor: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.05),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                  child: Text(
+                    'Mark all read',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
       body: _loading
           ? ListView.separated(
@@ -90,6 +152,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             )
           : RefreshIndicator(
               onRefresh: _load,
+              color: AppColors.accent,
               child: _notifications.isEmpty
                   ? const AppEmptyState(icon: Iconsax.notification, title: 'No notifications', subtitle: 'You\'re all caught up!')
                   : ListView.separated(
@@ -100,79 +163,134 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
                       ),
                       itemCount: _notifications.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 4),
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (_, i) {
                         final n = _notifications[i];
                         final isRead = n['is_read'] == true;
                         final createdAt = n['created_at'] != null ? DateTime.tryParse(n['created_at']) : null;
+                        final iconColor = _getIconColor(n['type']);
+                        final iconData = _getIcon(n['type']);
 
-                        return GestureDetector(
-                          onTap: () async {
-                            if (!isRead) {
-                              await NotificationService().markAsRead(n['id']);
-                              _load();
-                            }
-                            if (!mounted) return;
-                            final role = ref.read(authProvider).role;
-                            if (role == null) return;
+                        return Material(
+                          color: isRead
+                              ? (isDark ? const Color(0xFF08080A) : const Color(0xFFF3F3F5))
+                              : (isDark ? const Color(0xFF0F0F12) : Colors.white),
+                          borderRadius: BorderRadius.circular(20),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () async {
+                              if (!isRead) {
+                                await NotificationService().markAsRead(n['id']);
+                                _load();
+                              }
+                              if (!mounted) return;
+                              final role = ref.read(authProvider).role;
+                              if (role == null) return;
 
-                            final type = n['type'] as String?;
-                            final refId = n['reference_id'] as String?;
+                              final type = n['type'] as String?;
+                              final refId = n['reference_id'] as String?;
 
-                            if (type == 'new_message' && refId != null) {
-                              context.push('/$role/chats/$refId');
-                            } else if (type == 'application_received' && refId != null && role == 'brand') {
-                              context.push('/brand/cards/$refId');
-                            } else if (type == 'application_accepted' && refId != null && role == 'influencer') {
-                              context.push('/influencer/discover/$refId');
-                            } else if (type == 'application_rejected' && role == 'influencer') {
-                              context.push('/influencer/my-applications');
-                            } else if (type == 'milestone_completed' && refId != null) {
-                              context.push('/$role/chats/$refId');
-                            } else if (type == 'profile_view' && role == 'influencer') {
-                              context.push('/influencer/profile-views');
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            decoration: BoxDecoration(
-                              color: isRead ? Colors.transparent : AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                              border: isRead ? null : Border.all(color: AppColors.borderSubtle),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: _getIconColor(n['type']).withOpacity(0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(_getIcon(n['type']), size: 18, color: _getIconColor(n['type'])),
+                              if (type == 'new_message' && refId != null) {
+                                context.push('/$role/chats/$refId');
+                              } else if (type == 'application_received' && refId != null && role == 'brand') {
+                                context.push('/brand/cards/$refId');
+                              } else if (type == 'application_accepted' && refId != null && role == 'influencer') {
+                                context.push('/influencer/discover/$refId');
+                              } else if (type == 'application_rejected' && role == 'influencer') {
+                                context.push('/influencer/my-applications');
+                              } else if (type == 'milestone_completed' && refId != null) {
+                                context.push('/$role/chats/$refId');
+                              } else if (type == 'profile_view' && role == 'influencer') {
+                                context.push('/influencer/profile-views');
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isRead
+                                      ? (isDark ? const Color(0xFF141418) : const Color(0xFFEAEAEE))
+                                      : (isDark ? const Color(0xFF1F1F24) : const Color(0xFFE2E2E6)),
+                                  width: 1.2,
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(n['title'] ?? '', style: AppTextStyles.label.copyWith(fontWeight: isRead ? FontWeight.w400 : FontWeight.w700, fontSize: 13)),
-                                      if (n['body'] != null) ...[
-                                        const SizedBox(height: 4),
-                                        Text(n['body'], style: AppTextStyles.captionSm, maxLines: 2, overflow: TextOverflow.ellipsis),
-                                      ],
-                                      const SizedBox(height: 4),
-                                      Text(createdAt != null ? timeago.format(createdAt) : '', style: AppTextStyles.captionSm.copyWith(fontSize: 10, color: AppColors.textMuted)),
-                                    ],
-                                  ),
-                                ),
-                                if (!isRead)
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Container(
-                                    width: 8, height: 8,
-                                    margin: const EdgeInsets.only(top: 6),
-                                    decoration: BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: iconColor.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      iconData,
+                                      size: 20,
+                                      color: iconColor,
+                                    ),
                                   ),
-                              ],
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          n['title'] ?? '',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: isRead ? FontWeight.w600 : FontWeight.w800,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
+                                        if (n['body'] != null && (n['body'] as String).isNotEmpty) ...[
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            n['body'],
+                                            style: GoogleFonts.inter(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: AppColors.textSecondary,
+                                              height: 1.4,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          createdAt != null ? timeago.format(createdAt) : '',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (!isRead) ...[
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.only(top: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.accent.withValues(alpha: 0.4),
+                                            blurRadius: 4,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                         );

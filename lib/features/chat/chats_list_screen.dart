@@ -446,7 +446,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                           style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.bold),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded),
+                          icon: const Icon(Iconsax.close_circle),
                           onPressed: () => Navigator.pop(ctx),
                         ),
                       ],
@@ -688,7 +688,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: Icon(isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined, color: isPinned ? AppColors.accent : null),
+                leading: Icon(Iconsax.location, color: isPinned ? AppColors.accent : null),
                 title: Text(isPinned ? 'Unpin Chat' : 'Pin Chat', style: AppTextStyles.body),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -709,7 +709,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded, color: isMuted ? Colors.orange : null),
+                leading: Icon(isMuted ? Iconsax.volume_mute : Iconsax.volume_high, color: isMuted ? Colors.orange : null),
                 title: Text(isMuted ? 'Unmute Notifications' : 'Mute Notifications', style: AppTextStyles.body),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -724,7 +724,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(isArchived ? Icons.unarchive_rounded : Icons.archive_rounded, color: isArchived ? AppColors.accent : null),
+                leading: Icon(Iconsax.archive, color: isArchived ? AppColors.accent : null),
                 title: Text(isArchived ? 'Unarchive Chat' : 'Archive Chat', style: AppTextStyles.body),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -739,7 +739,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(isMarkedUnread ? Icons.mark_chat_read_rounded : Icons.mark_chat_unread_rounded, color: isMarkedUnread ? AppColors.accent : null),
+                leading: Icon(isMarkedUnread ? Iconsax.message : Iconsax.message_notif, color: isMarkedUnread ? AppColors.accent : null),
                 title: Text(isMarkedUnread ? 'Mark as Read' : 'Mark as Unread', style: AppTextStyles.body),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -754,7 +754,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent),
+                leading: const Icon(Iconsax.trash, color: Colors.redAccent),
                 title: const Text('Clear History', style: TextStyle(color: Colors.redAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -929,7 +929,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             actions: [
               if (widget.role == 'brand') ...[
                 _buildAppBarIcon(
-                  icon: Icons.add_rounded,
+                  icon: Iconsax.add,
                   onTap: _showGroupCreationFABOptions,
                 ),
                 const SizedBox(width: 8),
@@ -968,25 +968,37 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                     _buildSearchField(),
                     _buildFilterChips(),
                     Expanded(
-                      child: filteredRooms.isEmpty
-                          ? const AppEmptyState(
-                              icon: Icons.chat_bubble_outline_rounded,
-                              title: 'No conversations yet',
-                              subtitle: 'Your chats with collaborators will appear here',
-                            )
-                          : ListView.separated(
-                                padding: const EdgeInsets.only(
-                                  top: AppSpacing.sm,
-                                  bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
-                                ),
-                                itemCount: filteredRooms.length,
-                                separatorBuilder: (context, _) => Divider(
-                                  height: 1,
-                                  thickness: 0.8,
-                                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
-                                ),
-                                itemBuilder: (_, i) {
-                                  final room = filteredRooms[i];
+                      child: ListView.separated(
+                        padding: const EdgeInsets.only(
+                          top: AppSpacing.sm,
+                          bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
+                        ),
+                        itemCount: filteredRooms.isEmpty ? 2 : filteredRooms.length + 1,
+                        separatorBuilder: (context, i) {
+                          if (filteredRooms.isEmpty) return const SizedBox.shrink();
+                          if (i == filteredRooms.length - 1) return const SizedBox.shrink();
+                          return Divider(
+                            height: 1,
+                            thickness: 0.8,
+                            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                          );
+                        },
+                        itemBuilder: (_, i) {
+                          if (filteredRooms.isEmpty) {
+                            if (i == 0) {
+                              return const AppEmptyState(
+                                icon: Iconsax.message,
+                                title: 'No conversations yet',
+                                subtitle: 'Your chats with collaborators will appear here',
+                              );
+                            } else {
+                              return _buildFooter();
+                            }
+                          }
+                          if (i == filteredRooms.length) {
+                            return _buildFooter();
+                          }
+                          final room = filteredRooms[i];
                                   final roomId = room['id'] as String;
                                   final isGroup = room['influencer_id'] == null;
                                   final isPinned = pinnedRoomIds.contains(roomId);
@@ -1145,7 +1157,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                   width: 1,
                                                 ),
                                               ),
-                                              child: Icon(Icons.group_rounded, color: AppColors.accent, size: 24),
+                                              child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 24),
                                             )
                                           else
                                             Stack(
@@ -1280,7 +1292,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                             children: [
                                               if (mutedRoomIds.contains(roomId)) ...[
                                                 Icon(
-                                                  Icons.volume_off_rounded,
+                                                  Iconsax.volume_mute,
                                                   size: 15,
                                                   color: AppColors.textMuted,
                                                 ),
@@ -1288,7 +1300,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                               ],
                                               if (isPinned)
                                                 Icon(
-                                                  Icons.push_pin_rounded,
+                                                  Iconsax.location,
                                                   size: 15,
                                                   color: AppColors.accent,
                                                 )
@@ -1310,7 +1322,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                 )
                                               else
                                                 Icon(
-                                                  Icons.chevron_right_rounded,
+                                                  Iconsax.arrow_right_3,
                                                   size: 18,
                                                   color: AppColors.textMuted,
                                                 ),
@@ -1347,7 +1359,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             children: [
               if (_searchCtrl.text.isNotEmpty)
                 IconButton(
-                  icon: Icon(Icons.clear_rounded, size: 16, color: AppColors.textSecondary),
+                  icon: Icon(Iconsax.close_circle, size: 16, color: AppColors.textSecondary),
                   onPressed: () {
                     _searchCtrl.clear();
                     setState(() {});
@@ -1501,6 +1513,41 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             filter['count'] as int,
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Where partnerships',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'begin.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

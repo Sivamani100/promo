@@ -54,6 +54,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   Widget build(BuildContext context) {
     final items = _items;
     final unreadMessages = ref.watch(unreadMessageCountProvider);
+    final hideBottomNav = ref.watch(hideBottomNavProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Dynamic Bottom Nav Colors
@@ -91,8 +92,8 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
       child: Scaffold(
         extendBody: true,
         body: widget.child,
-      bottomNavigationBar: Container(
-        color: Colors.transparent,
+        bottomNavigationBar: hideBottomNav ? null : Container(
+          color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
         child: SafeArea(
           child: Row(

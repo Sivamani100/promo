@@ -210,6 +210,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(path: '/brand/notifications', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: '/influencer/notifications', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const NotificationsScreen()),
 
       // Brand shell (with bottom bar)
       ShellRoute(
@@ -233,7 +235,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/brand/campaigns', builder: (_, _) => const BrandCampaignsScreen()),
           GoRoute(path: '/brand/chats', builder: (_, _) => const ChatsListScreen(role: 'brand')),
           GoRoute(path: '/brand/analytics', builder: (_, _) => const BrandAnalyticsScreen()),
-          GoRoute(path: '/brand/notifications', builder: (_, _) => const NotificationsScreen()),
           GoRoute(path: '/brand/profile', builder: (_, _) => const BrandProfileScreen()),
         ],
       ),
@@ -263,7 +264,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/influencer/portfolio', builder: (_, _) => const InfluencerPortfolioScreen()),
           GoRoute(path: '/influencer/chats', builder: (_, _) => const ChatsListScreen(role: 'influencer')),
           GoRoute(path: '/influencer/analytics', builder: (_, _) => const InfluencerAnalyticsScreen()),
-          GoRoute(path: '/influencer/notifications', builder: (_, _) => const NotificationsScreen()),
           GoRoute(
             path: '/influencer/profile',
             builder: (_, state) {

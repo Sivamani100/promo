@@ -415,6 +415,8 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) => Aut
 
 final splashCompletedProvider = StateProvider<bool>((ref) => false);
 
+final hideBottomNavProvider = StateProvider<bool>((ref) => false);
+
 // ---------- Notification Count Provider ----------
 
 class UnreadNotificationCountNotifier extends StateNotifier<int> {

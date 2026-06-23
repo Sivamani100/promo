@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
@@ -52,7 +53,7 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/brand/home'),
         ),
         title: const Text('Applications'),
@@ -77,203 +78,250 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                     )).toList()),
                   ),
                   Expanded(
-                    child: _filtered.isEmpty
-                        ? const AppEmptyState(icon: Iconsax.receive_square, title: 'No applications')
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical,
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                            ),
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (_, i) {
-                              final app = _filtered[i];
-                              final inf = app['influencer'] as Map<String, dynamic>?;
-                              return Container(
-                                padding: const EdgeInsets.all(AppSpacing.lg),
-                                decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                  Row(children: [
-                                    Expanded(
-                                      child: GestureDetector(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical,
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                      ),
+                      itemCount: _filtered.isEmpty ? 2 : _filtered.length + 1,
+                      separatorBuilder: (context, i) {
+                        if (_filtered.isEmpty) return const SizedBox.shrink();
+                        if (i == _filtered.length - 1) return const SizedBox.shrink();
+                        return const SizedBox(height: 12);
+                      },
+                      itemBuilder: (context, i) {
+                        if (_filtered.isEmpty) {
+                          if (i == 0) {
+                            return const AppEmptyState(icon: Iconsax.receive_square, title: 'No applications');
+                          } else {
+                            return _buildFooter();
+                          }
+                        }
+                        if (i == _filtered.length) {
+                          return _buildFooter();
+                        }
+                        final app = _filtered[i];
+                        final inf = app['influencer'] as Map<String, dynamic>?;
+                        return Container(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Row(children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final infId = inf?['id'];
+                                    if (infId != null) {
+                                      context.push('/brand/influencers/$infId');
+                                    }
+                                  },
+                                  behavior: HitTestBehavior.opaque,
+                                  child: Row(
+                                    children: [
+                                      AppAvatar(
+                                        url: inf?['avatar_url'],
+                                        fallbackText: inf?['display_name'] ?? 'I',
+                                        size: 40,
                                         onTap: () {
                                           final infId = inf?['id'];
                                           if (infId != null) {
                                             context.push('/brand/influencers/$infId');
                                           }
                                         },
-                                        behavior: HitTestBehavior.opaque,
-                                        child: Row(
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            AppAvatar(
-                                              url: inf?['avatar_url'],
-                                              fallbackText: inf?['display_name'] ?? 'I',
-                                              size: 40,
-                                              onTap: () {
-                                                final infId = inf?['id'];
-                                                if (infId != null) {
-                                                  context.push('/brand/influencers/$infId');
-                                                }
-                                              },
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(inf?['display_name'] ?? 'Influencer', style: AppTextStyles.label),
-                                                  Text((inf?['niche'] as List?)?.take(2).join(' · ') ?? '', style: AppTextStyles.captionSm),
-                                                ],
-                                              ),
-                                            ),
+                                            Text(inf?['display_name'] ?? 'Influencer', style: AppTextStyles.label),
+                                            Text((inf?['niche'] as List?)?.take(2).join(' · ') ?? '', style: AppTextStyles.captionSm),
                                           ],
                                         ),
                                       ),
-                                    ),
-                                    _statusBadge(app['status'] ?? 'pending'),
-                                  ]),
-                                  const SizedBox(height: 12),
-                                   Text(app['pitch_message'] ?? '', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
-                                   if (app['proposed_rate'] != null) ...[
-                                     const SizedBox(height: 8),
-                                     Text('Proposed Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold)),
-                                   ],
-                                   if (app['portfolio_links'] != null && (app['portfolio_links'] as List).isNotEmpty) ...[
-                                     const SizedBox(height: 12),
-                                     Text('PORTFOLIO ATTACHMENTS', style: AppTextStyles.overline),
-                                     const SizedBox(height: 6),
-                                     Wrap(
-                                       spacing: 8,
-                                       runSpacing: 8,
-                                       children: (app['portfolio_links'] as List).map((link) {
-                                         return InkWell(
-                                           onTap: () async {
-                                             final uri = Uri.parse(link.toString().startsWith('http') ? link.toString() : 'https://${link.toString()}');
-                                             try {
-                                               await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
-                                             } catch (e) {
-                                               print('Error launching portfolio url: $e');
-                                             }
-                                           },
-                                           child: Container(
-                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                             decoration: BoxDecoration(
-                                               color: AppColors.accent.withOpacity(0.06),
-                                               border: Border.all(color: AppColors.accent.withOpacity(0.2)),
-                                               borderRadius: BorderRadius.circular(8),
-                                             ),
-                                             child: Row(
-                                               mainAxisSize: MainAxisSize.min,
-                                               children: [
-                                                 Icon(Iconsax.link, size: 12, color: AppColors.accent),
-                                                 const SizedBox(width: 6),
-                                                 Text(
-                                                   link.toString().length > 25 ? '${link.toString().substring(0, 22)}...' : link.toString(),
-                                                   style: TextStyle(
-                                                     fontSize: 11,
-                                                     fontWeight: FontWeight.bold,
-                                                     color: AppColors.accent,
-                                                   ),
-                                                 ),
-                                               ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              _statusBadge(app['status'] ?? 'pending'),
+                            ]),
+                            const SizedBox(height: 12),
+                             Text(app['pitch_message'] ?? '', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
+                             if (app['proposed_rate'] != null) ...[
+                               const SizedBox(height: 8),
+                               Text('Proposed Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                             ],
+                             if (app['portfolio_links'] != null && (app['portfolio_links'] as List).isNotEmpty) ...[
+                               const SizedBox(height: 12),
+                               Text('PORTFOLIO ATTACHMENTS', style: AppTextStyles.overline),
+                               const SizedBox(height: 6),
+                               Wrap(
+                                 spacing: 8,
+                                 runSpacing: 8,
+                                 children: (app['portfolio_links'] as List).map((link) {
+                                   return InkWell(
+                                     onTap: () async {
+                                       final uri = Uri.parse(link.toString().startsWith('http') ? link.toString() : 'https://${link.toString()}');
+                                       try {
+                                         await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
+                                       } catch (e) {
+                                         print('Error launching portfolio url: $e');
+                                       }
+                                     },
+                                     child: Container(
+                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                       decoration: BoxDecoration(
+                                         color: AppColors.accent.withValues(alpha: 0.06),
+                                         border: Border.all(color: AppColors.accent.withValues(alpha: 0.2)),
+                                         borderRadius: BorderRadius.circular(8),
+                                       ),
+                                       child: Row(
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           Icon(Iconsax.link, size: 12, color: AppColors.accent),
+                                           const SizedBox(width: 6),
+                                           Text(
+                                             link.toString().length > 25 ? '${link.toString().substring(0, 22)}...' : link.toString(),
+                                             style: TextStyle(
+                                               fontSize: 11,
+                                               fontWeight: FontWeight.bold,
+                                               color: AppColors.accent,
                                              ),
                                            ),
-                                         );
-                                       }).toList(),
+                                         ],
+                                       ),
                                      ),
-                                   ],
-                                   if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
-                                     const SizedBox(height: 12),
-                                     Row(children: [
-                                       Expanded(
-                                         child: AppButton(
-                                           label: 'Accept',
-                                           onTap: () async {
-                                             final card = app['card'] as Map<String, dynamic>?;
-                                             if (card == null) return;
-                                             final cardId = card['id'] as String;
-                                             final totalOpenings = card['openings'] ?? 1;
-                                             final acceptedCount = _apps.where((a) => a['card_id'] == cardId && a['status'] == 'accepted').length;
+                                   );
+                                 }).toList(),
+                               ),
+                             ],
+                             if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
+                               const SizedBox(height: 12),
+                               Row(children: [
+                                 Expanded(
+                                   child: AppButton(
+                                     label: 'Accept',
+                                     onTap: () async {
+                                       final card = app['card'] as Map<String, dynamic>?;
+                                       if (card == null) return;
+                                       final cardId = card['id'] as String;
+                                       final totalOpenings = card['openings'] ?? 1;
+                                       final acceptedCount = _apps.where((a) => a['card_id'] == cardId && a['status'] == 'accepted').length;
 
-                                             if (acceptedCount >= totalOpenings) {
-                                               final confirmed = await showPremiumConfirmDialog(
-                                                 context: context,
-                                                 title: 'Openings Limit Reached',
-                                                 message: 'All $totalOpenings openings have been filled. Would you like to increase the openings limit to ${totalOpenings + 1} and accept this applicant?',
-                                                 confirmLabel: 'Increase & Accept',
-                                                 cancelLabel: 'Cancel',
+                                       if (acceptedCount >= totalOpenings) {
+                                         final confirmed = await showPremiumConfirmDialog(
+                                           context: context,
+                                           title: 'Openings Limit Reached',
+                                           message: 'All $totalOpenings openings have been filled. Would you like to increase the openings limit to ${totalOpenings + 1} and accept this applicant?',
+                                           confirmLabel: 'Increase & Accept',
+                                           cancelLabel: 'Cancel',
+                                         );
+                                         if (confirmed == true) {
+                                           try {
+                                             setState(() => _loading = true);
+                                             await CardService().updateCard(cardId, {'openings': totalOpenings + 1});
+                                             await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
+                                             await _load();
+                                             if (mounted) {
+                                               ScaffoldMessenger.of(context).showSnackBar(
+                                                 const SnackBar(content: Text('Openings increased and application accepted successfully')),
                                                );
-                                               if (confirmed == true) {
-                                                 try {
-                                                   setState(() => _loading = true);
-                                                   await CardService().updateCard(cardId, {'openings': totalOpenings + 1});
-                                                   await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
-                                                   await _load();
-                                                   if (mounted) {
-                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                       const SnackBar(content: Text('Openings increased and application accepted successfully')),
-                                                     );
-                                                   }
-                                                 } catch (e) {
-                                                   if (mounted) {
-                                                     ScaffoldMessenger.of(context).showSnackBar(
-                                                       SnackBar(content: Text('Failed to update: $e')),
-                                                     );
-                                                   }
-                                                 } finally {
-                                                   if (mounted) {
-                                                     setState(() => _loading = false);
-                                                   }
-                                                 }
-                                               }
-                                             } else {
-                                               final confirmed = await showPremiumConfirmDialog(
-                                                 context: context,
-                                                 title: 'Accept Application',
-                                                 message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
-                                                 confirmLabel: 'Accept',
-                                               );
-                                               if (confirmed == true) {
-                                                 _updateStatus(app['id'], 'accepted');
-                                               }
                                              }
-                                           },
-                                         ),
-                                       ),
-                                       const SizedBox(width: 8),
-                                       IconButton(
-                                         icon: Icon(Iconsax.close_circle, color: AppColors.error),
-                                         onPressed: () async {
-                                           final confirmed = await showPremiumConfirmDialog(
-                                             context: context,
-                                             title: 'Reject Application',
-                                             message: 'Are you sure you want to reject this application? This action cannot be undone.',
-                                             confirmLabel: 'Reject',
-                                             isDestructive: true,
-                                           );
-                                           if (confirmed == true) {
-                                             _updateStatus(app['id'], 'rejected');
+                                           } catch (e) {
+                                             if (mounted) {
+                                               ScaffoldMessenger.of(context).showSnackBar(
+                                                 SnackBar(content: Text('Failed to update: $e')),
+                                               );
+                                             }
+                                           } finally {
+                                             if (mounted) {
+                                               setState(() => _loading = false);
+                                             }
                                            }
-                                         },
-                                       ),
-                                     ]),
-                                   ],
-                                  if (app['status'] == 'accepted') ...[
-                                    BrandMilestoneTrackerWidget(
-                                      influencerId: inf?['id'] ?? '',
-                                      cardId: app['card_id'] ?? '',
-                                    ),
-                                  ],
-                                ]),
-                              );
-                            },
-                          ),
+                                         }
+                                       } else {
+                                         final confirmed = await showPremiumConfirmDialog(
+                                           context: context,
+                                           title: 'Accept Application',
+                                           message: 'Are you sure you want to accept this application? This will create a milestone agreement.',
+                                           confirmLabel: 'Accept',
+                                         );
+                                         if (confirmed == true) {
+                                           _updateStatus(app['id'], 'accepted');
+                                         }
+                                       }
+                                     },
+                                   ),
+                                 ),
+                                 const SizedBox(width: 8),
+                                 IconButton(
+                                   icon: Icon(Iconsax.close_circle, color: AppColors.error),
+                                   onPressed: () async {
+                                     final confirmed = await showPremiumConfirmDialog(
+                                       context: context,
+                                       title: 'Reject Application',
+                                       message: 'Are you sure you want to reject this application? This action cannot be undone.',
+                                       confirmLabel: 'Reject',
+                                       isDestructive: true,
+                                     );
+                                     if (confirmed == true) {
+                                       _updateStatus(app['id'], 'rejected');
+                                     }
+                                   },
+                                 ),
+                               ]),
+                             ],
+                             if (app['status'] == 'accepted') ...[
+                               BrandMilestoneTrackerWidget(
+                                 influencerId: inf?['id'] ?? '',
+                                 cardId: app['card_id'] ?? '',
+                               ),
+                             ],
+                          ]),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Every applicant',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'counts.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
   Widget _statusBadge(String status) {

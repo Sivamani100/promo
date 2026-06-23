@@ -254,41 +254,92 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                     ),
                   ),
                   Expanded(
-                    child: _filtered.isEmpty
-                        ? const AppEmptyState(icon: Icons.assignment_rounded, title: 'No applications', subtitle: 'Your submitted applications will appear here')
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical,
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                            ),
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (_, i) {
-                              final app = _filtered[i];
-                              final card = app['card'] as Map<String, dynamic>?;
-                              final brand = card?['brand'] as Map<String, dynamic>?;
-                              final status = app['status'] ?? 'pending';
-                              final isHighlighted = widget.cardId != null && card?['id'] == widget.cardId;
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical,
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                      ),
+                      itemCount: _filtered.isEmpty ? 2 : _filtered.length + 1,
+                      separatorBuilder: (context, i) {
+                        if (_filtered.isEmpty) return const SizedBox.shrink();
+                        if (i == _filtered.length - 1) return const SizedBox.shrink();
+                        return const SizedBox(height: 12);
+                      },
+                      itemBuilder: (context, i) {
+                        if (_filtered.isEmpty) {
+                          if (i == 0) {
+                            return const AppEmptyState(
+                              icon: Icons.assignment_rounded,
+                              title: 'No applications',
+                              subtitle: 'Your submitted applications will appear here',
+                            );
+                          } else {
+                            return _buildFooter();
+                          }
+                        }
+                        if (i == _filtered.length) {
+                          return _buildFooter();
+                        }
+                        final app = _filtered[i];
+                        final card = app['card'] as Map<String, dynamic>?;
+                        final brand = card?['brand'] as Map<String, dynamic>?;
+                        final status = app['status'] ?? 'pending';
+                        final isHighlighted = widget.cardId != null && card?['id'] == widget.cardId;
 
-                              return _BentoApplicationCard(
-                                app: app,
-                                isHighlighted: isHighlighted,
-                                animationDelayIndex: i,
-                                milestoneTracker: status == 'accepted'
-                                    ? _MilestoneTrackerWidget(
-                                        brandId: brand?['id'] ?? '',
-                                        cardId: card?['id'] ?? '',
-                                      )
-                                    : null,
-                              );
-                            },
-                          ),
+                        return _BentoApplicationCard(
+                          app: app,
+                          isHighlighted: isHighlighted,
+                          animationDelayIndex: i,
+                          milestoneTracker: status == 'accepted'
+                              ? _MilestoneTrackerWidget(
+                                  brandId: brand?['id'] ?? '',
+                                  cardId: card?['id'] ?? '',
+                                )
+                              : null,
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Every application',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'counts.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

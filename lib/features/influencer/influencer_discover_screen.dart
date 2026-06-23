@@ -557,28 +557,80 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                       
                       // Bento List Card list
                       Expanded(
-                        child: filtered.isEmpty
-                            ? const AppEmptyState(icon: Icons.campaign_rounded, title: 'No campaigns found')
-                            : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(
-                                  AppSpacing.pageMarginHorizontal,
-                                  AppSpacing.pageMarginVertical,
-                                  AppSpacing.pageMarginHorizontal,
-                                  AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                                ),
-                                itemCount: filtered.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                                itemBuilder: (context, i) => _BentoCampaignListCard(
-                                  card: filtered[i],
-                                  isApplied: _appliedCardIds.contains(filtered[i]['id']),
-                                  onTap: () => context.push('/influencer/discover/${filtered[i]['id']}'),
-                                  animationDelayIndex: i,
-                                ),
-                              ),
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.pageMarginHorizontal,
+                            AppSpacing.pageMarginVertical,
+                            AppSpacing.pageMarginHorizontal,
+                            AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                          ),
+                          itemCount: filtered.isEmpty ? 2 : filtered.length + 1,
+                          separatorBuilder: (context, i) {
+                            if (filtered.isEmpty) return const SizedBox.shrink();
+                            if (i == filtered.length - 1) return const SizedBox.shrink();
+                            return const SizedBox(height: 12);
+                          },
+                          itemBuilder: (context, i) {
+                            if (filtered.isEmpty) {
+                              if (i == 0) {
+                                return const AppEmptyState(
+                                  icon: Icons.campaign_rounded,
+                                  title: 'No campaigns found',
+                                );
+                              } else {
+                                return _buildFooter();
+                              }
+                            }
+                            if (i == filtered.length) {
+                              return _buildFooter();
+                            }
+                            return _BentoCampaignListCard(
+                              card: filtered[i],
+                              isApplied: _appliedCardIds.contains(filtered[i]['id']),
+                              onTap: () => context.push('/influencer/discover/${filtered[i]['id']}'),
+                              animationDelayIndex: i,
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Finding your',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'next match.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

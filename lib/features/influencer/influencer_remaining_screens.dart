@@ -150,7 +150,7 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
       backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/influencer/home'),
         ),
         title: const Text('Browse Brands'),
@@ -312,7 +312,7 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/influencer/home'),
         ),
         title: const Text('Saved Cards'),
@@ -399,7 +399,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/influencer/home'),
         ),
         title: const Text('My Portfolio'),
@@ -1375,7 +1375,7 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/influencer/home'),
         ),
         title: const Text('Analytics'),
@@ -1610,10 +1610,24 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     }
   }
 
+  void _setEditing(bool editing) {
+    setState(() {
+      _isEditing = editing;
+    });
+    ref.read(hideBottomNavProvider.notifier).state = editing;
+  }
+
   @override
   void initState() {
     super.initState();
     _isEditing = widget.startInEditMode;
+    if (_isEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(hideBottomNavProvider.notifier).state = true;
+        }
+      });
+    }
     final p = ref.read(authProvider).profile;
     if (p != null) {
       _nameCtrl.text = p['display_name'] ?? '';
@@ -1781,7 +1795,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Profile and platforms updated! Total followers: $totalFollowers')),
         );
-        setState(() => _isEditing = false);
+        _setEditing(false);
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -1806,6 +1820,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     _tiktokFollowersCtrl.dispose();
     _youtubeFollowersCtrl.dispose();
     _twitterFollowersCtrl.dispose();
+    ref.read(hideBottomNavProvider.notifier).state = false;
     super.dispose();
   }
 
@@ -1896,19 +1911,22 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
           ),
           child: AppBar(
             automaticallyImplyLeading: false,
-            leading: _isEditing
-                ? _buildAppBarIcon(
-                    icon: Iconsax.arrow_left,
-                    onTap: () {
-                      setState(() => _isEditing = false);
-                    },
-                  )
-                : null,
+            leading: null,
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (_isEditing) ...[
+                  GestureDetector(
+                    onTap: () => _setEditing(false),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: Icon(Iconsax.arrow_left_2, size: 22, color: AppColors.textPrimary),
+                    ),
+                  ),
+                ],
                 Text(
                   _isEditing ? 'Edit Profile' : 'Profile',
                   style: GoogleFonts.inter(
@@ -1932,9 +1950,19 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
             backgroundColor: Colors.transparent,
             actions: [
               if (_isEditing)
-                _buildAppBarIcon(
-                  icon: Iconsax.close_circle,
-                  onTap: () => setState(() => _isEditing = false),
+                GestureDetector(
+                  onTap: () => _setEditing(false),
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Center(
+                      child: Transform.rotate(
+                        angle: 0.785398, // 45 degrees in radians (pi / 4)
+                        child: Icon(Iconsax.add, size: 24, color: AppColors.textPrimary),
+                      ),
+                    ),
+                  ),
                 )
               else ...[
                 _buildAppBarIcon(
@@ -2076,7 +2104,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                     isDestructive: true,
                                   );
                                   if (confirmed == true && mounted) {
-                                    setState(() => _isEditing = false);
+                                    _setEditing(false);
                                   }
                                 },
                               ),
@@ -2171,7 +2199,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () => setState(() => _isEditing = true),
+                                    onTap: () => _setEditing(true),
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
@@ -2470,6 +2498,40 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 ),
                               ],
                             ),
+                          ),
+                        ),
+                        // Footer (Jio Style)
+                        const SizedBox(height: 56),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 40),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Your story,',
+                                style: GoogleFonts.inter(
+                                  fontSize: 42,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.2,
+                                  color: AppColors.isDarkMode 
+                                      ? const Color(0xFF3F3F46) 
+                                      : const Color(0xFFD4D4D8),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              Text(
+                                'your influence.',
+                                style: GoogleFonts.inter(
+                                  fontSize: 42,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.2,
+                                  color: AppColors.isDarkMode 
+                                      ? const Color(0xFF3F3F46) 
+                                      : const Color(0xFFD4D4D8),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -4345,15 +4407,18 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
         preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
         child: Padding(
           padding: const EdgeInsets.only(
-            left: AppSpacing.appBarMarginHorizontal,
-            right: AppSpacing.appBarMarginHorizontal,
+            left: AppSpacing.pageMarginHorizontal,
+            right: AppSpacing.pageMarginHorizontal,
             top: AppSpacing.pageMarginVertical,
           ),
           child: AppBar(
             leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
               onPressed: () => context.go('/influencer/home'),
             ),
+            leadingWidth: 30,
             titleSpacing: 0,
             title: Row(
               mainAxisSize: MainAxisSize.min,

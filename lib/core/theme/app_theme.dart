@@ -18,6 +18,9 @@ class AppTheme {
         error: AppColors.error,
         onSurface: AppColors.textPrimary,
       ),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (context) => const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+      ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme).apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
@@ -144,6 +147,9 @@ class AppTheme {
         onSecondary: AppColors.textPrimary,
         error: AppColors.error,
         onSurface: AppColors.textPrimary,
+      ),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (context) => const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
       ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).apply(
         bodyColor: AppColors.textPrimary,

@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/services/card_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -48,7 +49,7 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/brand/home'),
         ),
         title: const Text('Saved Lists'),
@@ -170,7 +171,7 @@ class BrandCampaignsScreen extends ConsumerStatefulWidget {
 }
 
 class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
-  List<Map<String, dynamic>> _campaigns = [];
+  List<Map<String, dynamic>> _applications = [];
   bool _loading = true;
 
   @override
@@ -179,8 +180,23 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
   Future<void> _load() async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
-    final data = await CampaignService().getCampaigns(user.id);
-    if (mounted) setState(() { _campaigns = data; _loading = false; });
+    try {
+      final data = await ApplicationService().getApplicationsForBrand(user.id);
+      final acceptedData = data.where((app) => app['status'] == 'accepted').toList();
+      if (mounted) {
+        setState(() {
+          _applications = acceptedData;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading accepted deals: $e');
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -191,23 +207,65 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
       }
     });
 
+    final isDark = AppColors.isDarkMode;
+
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
-          onPressed: () => context.go('/brand/home'),
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.pageMarginHorizontal,
+            right: AppSpacing.pageMarginHorizontal,
+            top: AppSpacing.pageMarginVertical,
+          ),
+          child: AppBar(
+            leading: IconButton(
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: () => context.go('/brand/home'),
+            ),
+            leadingWidth: 30,
+            centerTitle: false,
+            titleSpacing: 0,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Accepted Deals',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '.',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        title: const Text('My Campaigns'),
       ),
       body: _loading
           ? ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
               itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerCampaignCard(),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const ShimmerApplicationCard(),
             )
-          : _campaigns.isEmpty
-              ? const AppEmptyState(icon: Iconsax.cup, title: 'No campaigns yet', subtitle: 'Your campaigns will appear here')
+          : _applications.isEmpty
+              ? const AppEmptyState(
+                  icon: Iconsax.tick_circle,
+                  title: 'No accepted deals yet',
+                  subtitle: 'When you accept an influencer\'s application, it will appear here.',
+                )
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.pageMarginHorizontal,
@@ -215,24 +273,188 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
                     AppSpacing.pageMarginHorizontal,
                     AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
                   ),
-                  itemCount: _campaigns.length,
+                  itemCount: _applications.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (_, i) {
-                    final c = _campaigns[i];
+                    final app = _applications[i];
+                    final card = app['card'] as Map<String, dynamic>?;
+                    final influencer = app['influencer'] as Map<String, dynamic>?;
+
+                    String formattedDate = '';
+                    try {
+                      final dateStr = app['updated_at'] ?? app['created_at'];
+                      if (dateStr != null) {
+                        final parsed = DateTime.parse(dateStr);
+                        formattedDate = DateFormat('MMM dd, yyyy').format(parsed);
+                      }
+                    } catch (_) {}
+
                     return Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppSpacing.radiusXl), border: Border.all(color: AppColors.border)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(c['title'] ?? '', style: AppTextStyles.label),
-                        const SizedBox(height: 4),
-                        Text(c['description'] ?? '', style: AppTextStyles.captionSm, maxLines: 2, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 8),
-                        Row(children: [
-                           Icon(Iconsax.calendar, size: 12, color: AppColors.textMuted),
-                          const SizedBox(width: 4),
-                          Text('${c['campaign_start'] ?? '?'} – ${c['campaign_end'] ?? '?'}', style: AppTextStyles.captionSm),
-                        ]),
-                      ]),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (card != null && card['id'] != null) {
+                                context.push('/brand/cards/${card['id']}');
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  // Visual Stack (Campaign cover + Influencer avatar overlay)
+                                  Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Container(
+                                          width: 68,
+                                          height: 68,
+                                          color: AppColors.surface2,
+                                          child: AppImage(
+                                            url: card?['cover_image_url'],
+                                            fit: BoxFit.cover,
+                                            fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: -6,
+                                        bottom: -6,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+                                              width: 2.0,
+                                            ),
+                                          ),
+                                          child: AppAvatar(
+                                            url: influencer?['avatar_url'],
+                                            fallbackText: influencer?['display_name'] ?? 'I',
+                                            size: 28,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 18),
+                                  // Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Accepted Status Tag and Date row
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                                                borderRadius: BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'DEAL ACCEPTED',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: const Color(0xFF10B981),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
+                                            if (formattedDate.isNotEmpty)
+                                              Text(
+                                                formattedDate,
+                                                style: AppTextStyles.captionSm.copyWith(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        // Card Title
+                                        Text(
+                                          card?['title'] ?? 'Campaign Card',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.textPrimary,
+                                            height: 1.25,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        // Creator / Partner Name
+                                        Text(
+                                          'Partner: ${influencer?['display_name'] ?? 'Creator'}',
+                                          style: AppTextStyles.captionSm.copyWith(
+                                            color: AppColors.textSecondary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        // Budget
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Iconsax.wallet_3,
+                                              size: 14,
+                                              color: AppColors.textMuted,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              card?['budget_range'] != null
+                                                  ? (card!['budget_range'].toString().startsWith('₹')
+                                                      ? card['budget_range']
+                                                      : '₹${card['budget_range']}')
+                                                  : 'Open Budget',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -302,7 +524,7 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.go('/brand/home'),
         ),
         title: const Text('Analytics'),
@@ -614,7 +836,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated!')));
-        setState(() => _isEditing = false);
+        _setEditing(false);
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -622,8 +844,22 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     if (mounted) setState(() => _saving = false);
   }
 
+  void _setEditing(bool editing) {
+    setState(() {
+      _isEditing = editing;
+    });
+    ref.read(hideBottomNavProvider.notifier).state = editing;
+  }
+
   @override
-  void dispose() { _nameCtrl.dispose(); _companyCtrl.dispose(); _bioCtrl.dispose(); _websiteCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _nameCtrl.dispose();
+    _companyCtrl.dispose();
+    _bioCtrl.dispose();
+    _websiteCtrl.dispose();
+    ref.read(hideBottomNavProvider.notifier).state = false;
+    super.dispose();
+  }
 
   Widget _buildAppBarIcon({
     required IconData icon,
@@ -692,19 +928,22 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
           ),
           child: AppBar(
             automaticallyImplyLeading: false,
-            leading: _isEditing
-                ? IconButton(
-                    icon: const Icon(Iconsax.arrow_left),
-                    onPressed: () {
-                      setState(() => _isEditing = false);
-                    },
-                  )
-                : null,
+            leading: null,
             centerTitle: false,
             titleSpacing: 0,
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (_isEditing) ...[
+                  GestureDetector(
+                    onTap: () => _setEditing(false),
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: Icon(Iconsax.arrow_left_2, size: 22, color: AppColors.textPrimary),
+                    ),
+                  ),
+                ],
                 Text(
                   _isEditing ? 'Edit Profile' : 'Profile',
                   style: GoogleFonts.inter(
@@ -728,9 +967,19 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             backgroundColor: Colors.transparent,
             actions: [
               if (_isEditing)
-                _buildAppBarIcon(
-                  icon: Iconsax.close_circle,
-                  onTap: () => setState(() => _isEditing = false),
+                GestureDetector(
+                  onTap: () => _setEditing(false),
+                  behavior: HitTestBehavior.opaque,
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Center(
+                      child: Transform.rotate(
+                        angle: 0.785398, // 45 degrees in radians (pi / 4)
+                        child: Icon(Iconsax.add, size: 24, color: AppColors.textPrimary),
+                      ),
+                    ),
+                  ),
                 )
               else ...[
                 _buildAppBarIcon(
@@ -792,7 +1041,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                     isDestructive: true,
                                   );
                                   if (confirmed == true && mounted) {
-                                    setState(() => _isEditing = false);
+                                    _setEditing(false);
                                   }
                                 },
                               ),
@@ -887,7 +1136,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () => setState(() => _isEditing = true),
+                                    onTap: () => _setEditing(true),
                                     child: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
@@ -1069,9 +1318,45 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             ),
                           ),
                         ),
+                        _buildFooter(),
                       ],
               ),
             ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your story,',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'your brand.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

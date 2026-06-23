@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -154,11 +155,40 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
   }
 
   Widget _statusBadge(String status) {
-    final color = status == 'accepted' ? AppColors.success : status == 'shortlisted' ? AppColors.info : status == 'rejected' ? AppColors.error : AppColors.textMuted;
+    Color color;
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        color = const Color(0xFF10B981);
+        break;
+      case 'shortlisted':
+        color = const Color(0xFF3B82F6);
+        break;
+      case 'rejected':
+        color = const Color(0xFFEF4444);
+        break;
+      default:
+        color = const Color(0xFFF59E0B); // pending
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(100)),
-      child: Text(status, style: AppTextStyles.captionSm.copyWith(color: color, fontWeight: FontWeight.w700)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: color.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: GoogleFonts.inter(
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 
@@ -171,58 +201,103 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     final nicheTags = (c['niche_tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final platforms = (c['platform_requirements'] as List<dynamic>?)?.cast<String>() ?? [];
     final deliverables = (c['deliverables'] as List<dynamic>?)?.cast<String>() ?? [];
+    final isDark = AppColors.isDarkMode;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(c['title'] ?? 'Card'),
-        actions: [
-          TextButton.icon(
-            onPressed: _navigateToGroupChat,
-            icon: const Icon(Iconsax.message, size: 18),
-            label: const Text('Group', style: TextStyle(fontWeight: FontWeight.bold)),
-            style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.pageMarginHorizontal,
+            right: AppSpacing.pageMarginHorizontal,
+            top: AppSpacing.pageMarginVertical,
           ),
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == 'edit') {
-                final result = await context.push('/brand/cards/new', extra: _card);
-                if (result == true) {
-                  _load();
-                }
-              } else if (value == 'delete') {
-                final confirmed = await showPremiumConfirmDialog(
-                  context: context,
-                  title: 'Delete Campaign Card',
-                  message: 'Are you sure you want to delete this campaign card? This action cannot be undone.',
-                  confirmLabel: 'Delete',
-                  isDestructive: true,
-                  icon: Iconsax.trash,
-                );
-                if (confirmed == true && mounted) {
-                  try {
-                    await CardService().deleteCard(widget.cardId);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Card deleted successfully')),
-                      );
-                      context.pop();
+          child: AppBar(
+            leading: IconButton(
+              padding: EdgeInsets.zero,
+              alignment: Alignment.centerLeft,
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: () => context.pop(),
+            ),
+            leadingWidth: 30,
+            centerTitle: false,
+            titleSpacing: 0,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    c['title'] ?? 'Card Detail',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  '.',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.accent,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton.icon(
+                onPressed: _navigateToGroupChat,
+                icon: const Icon(Iconsax.message, size: 18),
+                label: const Text('Group', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+              ),
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    final result = await context.push('/brand/cards/new', extra: _card);
+                    if (result == true) {
+                      _load();
                     }
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to delete card: $e')),
-                      );
+                  } else if (value == 'delete') {
+                    final confirmed = await showPremiumConfirmDialog(
+                      context: context,
+                      title: 'Delete Campaign Card',
+                      message: 'Are you sure you want to delete this campaign card? This action cannot be undone.',
+                      confirmLabel: 'Delete',
+                      isDestructive: true,
+                      icon: Iconsax.trash,
+                    );
+                    if (confirmed == true && mounted) {
+                      try {
+                        await CardService().deleteCard(widget.cardId);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Card deleted successfully')),
+                          );
+                          context.pop();
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to delete card: $e')),
+                          );
+                        }
+                      }
                     }
                   }
-                }
-              }
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'edit', child: Text('Edit')),
-              const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                },
+                itemBuilder: (_) => [
+                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
+              ),
             ],
           ),
-        ],
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
@@ -234,7 +309,7 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
         children: [
           if (c['cover_image_url'] != null)
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(24),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: AppImage(
@@ -252,32 +327,122 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
           const SizedBox(height: 16),
           Row(children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(color: AppColors.getCategoryColor(c['category'] ?? ''), borderRadius: BorderRadius.circular(100)),
-              child: Text(c['category'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.black)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.getCategoryColor(c['category'] ?? '').withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: AppColors.getCategoryColor(c['category'] ?? '').withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                (c['category'] ?? '').toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.getCategoryColor(c['category'] ?? ''),
+                  letterSpacing: 0.5,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(color: c['status'] == 'active' ? AppColors.success.withOpacity(0.2) : AppColors.surface2, borderRadius: BorderRadius.circular(100)),
-              child: Text(c['status'] ?? '', style: AppTextStyles.captionSm.copyWith(color: c['status'] == 'active' ? AppColors.success : AppColors.textMuted)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: (c['status'] == 'active' ? AppColors.success : AppColors.textMuted).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: (c['status'] == 'active' ? AppColors.success : AppColors.textMuted).withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                (c['status'] ?? '').toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: c['status'] == 'active' ? AppColors.success : AppColors.textMuted,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ),
           ]),
           const SizedBox(height: 16),
           Text(c['title'] ?? '', style: AppTextStyles.h2),
           const SizedBox(height: 12),
           Text(c['description'] ?? '', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.6)),
-          const SizedBox(height: 20),
-          _infoRow('Budget', c['budget_range'] ?? 'Not set'),
-          _infoRow('Timeline', c['timeline'] ?? 'Not set'),
-          if (deliverables.isNotEmpty) _infoRow('Deliverables', deliverables.join(', ')),
-          _infoRow(
-            'Openings / Positions',
-            '${_apps.where((a) => a['status'] == 'accepted').length} / ${c['openings'] ?? 1} filled',
-            valueColor: _apps.where((a) => a['status'] == 'accepted').length >= (c['openings'] ?? 1)
-                ? AppColors.warning
-                : AppColors.success,
+          
+          const SizedBox(height: 24),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 2.2,
+            children: [
+              _buildBentoInfoTile(
+                icon: Iconsax.wallet_3,
+                label: 'Budget',
+                value: c['budget_range'] ?? 'Open Budget',
+                color: const Color(0xFF6366F1),
+              ),
+              _buildBentoInfoTile(
+                icon: Iconsax.calendar,
+                label: 'Timeline',
+                value: c['timeline'] ?? 'Flexible',
+                color: const Color(0xFF10B981),
+              ),
+              _buildBentoInfoTile(
+                icon: Iconsax.profile_2user,
+                label: 'Openings',
+                value: '${_apps.where((a) => a['status'] == 'accepted').length} / ${c['openings'] ?? 1} filled',
+                color: const Color(0xFFF59E0B),
+              ),
+              _buildBentoInfoTile(
+                icon: Iconsax.global,
+                label: 'Location',
+                value: c['preferred_location'] ?? 'Anywhere',
+                color: const Color(0xFFF43F5E),
+              ),
+            ],
           ),
+
+          if (deliverables.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text('DELIVERABLES', style: AppTextStyles.overline),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: deliverables.map((d) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.06),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.15)),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Iconsax.document_text, size: 12, color: AppColors.accent),
+                      const SizedBox(width: 6),
+                      Text(
+                        d,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
           const SizedBox(height: 16),
           if (nicheTags.isNotEmpty) ...[
             Text('NICHE TAGS', style: AppTextStyles.overline),
@@ -310,9 +475,21 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                  border: Border.all(color: AppColors.border),
+                  color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,21 +536,50 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      app['pitch_message'] ?? '',
-                      style: AppTextStyles.body.copyWith(color: AppColors.textSecondary, height: 1.5),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface2,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        app['pitch_message'] ?? 'No pitch message provided.',
+                        style: AppTextStyles.body.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                          fontSize: 13,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     if (app['proposed_rate'] != null) ...[
-                      const SizedBox(height: 8),
-                      Text('Rate: ${app['proposed_rate']}', style: AppTextStyles.labelSm.copyWith(color: AppColors.warning)),
-                    ],
-                    if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: AppButton(label: 'Accept', onTap: () => _handleAccept(app))),
+                          Icon(Iconsax.wallet_3, size: 14, color: AppColors.warning),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Proposed Rate: ${app['proposed_rate']}',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.warning,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (app['status'] == 'pending' || app['status'] == 'shortlisted') ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppButton(
+                              label: 'Accept',
+                              onTap: () => _handleAccept(app),
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           IconButton(
                             icon: Icon(Iconsax.close_circle, color: AppColors.error),
@@ -383,6 +589,7 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                       ),
                     ],
                     if (app['status'] == 'accepted') ...[
+                      const SizedBox(height: 12),
                       BrandMilestoneTrackerWidget(
                         influencerId: inf?['id'] ?? '',
                         cardId: app['card_id'] ?? '',
@@ -397,11 +604,64 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value, {Color? valueColor}) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(label, style: AppTextStyles.caption),
-      Text(value, style: AppTextStyles.label.copyWith(color: valueColor)),
-    ]),
-  );
+  Widget _buildBentoInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    final isDark = AppColors.isDarkMode;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1.2,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -95,15 +95,22 @@ class AppTextField extends StatelessWidget {
             hintText: hint,
             suffixIcon: suffix,
             prefixIcon: prefixIcon,
-            border: maxLines != null && maxLines! > 1
-                ? OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusLg), borderSide: BorderSide(color: AppColors.border))
-                : null,
-            enabledBorder: maxLines != null && maxLines! > 1
-                ? OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusLg), borderSide: BorderSide(color: AppColors.border))
-                : null,
-            focusedBorder: maxLines != null && maxLines! > 1
-                ? OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusLg), borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5))
-                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.error),
+            ),
           ),
         ),
       ],

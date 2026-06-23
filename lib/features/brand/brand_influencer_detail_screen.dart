@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -25,6 +27,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
   late TabController _tabController;
   late ScrollController _scrollController;
   bool _isCollapsed = false;
+  double _headerOpacity = 1.0;
   Map<String, dynamic>? _influencer;
   List<Map<String, dynamic>> _portfolio = [];
   List<Map<String, dynamic>> _reviews = [];
@@ -41,9 +44,12 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
 
   void _onScroll() {
     final collapsed = _scrollController.hasClients && _scrollController.offset > 80;
-    if (collapsed != _isCollapsed) {
+    final offset = _scrollController.hasClients ? _scrollController.offset : 0.0;
+    final double opacity = (1.0 - (offset / 80.0)).clamp(0.0, 1.0);
+    if (collapsed != _isCollapsed || opacity != _headerOpacity) {
       setState(() {
         _isCollapsed = collapsed;
+        _headerOpacity = opacity;
       });
     }
   }
@@ -75,7 +81,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
         });
       }
     } catch (e) {
-      print('[INFLUENCER_DETAIL] Error loading details: $e');
+      debugPrint('[INFLUENCER_DETAIL] Error loading details: $e');
       if (mounted) {
         setState(() {
           _loading = false;
@@ -132,16 +138,34 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Creator Profile')),
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Creator Profile',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+        ),
         body: const ShimmerProfileDetail(),
       );
     }
 
     if (_influencer == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Creator Profile')),
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Creator Profile',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+        ),
         body: const AppEmptyState(icon: Icons.error_rounded, title: 'Creator profile not found'),
       );
     }
@@ -150,242 +174,326 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     final niches = (inf['niche'] as List?)?.cast<String>() ?? [];
     final platforms = (inf['platforms'] as List?)?.cast<String>() ?? [];
     final location = inf['location'] ?? 'Global';
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final followersCount = inf['follower_count'] ?? 0;
-    String followersText = '${followersCount}';
-    if (followersCount >= 1000) {
+    String followersText = '$followersCount';
+    if (followersCount >= 1000000) {
+      followersText = '${(followersCount / 1000000).toStringAsFixed(1)}M';
+    } else if (followersCount >= 1000) {
       followersText = '${(followersCount / 1000).toStringAsFixed(1)}K';
     }
 
     return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 140.0,
-              floating: false,
-              pinned: true,
-              backgroundColor: isDark ? const Color(0xFF0F0F16) : Colors.white,
-              actions: [
-                IconButton(
-                  icon: const Icon(Iconsax.archive_add),
-                  onPressed: _showSaveToListSheet,
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Image & Overlay avatar stack
+          SizedBox(
+            height: 160.0 + MediaQuery.of(context).padding.top,
+            child: Stack(
+              clipBehavior: Clip.none,
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/Logo.png',
+                  fit: BoxFit.cover,
                 ),
-              ],
-              title: AnimatedOpacity(
-                opacity: _isCollapsed ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: Row(
-                  children: [
-                    AppAvatar(
-                      url: inf['avatar_url'],
-                      fallbackText: inf['display_name'] ?? 'I',
-                      size: 32,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      inf['display_name'] ?? 'Creator Name',
-                      style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    if (inf['is_verified'] == true) ...[
-                      const SizedBox(width: 4),
-                      const VerificationBadge(size: 14),
-                    ],
-                  ],
-                ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient Cover Background
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.accent.withOpacity(0.4),
-                            AppColors.purple.withOpacity(0.3),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                    ),
-                    // Shadow layer at bottom
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 50,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isDark
+                          ? [
+                              AppColors.accent.withValues(alpha: 0.25),
+                              AppColors.purple.withValues(alpha: 0.15),
                               Colors.transparent,
-                              isDark ? const Color(0xFF0F0F16) : Colors.white,
+                            ]
+                          : [
+                              AppColors.accent.withValues(alpha: 0.2),
+                              AppColors.purple.withValues(alpha: 0.15),
+                              Colors.transparent,
                             ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.0, 0.5, 1.0],
+                    ),
+                  ),
+                ),
+                // Back button
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 12,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 16,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Overlapping avatar & details Stack
-                  Stack(
-                    clipBehavior: Clip.none,
+                // Archive/save to list
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: _showSaveToListSheet,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Iconsax.archive_add,
+                        size: 18,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: -36, // overlap cover by 36 (half of 72 avatar size)
+                  left: AppSpacing.pageMarginHorizontal,
+                  right: AppSpacing.pageMarginHorizontal,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Container(height: 45), // spacing for avatar bottom
-                      Positioned(
-                        top: -45, // half of avatar size (80 + 8 border/padding) to overlap cover
-                        left: AppSpacing.pageMarginHorizontal,
-                        right: AppSpacing.pageMarginHorizontal,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? const Color(0xFF0F0F16) : Colors.white,
-                                  width: 4,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: AppAvatar(
-                                url: inf['avatar_url'],
-                                fallbackText: inf['display_name'] ?? 'I',
-                                size: 80,
-                              ),
+                      // Avatar with border
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+                            width: 4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            inf['display_name'] ?? 'Creator Name',
-                                            style: AppTextStyles.h4.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (inf['is_verified'] == true) ...[
-                                          const SizedBox(width: 4),
-                                          const VerificationBadge(size: 18),
-                                        ],
-                                      ],
-                                    ),
-                                    Text(
-                                      'Essential Creator · $location',
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                        child: AppAvatar(
+                          url: inf['avatar_url'],
+                          fallbackText: inf['display_name'] ?? 'I',
+                          size: 72,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      inf['display_name'] ?? 'Creator',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textPrimary,
                                       ),
                                       overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
                                     ),
+                                  ),
+                                  if (inf['is_verified'] == true) ...[
+                                    const SizedBox(width: 5),
+                                    const VerificationBadge(size: 17),
                                   ],
-                                ),
+                                ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Text(
+                                'Creator · $location',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.pageMarginHorizontal,
-                      vertical: 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Location & Follower Count Row
-                        Row(
-                          children: [
-                            Icon(Iconsax.location, size: 14, color: AppColors.textMuted),
-                            const SizedBox(width: 4),
-                            Text(location, style: AppTextStyles.captionSm),
-                        const SizedBox(width: 16),
-                        Icon(Iconsax.people, size: 14, color: AppColors.textMuted),
-                        const SizedBox(width: 4),
-                        Text('$followersText followers', style: AppTextStyles.captionSm),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 36), // spacing for avatar bottom
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                // Stats row
+                Row(
+                  children: [
+                    _buildStatPill(Iconsax.people, followersText, 'Followers'),
+                    const SizedBox(width: 10),
+                    _buildStatPill(Iconsax.gallery, '${_portfolio.length}', 'Portfolio'),
+                    const SizedBox(width: 10),
+                    _buildStatPill(Iconsax.star, _reviews.isEmpty ? '—' : ((_reviews.map((r) => (r['rating'] as num?)?.toDouble() ?? 0.0).fold(0.0, (a, b) => a + b) / _reviews.length).toStringAsFixed(1)), 'Rating'),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-                    // Message Action Button
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppButton(
-                            label: 'Message',
-                            icon: Iconsax.message,
-                            onTap: _startChat,
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _startChat,
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white : const Color(0xFF0F0F11),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Iconsax.message,
+                                size: 18,
+                                color: isDark ? Colors.black : Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Message',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.black : Colors.white,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _showSaveToListSheet,
+                      child: Container(
+                        height: 46,
+                        width: 46,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Icon(
+                          Iconsax.archive_add,
+                          size: 20,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          Container(
+            color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: AppColors.textPrimary,
+              unselectedLabelColor: AppColors.textMuted,
+              indicatorColor: AppColors.accent,
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorWeight: 2.5,
+              dividerColor: Colors.transparent,
+              labelStyle: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
-            ],
+              unselectedLabelStyle: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: const [
+                Tab(text: 'About'),
+                Tab(text: 'Portfolio'),
+                Tab(text: 'Reviews'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildAboutTab(inf, niches, platforms, followersText),
+                _buildPortfolioTab(),
+                _buildReviewsTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatPill(IconData icon, String value, String label) {
+    final isDark = AppColors.isDarkMode;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+            width: 1,
           ),
         ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverTabHeaderDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppColors.accent,
-                  unselectedLabelColor: AppColors.textMuted,
-                  indicatorColor: AppColors.accent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelStyle: AppTextStyles.label,
-                  unselectedLabelStyle: AppTextStyles.labelSm,
-                  tabs: const [
-                    Tab(text: 'About'),
-                    Tab(text: 'Portfolio'),
-                    Tab(text: 'Reviews'),
-                  ],
-                ),
-                isDark: isDark,
+        child: Column(
+          children: [
+            Icon(icon, size: 16, color: AppColors.textMuted),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
               ),
             ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildAboutTab(inf, niches, platforms, followersText),
-            _buildPortfolioTab(),
-            _buildReviewsTab(),
+            const SizedBox(height: 1),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textMuted,
+              ),
+            ),
           ],
         ),
       ),
@@ -396,139 +504,350 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     final prefs = inf['preferences'] as Map<String, dynamic>? ?? {};
     final handles = prefs['platform_handles'] as Map<String, dynamic>? ?? {};
     final connectedHandles = handles.entries.where((e) => e.value.toString().trim().isNotEmpty).toList();
+    final isDark = AppColors.isDarkMode;
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.md,
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.bottomScreenPadding + AppSpacing.lg,
+      ),
       children: [
+        // Bio section
         if (inf['bio'] != null && (inf['bio'] as String).trim().isNotEmpty) ...[
-          Text('Bio', style: AppTextStyles.label),
-          const SizedBox(height: 8),
-          Text(
-            inf['bio'],
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-
-        if (niches.isNotEmpty) ...[
-          Text('Niches', style: AppTextStyles.label),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: niches.map((n) => AppChip(label: n)).toList(),
-          ),
-          const SizedBox(height: 24),
-        ],
-
-
-        if (connectedHandles.isNotEmpty) ...[
-          Text('Connected Platforms', style: AppTextStyles.label),
-          const SizedBox(height: 12),
-          Column(
-            children: connectedHandles.map((entry) {
-              final platform = entry.key;
-              final handle = entry.value.toString();
-              
-              IconData icon;
-              Color brandColor;
-              if (platform.toLowerCase() == 'instagram') {
-                icon = Iconsax.instagram;
-                brandColor = const Color(0xFFE1306C);
-              } else if (platform.toLowerCase() == 'youtube') {
-                icon = Iconsax.video_play;
-                brandColor = const Color(0xFFFF0000);
-              } else if (platform.toLowerCase() == 'tiktok') {
-                icon = Iconsax.music;
-                brandColor = AppColors.textPrimary;
-              } else if (platform.toLowerCase().contains('twitter') || platform.toLowerCase() == 'x') {
-                icon = Iconsax.global;
-                brandColor = const Color(0xFF1DA1F2);
-              } else {
-                icon = Iconsax.global;
-                brandColor = AppColors.accent;
-              }
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Row(
+          _buildSectionCard(
+            isDark: isDark,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Icon(icon, color: brandColor, size: 24),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(platform, style: AppTextStyles.labelSm.copyWith(fontWeight: FontWeight.bold)),
-                          Text(
-                            '@${SocialAgent.normalizeHandle(platform, handle)}',
-                            style: AppTextStyles.captionSm.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () => SocialAgent.launchSocialUrl(platform, handle),
-                      icon: const Icon(Icons.open_in_new, size: 14),
-                      label: const Text('Visit Profile', style: TextStyle(fontSize: 12)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: brandColor.withOpacity(0.1),
-                        foregroundColor: brandColor,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    Icon(Iconsax.edit, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Bio',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 24),
-        ] else if (platforms.isNotEmpty) ...[
-          Text('Platforms', style: AppTextStyles.label),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: platforms.map((p) => AppChip(label: p)).toList(),
-          ),
-          const SizedBox(height: 24),
+                const SizedBox(height: 10),
+                Text(
+                  inf['bio'],
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                    height: 1.6,
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 12),
         ],
 
-        Text('Creator Details', style: AppTextStyles.label),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
-          ),
+        // Niches section
+        if (niches.isNotEmpty) ...[
+          _buildSectionCard(
+            isDark: isDark,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.category, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Niches',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: niches.map((n) {
+                    final nColor = AppColors.getCategoryColor(n);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: nColor.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: nColor.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        n,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: nColor,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms, delay: 50.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 12),
+        ],
+
+        // Connected Platforms section
+        if (connectedHandles.isNotEmpty) ...[
+          _buildSectionCard(
+            isDark: isDark,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.global, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Connected Platforms',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ...connectedHandles.asMap().entries.map((mapEntry) {
+                  final entry = mapEntry.value;
+                  final platform = entry.key;
+                  final handle = entry.value.toString();
+
+                  IconData icon;
+                  Color brandColor;
+                  if (platform.toLowerCase() == 'instagram') {
+                    icon = Iconsax.instagram;
+                    brandColor = const Color(0xFFE1306C);
+                  } else if (platform.toLowerCase() == 'youtube') {
+                    icon = Iconsax.video_play;
+                    brandColor = const Color(0xFFFF0000);
+                  } else if (platform.toLowerCase() == 'tiktok') {
+                    icon = Iconsax.music;
+                    brandColor = AppColors.textPrimary;
+                  } else if (platform.toLowerCase().contains('twitter') || platform.toLowerCase() == 'x') {
+                    icon = Iconsax.global;
+                    brandColor = const Color(0xFF1DA1F2);
+                  } else {
+                    icon = Iconsax.global;
+                    brandColor = AppColors.accent;
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.only(top: mapEntry.key > 0 ? 8 : 0),
+                    child: GestureDetector(
+                      onTap: () => SocialAgent.launchSocialUrl(platform, handle),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: brandColor.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: brandColor.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: brandColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(icon, color: brandColor, size: 18),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    platform,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  Text(
+                                    '@${SocialAgent.normalizeHandle(platform, handle)}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.open_in_new_rounded,
+                              size: 16,
+                              color: brandColor.withValues(alpha: 0.6),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 12),
+        ] else if (platforms.isNotEmpty) ...[
+          _buildSectionCard(
+            isDark: isDark,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.global, size: 14, color: AppColors.textMuted),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Platforms',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: platforms.map((p) => AppChip(label: p)).toList(),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 12),
+        ],
+
+        // Creator Details section
+        _buildSectionCard(
+          isDark: isDark,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('Location', inf['location'] ?? 'N/A'),
-              const Divider(height: 20),
-              _buildDetailRow('Followers', followersText),
-              const Divider(height: 20),
-              _buildDetailRow('Joined On', _formatDate(inf['created_at'])),
+              Row(
+                children: [
+                  Icon(Iconsax.personalcard, size: 14, color: AppColors.textMuted),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Creator Details',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _buildDetailRow(Iconsax.location, 'Location', inf['location'] ?? 'N/A'),
+              _buildThinDivider(isDark),
+              _buildDetailRow(Iconsax.people, 'Followers', followersText),
+              _buildThinDivider(isDark),
+              _buildDetailRow(Iconsax.calendar_1, 'Joined', _formatDate(inf['created_at'])),
+              if (niches.isNotEmpty) ...[
+                _buildThinDivider(isDark),
+                _buildDetailRow(Iconsax.tag, 'Niche', niches.take(2).join(', ')),
+              ],
             ],
           ),
-        ),
+        ).animate().fadeIn(duration: 300.ms, delay: 150.ms).slideY(begin: 0.05, end: 0),
       ],
     );
   }
 
+  Widget _buildSectionCard({required bool isDark, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildThinDivider(bool isDark) {
+    return Divider(
+      height: 20,
+      thickness: 0.5,
+      color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(icon, size: 15, color: AppColors.textMuted),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const Spacer(),
+          Flexible(
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPortfolioTab() {
+    final isDark = AppColors.isDarkMode;
+
     if (_portfolio.isEmpty) {
       return const AppEmptyState(
         icon: Iconsax.gallery,
@@ -538,12 +857,12 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.pageMarginHorizontal),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.82,
       ),
       itemCount: _portfolio.length,
       itemBuilder: (context, i) {
@@ -560,9 +879,12 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
           },
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(color: AppColors.border),
+              color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                width: 1,
+              ),
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -570,26 +892,45 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
               children: [
                 Expanded(
                   child: Container(
-                    color: AppColors.surface2,
                     width: double.infinity,
+                    color: isDark ? const Color(0xFF1A1A1E) : const Color(0xFFF3F4F6),
                     child: AppImage(
                       url: item['media_url'],
                       fit: BoxFit.cover,
-                      fallback: Icon(Iconsax.image, size: 40, color: AppColors.textMuted),
+                      fallback: Icon(Iconsax.image, size: 32, color: AppColors.textMuted),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item['title'] ?? 'Untitled', style: AppTextStyles.labelSm, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 2),
+                      Text(
+                        item['title'] ?? 'Untitled',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(item['platform'] ?? '', style: AppTextStyles.captionSm),
+                          Flexible(
+                            child: Text(
+                              item['platform'] ?? '',
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textMuted,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           if (postUrl != null && postUrl.trim().isNotEmpty)
                             Icon(Iconsax.link, size: 12, color: AppColors.accent),
                         ],
@@ -598,9 +939,16 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
+                            Icon(Iconsax.trend_up, size: 11, color: AppColors.success),
                             const SizedBox(width: 4),
-                            Text('${item['engagement_rate']}% ER', style: AppTextStyles.captionSm.copyWith(color: AppColors.success)),
+                            Text(
+                              '${item['engagement_rate']}% ER',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.success,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -610,32 +958,110 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
               ],
             ),
           ),
+        ).animate().fadeIn(
+          duration: 300.ms,
+          delay: Duration(milliseconds: 40 * i),
+        ).slideY(begin: 0.08, end: 0, duration: 300.ms, delay: Duration(milliseconds: 40 * i));
+      },
+    );
+  }
+
+  void _showWriteReviewSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bctx) {
+        return _WriteReviewSheet(
+          influencerId: widget.influencerId,
+          onSuccess: () {
+            _loadAll(); // Reload reviews and ratings
+          },
         );
       },
     );
   }
 
   Widget _buildReviewsTab() {
+    final isDark = AppColors.isDarkMode;
+    final isBrand = ref.read(authProvider).role == 'brand';
+
+    Widget? writeReviewButton;
+    if (isBrand) {
+      writeReviewButton = Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: GestureDetector(
+          onTap: _showWriteReviewSheet,
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white : const Color(0xFF0F0F11),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Iconsax.edit,
+                  size: 18,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Write a Review',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.black : Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_reviews.isEmpty) {
-      return const AppEmptyState(
-        icon: Iconsax.star,
-        title: 'No Reviews Yet',
-        subtitle: 'Brands haven\'t left any reviews for this creator yet.',
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.md,
+          AppSpacing.pageMarginHorizontal,
+          AppSpacing.bottomScreenPadding + AppSpacing.lg,
+        ),
+        children: [
+          if (writeReviewButton != null) writeReviewButton,
+          const AppEmptyState(
+            icon: Iconsax.star,
+            title: 'No Reviews Yet',
+            subtitle: 'Brands haven\'t left any reviews for this creator yet. Be the first to write one!',
+          ),
+        ],
       );
     }
 
     final double avgRating = _reviews.map((r) => (r['rating'] as num?)?.toDouble() ?? 0.0).fold(0.0, (a, b) => a + b) / _reviews.length;
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.md,
+        AppSpacing.pageMarginHorizontal,
+        AppSpacing.bottomScreenPadding + AppSpacing.lg,
+      ),
       children: [
+        if (writeReviewButton != null) writeReviewButton,
         // Summary Card
         Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: AppColors.border),
+            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              width: 1,
+            ),
           ),
           child: Row(
             children: [
@@ -644,112 +1070,131 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                 children: [
                   Text(
                     avgRating.toStringAsFixed(1),
-                    style: AppTextStyles.h1.copyWith(fontSize: 36, color: AppColors.warning),
+                    style: GoogleFonts.inter(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFFF59E0B),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: List.generate(5, (index) {
                       return Icon(
                         index < avgRating.round() ? Iconsax.star1 : Iconsax.star,
-                        color: AppColors.warning,
+                        color: const Color(0xFFF59E0B),
                         size: 16,
                       );
                     }),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
-                    'Based on ${_reviews.length} reviews',
-                    style: AppTextStyles.captionSm,
+                    'Based on ${_reviews.length} review${_reviews.length > 1 ? 's' : ''}',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
               const Spacer(),
-              Icon(Iconsax.award, size: 64, color: AppColors.accent.withOpacity(0.2)),
+              Icon(
+                Iconsax.award,
+                size: 56,
+                color: AppColors.accent.withValues(alpha: 0.15),
+              ),
             ],
           ),
-        ),
-        const SizedBox(height: 20),
+        ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
+        const SizedBox(height: 16),
 
         // List of reviews
-        ..._reviews.map((r) {
+        ..._reviews.asMap().entries.map((entry) {
+          final i = entry.key;
+          final r = entry.value;
           final reviewer = r['reviewer'] as Map<String, dynamic>? ?? {};
           final display = reviewer['display_name'] ?? 'Verified Brand';
           final rating = (r['rating'] as num?)?.toDouble() ?? 0.0;
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    AppAvatar(
-                      url: reviewer['avatar_url'],
-                      fallbackText: display,
-                      size: 32,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(display, style: AppTextStyles.labelSm),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: List.generate(5, (index) {
-                              return Icon(
-                                index < rating ? Iconsax.star1 : Iconsax.star,
-                                color: AppColors.warning,
-                                size: 12,
-                              );
-                            }),
-                          ),
-                        ],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      AppAvatar(
+                        url: reviewer['avatar_url'],
+                        fallbackText: display,
+                        size: 34,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              display,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: List.generate(5, (index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 2),
+                                  child: Icon(
+                                    index < rating ? Iconsax.star1 : Iconsax.star,
+                                    color: const Color(0xFFF59E0B),
+                                    size: 12,
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        _formatDate(r['created_at']),
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (r['comment'] != null && (r['comment'] as String).trim().isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      r['comment'],
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                        height: 1.5,
                       ),
                     ),
-                    Text(
-                      _formatDate(r['created_at']),
-                      style: AppTextStyles.captionSm.copyWith(fontSize: 10),
-                    ),
                   ],
-                ),
-                if (r['comment'] != null && (r['comment'] as String).trim().isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Text(
-                    r['comment'],
-                    style: AppTextStyles.body.copyWith(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                      height: 1.4,
-                    ),
-                  ),
                 ],
-              ],
-            ),
+              ),
+            ).animate().fadeIn(
+              duration: 300.ms,
+              delay: Duration(milliseconds: 40 * (i + 1)),
+            ).slideY(begin: 0.05, end: 0, duration: 300.ms, delay: Duration(milliseconds: 40 * (i + 1))),
           );
         }),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w500)),
-        Flexible(
-          child: Text(
-            value,
-            style: AppTextStyles.label.copyWith(fontSize: 13),
-            textAlign: TextAlign.end,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
       ],
     );
   }
@@ -758,7 +1203,8 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     if (isoString == null) return 'N/A';
     try {
       final dt = DateTime.parse(isoString);
-      return '${dt.day}/${dt.month}/${dt.year}';
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
     } catch (_) {
       return 'N/A';
     }
@@ -771,20 +1217,15 @@ class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {
   _SliverTabHeaderDelegate(this.tabBar, {required this.isDark});
 
   @override
-  double get minExtent => tabBar.preferredSize.height + 1;
+  double get minExtent => tabBar.preferredSize.height;
   @override
-  double get maxExtent => tabBar.preferredSize.height + 1;
+  double get maxExtent => tabBar.preferredSize.height;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: isDark ? const Color(0xFF0F0F16) : Colors.white,
-      child: Column(
-        children: [
-          tabBar,
-          const Divider(height: 1, thickness: 1),
-        ],
-      ),
+      color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+      child: tabBar,
     );
   }
 
@@ -824,10 +1265,10 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = AppColors.isDarkMode;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF14141E) : Colors.white,
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
@@ -835,19 +1276,45 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Save to List', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
-              IconButton(
-                icon: const Icon(Iconsax.add_circle, size: 24),
-                onPressed: () async {
+              Text(
+                'Save to List',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              GestureDetector(
+                onTap: () async {
                   final name = await _showCreateDialog(context);
                   if (name != null && name.isNotEmpty) {
                     await SavedService().createList(widget.brandId, name);
                     _load();
                   }
                 },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.add_rounded, size: 20, color: AppColors.accent),
+                ),
               ),
             ],
           ),
@@ -860,15 +1327,22 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
               child: Center(
                 child: Text(
                   'No lists created yet. Tap + to create one.',
-                  style: AppTextStyles.caption,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             )
           else
             Flexible(
-              child: ListView.builder(
+              child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _lists.length,
+                separatorBuilder: (context, index) => Divider(
+                  height: 1,
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
                 itemBuilder: (context, i) {
                   final list = _lists[i];
                   final items = list['items'] as List? ?? [];
@@ -880,7 +1354,14 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
                       isSaved ? Iconsax.folder_favorite5 : Iconsax.folder,
                       color: isSaved ? AppColors.accent : AppColors.textMuted,
                     ),
-                    title: Text(list['name'] ?? 'List', style: AppTextStyles.label),
+                    title: Text(
+                      list['name'] ?? 'List',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     trailing: isSaved
                         ? Icon(Icons.check_circle_rounded, color: AppColors.success)
                         : null,
@@ -914,7 +1395,7 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
         decoration: InputDecoration(
           hintText: 'List name',
           hintStyle: AppTextStyles.caption,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
       ),
@@ -927,6 +1408,7 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.textMuted,
                   side: BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                 ),
                 child: const Text('Cancel'),
               ),
@@ -937,6 +1419,9 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
                 onPressed: () => Navigator.pop(context, ctrl.text.trim()),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                 ),
                 child: const Text('Create'),
               ),
@@ -944,6 +1429,253 @@ class _SaveToListSheetState extends ConsumerState<_SaveToListSheet> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _WriteReviewSheet extends ConsumerStatefulWidget {
+  final String influencerId;
+  final VoidCallback onSuccess;
+
+  const _WriteReviewSheet({
+    required this.influencerId,
+    required this.onSuccess,
+  });
+
+  @override
+  ConsumerState<_WriteReviewSheet> createState() => _WriteReviewSheetState();
+}
+
+class _WriteReviewSheetState extends ConsumerState<_WriteReviewSheet> {
+  int _rating = 5;
+  final _commentCtrl = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+
+    final comment = _commentCtrl.text.trim();
+    if (comment.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please write a comment for your review.')),
+      );
+      return;
+    }
+
+    setState(() => _submitting = true);
+
+    try {
+      // 1. Get/create 1-to-1 chat room to satisfy PostgreSQL RLS participant constraint
+      final room = await ChatService().getOrCreate1to1Room(
+        brandId: user.id,
+        influencerId: widget.influencerId,
+      );
+      final roomId = room['id'] as String;
+
+      // 2. Submit review to reviews table
+      await AnalyticsService().submitReview(
+        reviewerId: user.id,
+        reviewedId: widget.influencerId,
+        rating: _rating,
+        comment: comment,
+        roomId: roomId,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close sheet
+        widget.onSuccess(); // Trigger UI reload
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Review submitted successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit review: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Grab Handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Write a Review',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Rating stars selection
+          Text(
+            'Rating',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: List.generate(5, (index) {
+              final starVal = index + 1;
+              final isSelected = starVal <= _rating;
+              return GestureDetector(
+                onTap: _submitting ? null : () => setState(() => _rating = starVal),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(
+                    isSelected ? Iconsax.star1 : Iconsax.star,
+                    color: const Color(0xFFF59E0B),
+                    size: 32,
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 20),
+
+          // Comment
+          Text(
+            'Review Comment',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentCtrl,
+            maxLines: 4,
+            enabled: !_submitting,
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Describe your experience collaborating with this creator...',
+              hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
+              fillColor: isDark ? const Color(0xFF1A1A1E) : const Color(0xFFF3F4F6),
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? Colors.white : const Color(0xFF0F0F11),
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(12),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _submitting ? null : () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textMuted,
+                    side: BorderSide(color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: _submitting ? null : _submit,
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _submitting
+                          ? AppColors.textMuted
+                          : (isDark ? Colors.white : const Color(0xFF0F0F11)),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Center(
+                      child: _submitting
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: isDark ? Colors.black : Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Submit',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.black : Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

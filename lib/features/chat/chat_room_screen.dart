@@ -609,7 +609,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               color: AppColors.accent.withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
+                            child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
                           )
                         : AppAvatar(
                             url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
@@ -782,14 +782,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 final url = msg['attachment_url'] as String;
                                 final name = msg['content'] ?? 'Attachment';
                                 final type = msg['attachment_type'] ?? 'file';
-                                IconData icon = Icons.insert_drive_file_rounded;
-                                if (type == 'audio') icon = Icons.headset_rounded;
+                                IconData icon = Iconsax.document;
+                                if (type == 'audio') icon = Iconsax.headphone;
                                 return ListTile(
                                   leading: Icon(icon, color: AppColors.accent),
                                   title: Text(name, style: AppTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
                                   subtitle: Text(type.toUpperCase(), style: AppTextStyles.captionSm),
                                   trailing: IconButton(
-                                    icon: const Icon(Icons.download_rounded),
+                                    icon: const Icon(Iconsax.document_download),
                                     onPressed: () => _downloadFile(url, name),
                                   ),
                                   onTap: () => _launchURL(url),
@@ -808,7 +808,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 final match = linkRegExp.firstMatch(content);
                                 final url = match?.group(0) ?? '';
                                 return ListTile(
-                                  leading: const Icon(Icons.link_rounded, color: Colors.blue),
+                                  leading: const Icon(Iconsax.link, color: Colors.blue),
                                   title: Text(url, style: AppTextStyles.body.copyWith(color: Colors.blue, decoration: TextDecoration.underline), maxLines: 1, overflow: TextOverflow.ellipsis),
                                   subtitle: Text(content, style: AppTextStyles.caption, maxLines: 2, overflow: TextOverflow.ellipsis),
                                   onTap: () => _launchURL(url),
@@ -962,7 +962,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.pin_drop_rounded, size: 20, color: AppColors.accent),
+          Icon(Iconsax.location, size: 20, color: AppColors.accent),
           const SizedBox(width: 10),
           Expanded(
             child: InkWell(
@@ -1010,7 +1010,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close_rounded, size: 18),
+            icon: const Icon(Iconsax.close_circle, size: 18),
             onPressed: () {
               _togglePinMessage(pinnedMsg['id'] as String, false, pinnedMsg['payload'] as Map<String, dynamic>? ?? {});
             },
@@ -1096,7 +1096,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       color: AppColors.accent.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
+                    child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
                   )
                 else
                   Stack(
@@ -1174,11 +1174,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(_showMilestones ? Icons.chat_bubble_rounded : Icons.flag_rounded, size: 22),
+            icon: Icon(_showMilestones ? Iconsax.message : Iconsax.flag, size: 22),
             onPressed: () => setState(() => _showMilestones = !_showMilestones),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded),
+            icon: const Icon(Iconsax.more),
             color: AppColors.surface,
             onSelected: (val) {
               if (val == 'info') {
@@ -1223,7 +1223,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       Text('Milestones', style: AppTextStyles.label),
                       TextButton.icon(
                         onPressed: _addMilestone,
-                        icon: const Icon(Icons.add_rounded, size: 16),
+                        icon: const Icon(Iconsax.add, size: 16),
                         label: const Text('Add', style: TextStyle(fontSize: 12)),
                       ),
                     ],
@@ -1240,7 +1240,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           children: [
                             GestureDetector(
                               onTap: () => _toggleMilestone(m),
-                              child: Icon(done ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, size: 20, color: done ? AppColors.success : AppColors.textMuted),
+                              child: done
+                                  ? const Icon(Iconsax.tick_circle, size: 20, color: AppColors.success)
+                                  : Container(
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: AppColors.textMuted, width: 2),
+                                      ),
+                                    ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(child: Text(m['title'] ?? '', style: AppTextStyles.bodySm.copyWith(decoration: done ? TextDecoration.lineThrough : null))),
@@ -1310,7 +1319,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.only(left: 16),
                     color: Colors.transparent,
-                    child: Icon(Icons.reply_rounded, color: AppColors.accent),
+                    child: Icon(Iconsax.undo, color: AppColors.accent),
                   ),
                   child: bubble,
                 );
@@ -1372,120 +1381,54 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   _buildReplyPreview(),
                   _buildEditingPreview(),
                   const SizedBox(height: 4),
-                  _isRecordingVoice
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface2,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.borderSubtle),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.fiber_manual_record, color: Colors.red, size: 18),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${_voiceRecordingDuration ~/ 60}:${(_voiceRecordingDuration % 60).toString().padLeft(2, '0')}',
-                                style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  'Recording voice...',
-                                  style: AppTextStyles.caption.copyWith(fontStyle: FontStyle.italic),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _cancelVoiceRecording,
-                                child: const Text('Cancel', style: TextStyle(color: Colors.red)),
-                              ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
-                                onTap: _sendVoiceRecording,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.success,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.check, color: Colors.white, size: 20),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface2,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(color: AppColors.borderSubtle),
-                                ),
-                                child: Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.sentiment_satisfied_alt_rounded, color: AppColors.textMuted),
-                                      onPressed: () {},
-                                    ),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _msgCtrl,
-                                        style: AppTextStyles.body,
-                                        keyboardType: TextInputType.multiline,
-                                        maxLines: null,
-                                        decoration: InputDecoration(
-                                          hintText: 'Message',
-                                          hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                                          border: InputBorder.none,
-                                          focusedBorder: InputBorder.none,
-                                          enabledBorder: InputBorder.none,
-                                          errorBorder: InputBorder.none,
-                                          disabledBorder: InputBorder.none,
-                                          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: _showFilePicker,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface2,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.borderSubtle),
-                                ),
-                                child: Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 20,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            GestureDetector(
-                              onTap: _msgCtrl.text.trim().isNotEmpty ? _send : _startVoiceRecording,
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  _msgCtrl.text.trim().isNotEmpty ? Icons.send_rounded : Icons.mic_rounded,
-                                  size: 22,
-                                  color: AppColors.accentOnDark,
-                                ),
-                              ),
-                            ),
-                          ],
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: AppColors.borderSubtle),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Iconsax.add, color: Color(0xFF3797EF), size: 22),
+                          onPressed: _showFilePicker,
+                          tooltip: 'Attach photos or files',
                         ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: TextField(
+                              controller: _msgCtrl,
+                              style: AppTextStyles.body,
+                              keyboardType: TextInputType.multiline,
+                              maxLines: 5,
+                              minLines: 1,
+                              decoration: InputDecoration(
+                                hintText: 'Message',
+                                hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                                border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Iconsax.send_1,
+                            color: Color(0xFF3797EF),
+                            size: 22,
+                          ),
+                          onPressed: _msgCtrl.text.trim().isNotEmpty ? _send : null,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1549,7 +1492,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close_rounded, size: 20),
+            icon: const Icon(Iconsax.close_circle, size: 20),
             onPressed: () => setState(() => _replyingTo = null),
           ),
         ],
@@ -1597,7 +1540,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close_rounded, size: 20),
+            icon: const Icon(Iconsax.close_circle, size: 20),
             onPressed: () {
               setState(() {
                 _editingMessage = null;
@@ -1691,14 +1634,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       );
     }
 
-    IconData icon = Icons.insert_drive_file_rounded;
+    IconData icon = Iconsax.document;
     Color iconColor = Colors.purple;
 
     if (type == 'location') {
-      icon = Icons.location_on_rounded;
+      icon = Iconsax.location;
       iconColor = Colors.green;
     } else if (type == 'contact') {
-      icon = Icons.person_rounded;
+      icon = Iconsax.user;
       iconColor = Colors.blue;
     }
 
@@ -1881,7 +1824,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     children: [
                       const Spacer(),
                       if (isStarred) ...[
-                        const Icon(Icons.star_rounded, size: 11, color: Colors.amber),
+                        const Icon(Iconsax.star1, size: 11, color: Colors.amber),
                         const SizedBox(width: 4),
                       ],
                       Text(
@@ -1893,11 +1836,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       ),
                       if (isMe) ...[
                         const SizedBox(width: 4),
-                        Icon(
-                          Icons.done_all_rounded,
-                          size: 14,
-                          color: msg['is_read'] == true ? const Color(0xFF34B7F1) : Colors.white60,
-                        ),
+                        msg['is_read'] == true
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Iconsax.tick_circle, size: 14, color: Color(0xFF34B7F1)),
+                                  Transform.translate(
+                                    offset: const Offset(-8, 0),
+                                    child: const Icon(Iconsax.tick_circle, size: 14, color: Color(0xFF34B7F1)),
+                                  ),
+                                ],
+                              )
+                            : const Icon(Iconsax.tick_circle, size: 14, color: Colors.white60),
                       ],
                     ],
                   ),
@@ -1950,7 +1900,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 const Divider(height: 24),
                 ListTile(
-                  leading: Icon(isStarred ? Icons.star_rounded : Icons.star_border_rounded, color: isStarred ? Colors.amber : null),
+                  leading: Icon(isStarred ? Iconsax.star1 : Iconsax.star, color: isStarred ? Colors.amber : null),
                   title: Text(isStarred ? 'Unstar Message' : 'Star Message', style: AppTextStyles.body),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1959,7 +1909,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 if (_room?['influencer_id'] == null) ...[
                   ListTile(
-                    leading: const Icon(Icons.remove_red_eye_rounded),
+                    leading: const Icon(Iconsax.eye),
                     title: Text('Seen By', style: AppTextStyles.body),
                     onTap: () {
                       Navigator.pop(ctx);
@@ -1968,7 +1918,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ),
                 ],
                 ListTile(
-                  leading: const Icon(Icons.reply_rounded),
+                  leading: const Icon(Iconsax.undo),
                   title: Text('Reply', style: AppTextStyles.body),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1979,7 +1929,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.content_copy_rounded),
+                  leading: const Icon(Iconsax.copy),
                   title: Text('Copy Message', style: AppTextStyles.body),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1990,7 +1940,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.forward_rounded),
+                  leading: const Icon(Iconsax.forward),
                   title: Text('Forward Message', style: AppTextStyles.body),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -1998,7 +1948,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(isPinned ? Icons.pin_drop_outlined : Icons.pin_drop_rounded),
+                  leading: Icon(Iconsax.location, color: isPinned ? AppColors.accent : null),
                   title: Text(isPinned ? 'Unpin Message' : 'Pin Message', style: AppTextStyles.body),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -2007,7 +1957,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 if (isMyMessage) ...[
                   ListTile(
-                    leading: const Icon(Icons.edit_rounded),
+                    leading: const Icon(Iconsax.edit),
                     title: Text('Edit Message', style: AppTextStyles.body),
                     onTap: () {
                       Navigator.pop(ctx);
@@ -2016,7 +1966,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ),
                 ],
                 ListTile(
-                  leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                  leading: const Icon(Iconsax.trash, color: Colors.red),
                   title: const Text('Delete for Me', style: TextStyle(color: Colors.red)),
                   onTap: () async {
                     Navigator.pop(ctx);
@@ -2026,7 +1976,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       message: 'Are you sure you want to delete this message for yourself? This cannot be undone.',
                       confirmLabel: 'Delete',
                       isDestructive: true,
-                      icon: Icons.delete_outline_rounded,
+                      icon: Iconsax.trash,
                     );
                     if (confirmed == true) {
                       _deleteMessageForMe(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
@@ -2035,7 +1985,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 if (isMyMessage) ...[
                   ListTile(
-                    leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
+                    leading: const Icon(Iconsax.trash, color: Colors.red),
                     title: const Text('Delete for Everyone', style: TextStyle(color: Colors.red)),
                     onTap: () async {
                       Navigator.pop(ctx);
@@ -2045,7 +1995,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         message: 'Are you sure you want to delete this message for everyone? This cannot be undone.',
                         confirmLabel: 'Delete',
                         isDestructive: true,
-                        icon: Icons.delete_forever_rounded,
+                        icon: Iconsax.trash,
                       );
                       if (confirmed == true) {
                         _deleteMessageForEveryone(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
@@ -2325,7 +2275,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
                                     onPressed: () => _showAddMemberDialog(setSheetState),
-                                    icon: const Icon(Icons.person_add_rounded, size: 18),
+                                    icon: const Icon(Iconsax.user_add, size: 18),
                                     label: const Text('Add Member', style: TextStyle(fontWeight: FontWeight.bold)),
                                     style: TextButton.styleFrom(foregroundColor: AppColors.accent),
                                   ),
@@ -2373,7 +2323,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           ListView(
                             children: [
                               ExpansionTile(
-                                leading: Icon(Icons.image_rounded, color: AppColors.accent),
+                                leading: Icon(Iconsax.image, color: AppColors.accent),
                                 title: Text('Photos (${imageMsgs.length})', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                                 children: [
                                   if (imageMsgs.isEmpty)
@@ -2410,7 +2360,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 ],
                               ),
                               ExpansionTile(
-                                leading: Icon(Icons.insert_drive_file_rounded, color: AppColors.accent),
+                                leading: Icon(Iconsax.document, color: AppColors.accent),
                                 title: Text('Documents (${fileMsgs.length})', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                                 children: [
                                   if (fileMsgs.isEmpty)
@@ -2429,10 +2379,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                         final name = msg['content'] ?? 'Attachment';
                                         return ListTile(
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                          leading: Icon(Icons.insert_drive_file_rounded, color: AppColors.accent, size: 20),
+                                          leading: Icon(Iconsax.document, color: AppColors.accent, size: 20),
                                           title: Text(name, style: AppTextStyles.bodySm, maxLines: 1, overflow: TextOverflow.ellipsis),
                                           trailing: IconButton(
-                                            icon: const Icon(Icons.download_rounded, size: 18),
+                                            icon: const Icon(Iconsax.document_download),
                                             onPressed: () => _downloadFile(url, name),
                                           ),
                                           onTap: () => _launchURL(url),
@@ -2442,7 +2392,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 ],
                               ),
                               ExpansionTile(
-                                leading: Icon(Icons.headset_rounded, color: AppColors.accent),
+                                leading: Icon(Iconsax.headphone, color: AppColors.accent),
                                 title: Text('Voice Notes (${voiceMsgs.length})', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                                 children: [
                                   if (voiceMsgs.isEmpty)
@@ -2460,7 +2410,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                         final duration = msg['payload']?['duration'] as int? ?? 0;
                                         return ListTile(
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                          leading: Icon(Icons.mic_rounded, color: AppColors.accent, size: 20),
+                                          leading: Icon(Iconsax.microphone, color: AppColors.accent, size: 20),
                                           title: Text('Voice Note (${duration}s)', style: AppTextStyles.bodySm),
                                           trailing: Text(
                                             msg['created_at'] != null
@@ -2474,7 +2424,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 ],
                               ),
                               ExpansionTile(
-                                leading: const Icon(Icons.link_rounded, color: Colors.blue),
+                                leading: const Icon(Iconsax.link, color: Colors.blue),
                                 title: Text('Links (${linkMsgs.length})', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                                 children: [
                                   if (linkMsgs.isEmpty)
@@ -2494,7 +2444,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                         final url = match?.group(0) ?? '';
                                         return ListTile(
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                          leading: const Icon(Icons.link_rounded, color: Colors.blue, size: 20),
+                                          leading: const Icon(Iconsax.link, color: Colors.blue, size: 20),
                                           title: Text(url, style: AppTextStyles.bodySm.copyWith(color: Colors.blue, decoration: TextDecoration.underline), maxLines: 1, overflow: TextOverflow.ellipsis),
                                           subtitle: Text(content, style: AppTextStyles.captionSm, maxLines: 2, overflow: TextOverflow.ellipsis),
                                           onTap: () => _launchURL(url),
@@ -2575,7 +2525,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       subtitle: Text(subtext, style: AppTextStyles.captionSm),
       trailing: (!isMe && isCurrentUserAdmin && roleStr != 'owner')
           ? IconButton(
-              icon: const Icon(Icons.more_vert_rounded),
+              icon: const Icon(Iconsax.more),
               onPressed: () => _showMemberActionsMenu(member, setSheetState),
             )
           : null,
@@ -2636,7 +2586,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               const SizedBox(height: 8),
               if (isCurrentUserOwner) ...[
                 ListTile(
-                  leading: Icon(targetRole == 'admin' ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded),
+                  leading: Icon(targetRole == 'admin' ? Iconsax.arrow_down : Iconsax.arrow_up),
                   title: Text(targetRole == 'admin' ? 'Demote to Member' : 'Promote to Admin', style: AppTextStyles.body),
                   onTap: () async {
                     Navigator.pop(ctx);
@@ -2653,7 +2603,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               ],
               ListTile(
-                leading: const Icon(Icons.volume_off_rounded),
+                leading: const Icon(Iconsax.volume_mute),
                 title: Text(member['muted_until'] != null ? 'Unmute Member' : 'Mute Member', style: AppTextStyles.body),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -2665,7 +2615,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.person_remove_rounded, color: Colors.orangeAccent),
+                leading: const Icon(Iconsax.user_remove, color: Colors.orangeAccent),
                 title: const Text('Remove from Group', style: TextStyle(color: Colors.orangeAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -2675,7 +2625,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     message: 'Are you sure you want to remove $targetDisplayName from the group?',
                     confirmLabel: 'Remove',
                     isDestructive: true,
-                    icon: Icons.person_remove_rounded,
+                    icon: Iconsax.user_remove,
                   );
                   if (confirmed == true) {
                     await _chatService.removeMember(widget.roomId, targetUserId);
@@ -2690,7 +2640,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.block_rounded, color: Colors.redAccent),
+                leading: const Icon(Iconsax.user_minus, color: Colors.redAccent),
                 title: const Text('Ban Member', style: TextStyle(color: Colors.redAccent)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -2700,7 +2650,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     message: 'Are you sure you want to ban $targetDisplayName from the group? They will not be able to re-join.',
                     confirmLabel: 'Ban',
                     isDestructive: true,
-                    icon: Icons.block_rounded,
+                    icon: Iconsax.user_minus,
                   );
                   if (confirmed == true) {
                     await _chatService.banMember(widget.roomId, targetUserId);
@@ -2870,7 +2820,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildPickerTile(
-                  icon: Icons.camera_alt_rounded,
+                  icon: Iconsax.camera,
                   color: Colors.redAccent,
                   label: 'Camera',
                   subtitle: 'Take a photo',
@@ -2880,7 +2830,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 _buildPickerTile(
-                  icon: Icons.photo_library_rounded,
+                  icon: Iconsax.gallery,
                   color: Colors.pinkAccent,
                   label: 'Gallery',
                   subtitle: 'Pick photos & videos',
@@ -2890,7 +2840,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 _buildPickerTile(
-                  icon: Icons.insert_drive_file_rounded,
+                  icon: Iconsax.document_text,
                   color: Colors.deepPurpleAccent,
                   label: 'Files',
                   subtitle: 'Documents, PDFs, and more',
@@ -3203,7 +3153,7 @@ class _VoiceNotePlayerWidgetState extends State<VoiceNotePlayerWidget> {
         children: [
           IconButton(
             icon: Icon(
-              _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              _isPlaying ? Iconsax.pause : Iconsax.play,
               color: color,
             ),
             padding: EdgeInsets.zero,
@@ -3376,7 +3326,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.lock_outline_rounded, color: Colors.white54, size: 14),
+                      const Icon(Iconsax.lock, color: Colors.white54, size: 14),
                       const SizedBox(width: 4),
                       const Text(
                         'End-to-End Encrypted',
@@ -3467,7 +3417,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.present_to_all_rounded, size: 64, color: Colors.greenAccent),
+                                      const Icon(Iconsax.screenmirroring, size: 64, color: Colors.greenAccent),
                                       const SizedBox(height: 16),
                                       const Text(
                                         'Presenting Screen',
@@ -3484,7 +3434,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.videocam_rounded, size: 64, color: Colors.white70),
+                                      const Icon(Iconsax.video, size: 64, color: Colors.white70),
                                       const SizedBox(height: 16),
                                       const Text(
                                         'Camera Stream Active',
@@ -3512,7 +3462,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                                     ),
                                     child: Center(
                                       child: Icon(
-                                        _cameraOn ? Icons.person_rounded : Icons.videocam_off_rounded,
+                                        _cameraOn ? Iconsax.user : Iconsax.video_slash,
                                         color: Colors.white70,
                                         size: 24,
                                       ),
@@ -3556,7 +3506,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                                         radius: 65,
                                         backgroundColor: AppColors.accent.withOpacity(0.15),
                                         child: Icon(
-                                          Icons.group_rounded,
+                                          Iconsax.profile_2user,
                                           color: AppColors.accent,
                                           size: 54,
                                         ),
@@ -3586,25 +3536,25 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                     children: [
                       // Mute
                       _buildControlBtn(
-                        icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                        icon: _isMuted ? Iconsax.microphone_slash : Iconsax.microphone,
                         active: _isMuted,
                         onTap: () => setState(() => _isMuted = !_isMuted),
                       ),
                       // Video
                       _buildControlBtn(
-                        icon: _cameraOn ? Icons.videocam_rounded : Icons.videocam_off_rounded,
+                        icon: _cameraOn ? Iconsax.video : Iconsax.video_slash,
                         active: _cameraOn,
                         onTap: () => setState(() => _cameraOn = !_cameraOn),
                       ),
                       // Screen Share
                       _buildControlBtn(
-                        icon: Icons.present_to_all_rounded,
+                        icon: Iconsax.screenmirroring,
                         active: _isScreenSharing,
                         onTap: () => setState(() => _isScreenSharing = !_isScreenSharing),
                       ),
                       // Speaker
                       _buildControlBtn(
-                        icon: _isSpeaker ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+                        icon: _isSpeaker ? Iconsax.volume_high : Iconsax.volume_low,
                         active: _isSpeaker,
                         onTap: () => setState(() => _isSpeaker = !_isSpeaker),
                       ),
@@ -3629,7 +3579,7 @@ class _SimulatedCallScreenState extends State<_SimulatedCallScreen> {
                           ],
                         ),
                         child: const Icon(
-                          Icons.call_end_rounded,
+                          Iconsax.call_remove,
                           color: Colors.white,
                           size: 32,
                         ),

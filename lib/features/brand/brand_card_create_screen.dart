@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
@@ -350,150 +351,171 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.card != null;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        if (_loading) {
-          Navigator.of(context).pop(result);
-          return;
-        }
-        if (_hasUnsavedChanges()) {
-          final confirm = await showPremiumConfirmDialog(
-            context: context,
-            title: 'Discard Changes',
-            message: 'You have unsaved changes. Are you sure you want to discard them and exit?',
-            confirmLabel: 'Discard',
-            isDestructive: true,
-          );
-          if (confirm == true && mounted) {
+    final theme = Theme.of(context);
+    final localTheme = theme.copyWith(
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+
+    return Theme(
+      data: localTheme,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          if (_loading) {
+            Navigator.of(context).pop(result);
+            return;
+          }
+          if (_hasUnsavedChanges()) {
+            final confirm = await showPremiumConfirmDialog(
+              context: context,
+              title: 'Discard Changes',
+              message: 'You have unsaved changes. Are you sure you want to discard them and exit?',
+              confirmLabel: 'Discard',
+              isDestructive: true,
+            );
+            if (confirm == true && mounted) {
+              Navigator.of(context).pop(result);
+            }
+          } else {
             Navigator.of(context).pop(result);
           }
-        } else {
-          Navigator.of(context).pop(result);
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(isEditing ? 'Edit Campaign Card' : 'Create Campaign Card'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () {
-              Navigator.of(context).maybePop();
-            },
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(isEditing ? 'Edit Campaign Card' : 'Create Campaign Card'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: () {
+                Navigator.of(context).maybePop();
+              },
+            ),
           ),
-        ),
-        body: Column(
-          children: [
-            // Stepper indicator
-            _buildStepperHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: _buildCurrentStepView(),
+          body: Column(
+            children: [
+              // Stepper indicator
+              _buildStepperHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: _buildCurrentStepView(),
+                  ),
                 ),
               ),
-            ),
-            _buildNavigationRow(),
-          ],
+              _buildNavigationRow(),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildStepperHeader() {
-    final steps = [
-      {'title': 'Details', 'icon': Iconsax.document_text},
-      {'title': 'Targeting', 'icon': Iconsax.user_search},
-      {'title': 'Compensation', 'icon': Iconsax.wallet_3},
-      {'title': 'Preview', 'icon': Iconsax.eye},
-    ];
-
+    const stepsCount = 4;
     final isDark = AppColors.isDarkMode;
+    final activeColor = AppColors.accent;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         border: Border(bottom: BorderSide(color: AppColors.border, width: 1)),
       ),
+      alignment: Alignment.center,
       child: Row(
-        children: List.generate(steps.length, (idx) {
-          final step = steps[idx];
-          final isActive = _currentStep == idx;
-          final isCompleted = _currentStep > idx;
-
-          Color bg;
-          Color contentCol;
-          double borderVal;
-          Color borderCol;
-
-          if (isActive) {
-            bg = AppColors.accent;
-            contentCol = AppColors.accentOnDark;
-            borderVal = 0;
-            borderCol = Colors.transparent;
-          } else if (isCompleted) {
-            bg = AppColors.success.withOpacity(0.12);
-            contentCol = AppColors.success;
-            borderVal = 1;
-            borderCol = AppColors.success.withOpacity(0.3);
-          } else {
-            bg = isDark ? const Color(0xFF141414) : const Color(0xFFF3F4F6);
-            contentCol = AppColors.textMuted;
-            borderVal = 1;
-            borderCol = AppColors.border;
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(stepsCount * 2 - 1, (idx) {
+          if (idx.isOdd) {
+            // Line connector
+            final stepIndex = idx ~/ 2;
+            final isLineCompleted = _currentStep > stepIndex;
+            return Container(
+              width: 50,
+              height: 2,
+              margin: const EdgeInsets.symmetric(horizontal: 6),
+              color: isLineCompleted ? activeColor : (isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+            );
           }
 
-          return Expanded(
-            child: Container(
-              margin: EdgeInsets.only(
-                left: idx == 0 ? 0 : 6,
-                right: idx == steps.length - 1 ? 0 : 6,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          final stepIndex = idx ~/ 2;
+          final isActive = _currentStep == stepIndex;
+          final isCompleted = _currentStep > stepIndex;
+
+          Widget circleWidget;
+          if (isCompleted) {
+            circleWidget = Container(
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(100),
-                border: borderVal > 0 ? Border.all(color: borderCol, width: borderVal) : null,
-                boxShadow: isActive
-                    ? [
-                        BoxShadow(
-                          color: AppColors.accent.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        )
-                      ]
-                    : null,
+                color: activeColor,
+                shape: BoxShape.circle,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isCompleted ? Icons.check_circle_rounded : (step['icon'] as IconData),
-                    color: contentCol,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      step['title'] as String,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.labelXs.copyWith(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: contentCol,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ),
-                ],
+              child: const Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: 16,
               ),
-            ),
-          );
+            );
+          } else if (isActive) {
+            circleWidget = Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: activeColor,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${stepIndex + 1}',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          } else {
+            circleWidget = Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${stepIndex + 1}',
+                style: GoogleFonts.inter(
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          }
+
+          return circleWidget;
         }),
       ),
     );
@@ -529,11 +551,8 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _campaignType,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            filled: true,
-            fillColor: AppColors.surface2,
+          decoration: const InputDecoration(
+            hintText: 'Select Campaign Type',
           ),
           dropdownColor: AppColors.surface,
           items: ['Sponsored Post', 'Product Review', 'Brand Ambassador', 'Affiliate / Commission', 'Other']
@@ -604,14 +623,14 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                     return GestureDetector(
                       onTap: _uploadingCover ? null : _selectImageSource,
                       child: Container(
-                        width: 140,
+                        width: 130,
                         margin: const EdgeInsets.only(right: 12),
                         decoration: BoxDecoration(
                           color: AppColors.surface2,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _uploadingCover ? AppColors.accent : AppColors.border,
-                            style: BorderStyle.solid,
+                            width: 1.2,
                           ),
                         ),
                         alignment: Alignment.center,
@@ -637,11 +656,15 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                             : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Iconsax.image, color: AppColors.textMuted, size: 24),
+                                  Icon(Iconsax.image, color: AppColors.textMuted, size: 22),
                                   const SizedBox(height: 6),
                                   Text(
                                     'Upload Cover',
-                                    style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted, fontWeight: FontWeight.bold),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textMuted,
+                                    ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
@@ -670,13 +693,13 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                       });
                     },
                     child: Container(
-                      width: 140,
+                      width: 130,
                       margin: const EdgeInsets.only(right: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected ? AppColors.accent : AppColors.border,
-                          width: isSelected ? 3 : 1,
+                          width: isSelected ? 2 : 1,
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
@@ -687,37 +710,50 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                             url: url,
                             fit: BoxFit.cover,
                           ),
-                          Container(
-                            color: Colors.black.withOpacity(isSelected ? 0.3 : 0.5),
-                          ),
-                          Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.1),
+                                    Colors.black.withValues(alpha: 0.75),
+                                  ],
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                             ),
                           ),
-                          if (type == 'uploaded')
+                          Positioned(
+                            left: 8,
+                            right: 8,
+                            bottom: 8,
+                            child: Text(
+                              name,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isSelected)
                             Positioned(
-                              top: 4,
-                              right: 4,
+                              top: 6,
+                              right: 6,
                               child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(
-                                  color: Colors.black54,
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Colors.green,
-                                  size: 14,
+                                child: Icon(
+                                  Icons.check_rounded,
+                                  color: AppColors.accentOnDark,
+                                  size: 10,
                                 ),
                               ),
                             ),
@@ -800,11 +836,8 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _preferredLocation,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            filled: true,
-            fillColor: AppColors.surface2,
+          decoration: const InputDecoration(
+            hintText: 'Select Preferred Location',
           ),
           dropdownColor: AppColors.surface,
           items: _locations
@@ -869,7 +902,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
             }
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: AppColors.surface2,
               borderRadius: BorderRadius.circular(12),
@@ -950,8 +983,10 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                     child: DropdownButtonFormField<String>(
                       value: _tempDelivType,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.border)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       ),
                       items: ['Instagram Reel', 'Instagram Story', 'Instagram Post', 'YouTube Video', 'YouTube Short', 'TikTok Video', 'UGC Content', 'Other']
                           .map((type) => DropdownMenuItem(value: type, child: Text(type, style: const TextStyle(fontSize: 12))))
@@ -969,8 +1004,10 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Qty',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.border)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                       ),
                       style: const TextStyle(fontSize: 12),
                     ),
@@ -990,7 +1027,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                       backgroundColor: AppColors.accent,
                       foregroundColor: AppColors.accentOnDark,
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
                     child: const Icon(Icons.add, size: 16),
@@ -1230,11 +1267,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     final isFirstStep = _currentStep == 0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
       child: Row(
         children: [
           if (!isFirstStep)
@@ -1242,7 +1275,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
               child: OutlinedButton(
                 onPressed: _prevStep,
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   side: BorderSide(color: AppColors.border),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                 ),
@@ -1256,7 +1289,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: isLastStep ? AppColors.accent : AppColors.accent,
                 foregroundColor: AppColors.accentOnDark,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
                 elevation: 0,
               ),

@@ -357,34 +357,77 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
                   // Bento Niche filter chips with counts
                   _buildNicheChips(),
                   Expanded(
-                    child: _filtered.isEmpty
-                        ? const AppEmptyState(
-                            icon: Iconsax.profile_2user,
-                            title: 'No influencers found',
-                          )
-                        : ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.xs,
-                              AppSpacing.pageMarginHorizontal,
-                              AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                            ),
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, index) => const SizedBox(height: 12),
-                            itemBuilder: (_, i) {
-                              final inf = _filtered[i];
-                              return _BentoInfluencerCard(
-                                influencer: inf,
-                                animationDelayIndex: i,
-                                onTap: () => context.push('/brand/influencers/${inf['id']}'),
-                              );
-                            },
-                          ),
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.xs,
+                        AppSpacing.pageMarginHorizontal,
+                        AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                      ),
+                      itemCount: _filtered.isEmpty ? 2 : _filtered.length + 1,
+                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      itemBuilder: (context, i) {
+                        if (_filtered.isEmpty) {
+                          if (i == 0) {
+                            return const AppEmptyState(
+                              icon: Iconsax.profile_2user,
+                              title: 'No influencers found',
+                            );
+                          } else {
+                            return _buildFooter();
+                          }
+                        }
+                        if (i == _filtered.length) {
+                          return _buildFooter();
+                        }
+                        final inf = _filtered[i];
+                        return _BentoInfluencerCard(
+                          influencer: inf,
+                          animationDelayIndex: i,
+                          onTap: () => context.push('/brand/influencers/${inf['id']}'),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 56, bottom: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Finding your',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            'next partner.',
+            style: GoogleFonts.inter(
+              fontSize: 42,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+              color: AppColors.isDarkMode 
+                  ? const Color(0xFF3F3F46) 
+                  : const Color(0xFFD4D4D8),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
