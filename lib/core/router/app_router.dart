@@ -37,6 +37,7 @@ import '../../features/settings/verification_settings.dart';
 import '../../features/settings/platform_settings.dart';
 import '../../features/settings/api_keys_settings.dart';
 import '../../features/settings/document_viewer.dart';
+import '../../features/settings/developer_settings_screen.dart';
 import '../../features/support/support_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -158,6 +159,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'security', builder: (_, _) => const SecuritySettingsScreen()),
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
+          GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
         ],
@@ -176,6 +178,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'platforms', builder: (_, _) => const PlatformSettingsScreen()),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
+          GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
         ],

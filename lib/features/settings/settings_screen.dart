@@ -82,6 +82,12 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.push('/$role/support'),
             ),
             _SettingsItem(
+              icon: Iconsax.user_octagon,
+              label: 'Developers',
+              subtitle: 'Meet the creator of Promo',
+              onTap: () => context.push('/$role/settings/developers'),
+            ),
+            _SettingsItem(
               icon: Iconsax.document,
               label: 'Terms of Service',
               onTap: () => context.push('/$role/settings/tos'),

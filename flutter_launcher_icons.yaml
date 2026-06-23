@@ -1,7 +1,7 @@
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/Logo.png"
+  image_path: "assets/Promo.png"
   web:
     generate: true
-    image_path: "assets/Logo.png"
+    image_path: "assets/Promo.png"
