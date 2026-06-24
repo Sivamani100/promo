@@ -200,26 +200,37 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
 
   if (response.payload == null) return;
 
-  if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      try {
-        await SupabaseService.initialize();
-      } catch (_) {}
+      await SupabaseService.initialize();
+    } catch (_) {}
 
-      final client = SupabaseService.client;
-      final currentUser = client.auth.currentUser;
-      if (currentUser == null) {
-        debugPrint('[PUSH BACKGROUND REPLY ERROR] No authenticated user found.');
-        return;
-      }
+    final client = SupabaseService.client;
 
-      final Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(response.payload!));
-      final roomId = data['reference_id'] as String?;
+    // Wait up to 1.5 seconds for the auth session to be restored from persistence
+    int attempts = 0;
+    while (client.auth.currentSession == null && attempts < 15) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
 
-      if (roomId != null) {
+    final currentUser = client.auth.currentUser;
+    if (currentUser == null) {
+      debugPrint('[PUSH BACKGROUND ACTION ERROR] No authenticated user found after waiting.');
+      return;
+    }
+
+    final Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(response.payload!));
+    final roomId = data['reference_id'] as String?;
+    final String? title = data['title'] ?? data['body'];
+    final String? body = data['body'];
+    final int notifId = response.id ?? (title?.hashCode ?? 0) ^ (body?.hashCode ?? 0);
+
+    if (roomId != null) {
+      if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
         debugPrint('[PUSH BACKGROUND REPLY] Sending reply to room $roomId: ${response.input}');
 
         // Send message using Supabase directly
@@ -233,33 +244,9 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
 
         // Cancel the notification to clear it from shade
         final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
-        if (response.id != null) {
-          await localNotifications.cancel(id: response.id!);
-        }
-      }
-    } catch (e) {
-      debugPrint('[PUSH BACKGROUND REPLY ERROR] Failed to send background reply: $e');
-    }
-  } else if (response.actionId == 'action_mark_read') {
-    try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      try {
-        await SupabaseService.initialize();
-      } catch (_) {}
+        await localNotifications.cancel(id: notifId);
 
-      final client = SupabaseService.client;
-      final currentUser = client.auth.currentUser;
-      if (currentUser == null) {
-        debugPrint('[PUSH BACKGROUND MARK READ ERROR] No authenticated user found.');
-        return;
-      }
-
-      final Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(response.payload!));
-      final roomId = data['reference_id'] as String?;
-
-      if (roomId != null) {
+      } else if (response.actionId == 'action_mark_read') {
         debugPrint('[PUSH BACKGROUND MARK READ] Marking messages read in room $roomId');
 
         // Update all messages in the room not sent by currentUser to is_read = true
@@ -274,13 +261,11 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
 
         // Cancel the notification
         final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
-        if (response.id != null) {
-          await localNotifications.cancel(id: response.id!);
-        }
+        await localNotifications.cancel(id: notifId);
       }
-    } catch (e) {
-      debugPrint('[PUSH BACKGROUND MARK READ ERROR] Failed to mark messages read: $e');
     }
+  } catch (e, stack) {
+    debugPrint('[PUSH BACKGROUND ACTION CRITICAL ERROR] $e\n$stack');
   }
 }
 
