@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -77,7 +78,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
 
   Future<void> _apply() async {
     if (_pitchCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please write a pitch message.')));
+      AppSnackbar.show(context, 'Please write a pitch message.');
       return;
     }
     setState(() => _applying = true);
@@ -102,18 +103,18 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
       if (_application != null) {
         await ApplicationService().updateApplication(_application!['id'], appData);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application updated successfully!')));
+          AppSnackbar.show(context, 'Application updated successfully!');
         }
       } else {
         await ApplicationService().createApplication(appData);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Application submitted successfully!')));
+          AppSnackbar.show(context, 'Application submitted successfully!');
         }
       }
       
       await _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppErrorHandler.toUserMessage(e))));
+      if (mounted) AppSnackbar.error(context, AppErrorHandler.toUserMessage(e));
     } finally {
       if (mounted) setState(() => _applying = false);
     }

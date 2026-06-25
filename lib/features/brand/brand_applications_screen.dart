@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -225,15 +226,11 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                                              await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
                                              await _load();
                                              if (mounted) {
-                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                 const SnackBar(content: Text('Openings increased and application accepted successfully')),
-                                               );
+                                               AppSnackbar.show(context, 'Openings increased and application accepted successfully');
                                              }
                                            } catch (e) {
                                              if (mounted) {
-                                               ScaffoldMessenger.of(context).showSnackBar(
-                                                 SnackBar(content: Text('Failed to update: $e')),
-                                               );
+                                               AppSnackbar.show(context, 'Failed to update: $e');
                                              }
                                            } finally {
                                              if (mounted) {
@@ -393,7 +390,7 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
       setState(() {
         m['status'] = done ? 'completed' : 'pending';
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update milestone')));
+      if (mounted) AppSnackbar.show(context, 'Failed to update milestone');
     }
   }
 
@@ -519,7 +516,7 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
         });
         await _loadMilestones();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add: $e')));
+        if (mounted) AppSnackbar.show(context, 'Failed to add: $e');
         setState(() => _loading = false);
       }
     }
@@ -545,15 +542,11 @@ class _BrandMilestoneTrackerWidgetState extends ConsumerState<BrandMilestoneTrac
       }
       await _loadMilestones();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(approve ? 'Extension request approved!' : 'Extension request rejected.')),
-        );
+        AppSnackbar.success(context, approve ? 'Extension request approved!' : 'Extension request rejected.');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update extension: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to update extension: $e');
       }
       setState(() => _loading = false);
     }

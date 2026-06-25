@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -1371,9 +1372,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                         } catch (e) {
                           if (context.mounted) {
                             Navigator.pop(context); // Close loading dialog
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error starting chat: $e')),
-                            );
+                            AppSnackbar.show(context, 'Error starting chat: $e');
                           }
                         }
                       },

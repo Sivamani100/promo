@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -835,11 +836,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       });
       ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated!')));
+        AppSnackbar.show(context, 'Profile updated!');
         _setEditing(false);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) AppSnackbar.error(context, e.toString());
     }
     if (mounted) setState(() => _saving = false);
   }

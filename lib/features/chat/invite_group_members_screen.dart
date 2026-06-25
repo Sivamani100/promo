@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -114,9 +115,7 @@ class _InviteGroupMembersScreenState extends ConsumerState<InviteGroupMembersScr
     } catch (e) {
       print('Error inviting users: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to invite: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to invite: $e');
       }
     } finally {
       if (mounted) {

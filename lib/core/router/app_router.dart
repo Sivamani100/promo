@@ -189,6 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/influencer/support', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const SupportScreen()),
       GoRoute(path: '/influencer/map', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const DiscoverMapScreen()),
+      GoRoute(path: '/brand/map', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const DiscoverMapScreen()),
       GoRoute(path: '/brand/influencers/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => BrandInfluencerDetailScreen(influencerId: state.pathParameters['id']!)),
       GoRoute(path: '/influencer/brands/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => InfluencerBrandDetailScreen(brandId: state.pathParameters['id']!)),
       GoRoute(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -46,24 +47,18 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
       await AuthService().updatePassword(_newPasswordCtrl.text.trim());
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password updated successfully! Signing out all devices...')),
-        );
+        AppSnackbar.show(context, 'Password updated successfully! Signing out all devices...');
         _oldPasswordCtrl.clear();
         _newPasswordCtrl.clear();
         _confirmPasswordCtrl.clear();
       }
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        AppSnackbar.error(context, e.message);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update password: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to update password: $e');
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -178,9 +173,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                 value: totpEnabled,
                 activeThumbColor: AppColors.accent,
                 onChanged: (val) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please contact support to configure Authenticator App credentials.')),
-                  );
+                  AppSnackbar.show(context, 'Please contact support to configure Authenticator App credentials.');
                 },
               ),
             ),
@@ -216,9 +209,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                     trailing: IconButton(
                       icon: const Icon(Iconsax.trash, size: 18, color: Colors.red),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Session revoked successfully.')),
-                        );
+                        AppSnackbar.show(context, 'Session revoked successfully.');
                       },
                     ),
                   ),

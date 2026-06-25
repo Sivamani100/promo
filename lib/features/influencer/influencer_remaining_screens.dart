@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -65,7 +66,7 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
       wasFollowing ? await _followService.unfollow(user.id, brandId) : await _followService.follow(user.id, brandId);
     } catch (e) {
       setState(() { wasFollowing ? _followingIds.add(brandId) : _followingIds.remove(brandId); });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update follow status')));
+      if (mounted) AppSnackbar.show(context, 'Failed to update follow status');
     }
   }
 
@@ -536,9 +537,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                     } catch (e) {
                                       setState(() => _loading = false);
                                       if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Failed to delete item: $e')),
-                                        );
+                                        AppSnackbar.show(context, 'Failed to delete item: $e');
                                       }
                                     }
                                   }
@@ -700,9 +699,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                   } catch (e) {
                                     print('Error uploading photo: $e');
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to upload photo: $e')),
-                                      );
+                                      AppSnackbar.show(context, 'Failed to upload photo: $e');
                                     }
                                   } finally {
                                     setDialogState(() => uploading = false);
@@ -946,9 +943,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                   } catch (e) {
                                     print('Error uploading photo: $e');
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to upload photo: $e')),
-                                      );
+                                      AppSnackbar.show(context, 'Failed to upload photo: $e');
                                     }
                                   } finally {
                                     setDialogState(() => uploading = false);
@@ -1056,9 +1051,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                 _load();
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to delete: $e')),
-                                  );
+                                  AppSnackbar.show(context, 'Failed to delete: $e');
                                 }
                               }
                             }
@@ -1082,9 +1075,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                                 _load();
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to save: $e')),
-                                  );
+                                  AppSnackbar.show(context, 'Failed to save: $e');
                                 }
                               }
                             }
@@ -1543,15 +1534,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Location services are disabled on your device.'),
-              action: SnackBarAction(
-                label: 'Enable',
-                onPressed: () => Geolocator.openLocationSettings(),
-              ),
-            ),
-          );
+          AppSnackbar.warning(context, 'Location services are disabled. Please enable them.');
         }
         setState(() {
           _isLoadingLocation = false;
@@ -1564,11 +1547,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Location permissions are denied. You can enter location details manually below.'),
-              ),
-            );
+            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
           }
           setState(() {
             _isLoadingLocation = false;
@@ -1579,16 +1558,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Location permissions are permanently denied. Please enable them in settings.'),
-              action: SnackBarAction(
-                label: 'Settings',
-                onPressed: () => Geolocator.openAppSettings(),
-              ),
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          AppSnackbar.warning(context, 'Location permissions permanently denied. Enable in settings.');
         }
         setState(() {
           _isLoadingLocation = false;
@@ -1629,18 +1599,14 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
             _updateLocationString();
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location updated successfully!')),
-          );
+          AppSnackbar.show(context, 'Location updated successfully!');
         }
       } else {
         throw 'Failed to reverse geocode location';
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: $e')),
-        );
+        AppSnackbar.show(context, 'Error getting location: $e');
       }
     } finally {
       if (mounted) {
@@ -1756,9 +1722,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         _followingBrands.insert(brandIndex, removedBrand);
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to unfollow brand')),
-        );
+        AppSnackbar.show(context, 'Failed to unfollow brand');
       }
     }
   }
@@ -1833,13 +1797,11 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       });
       await ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Profile and platforms updated! Total followers: $totalFollowers')),
-        );
+        AppSnackbar.show(context, 'Profile and platforms updated! Total followers: $totalFollowers');
         _setEditing(false);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) AppSnackbar.error(context, e.toString());
     }
     if (mounted) setState(() => _saving = false);
   }
@@ -2892,9 +2854,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                   } catch (e) {
                                     print('Error uploading photo: $e');
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Failed to upload photo: $e')),
-                                      );
+                                      AppSnackbar.show(context, 'Failed to upload photo: $e');
                                     }
                                   } finally {
                                     setDialogState(() => uploading = false);
@@ -3002,9 +2962,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 _loadDashboardData();
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to delete: $e')),
-                                  );
+                                  AppSnackbar.show(context, 'Failed to delete: $e');
                                 }
                               }
                             }
@@ -3028,9 +2986,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 _loadDashboardData();
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to save: $e')),
-                                  );
+                                  AppSnackbar.show(context, 'Failed to save: $e');
                                 }
                               }
                             }
@@ -3248,12 +3204,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                         
                         if (context.mounted) {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Digital card profile details copied to clipboard!'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
+                          AppSnackbar.success(context, 'Digital card profile details copied to clipboard!');
                           await Share.share(shareText, subject: '$displayName\'s Digital Card');
                         }
                       },
@@ -4267,9 +4218,7 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
         m['status'] = done ? 'completed' : 'pending';
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update milestone status')),
-        );
+        AppSnackbar.show(context, 'Failed to update milestone status');
       }
     }
   }
@@ -4404,15 +4353,11 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
                           label: 'Submit Request',
                           onTap: () {
                             if (selectedDate == null) {
-                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                const SnackBar(content: Text('Please select a new proposed date')),
-                              );
+                              AppSnackbar.show(ctx, 'Please select a new proposed date');
                               return;
                             }
                             if (reasonCtrl.text.trim().isEmpty) {
-                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                const SnackBar(content: Text('Please specify a reason')),
-                              );
+                              AppSnackbar.show(ctx, 'Please specify a reason');
                               return;
                             }
                             Navigator.pop(context, true);
@@ -4446,18 +4391,14 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
       try {
         await ChatService().updateMilestoneTitle(m['id'] as String, newRawTitle);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Extension requested successfully!')),
-          );
+          AppSnackbar.show(context, 'Extension requested successfully!');
         }
       } catch (e) {
         setState(() {
           m['title'] = oldTitle;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to submit extension request: $e')),
-          );
+          AppSnackbar.show(context, 'Failed to submit extension request: $e');
         }
       }
     }

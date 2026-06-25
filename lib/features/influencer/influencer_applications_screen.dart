@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -403,7 +404,7 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
       setState(() {
         m['status'] = done ? 'completed' : 'pending';
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update milestone')));
+      if (mounted) AppSnackbar.show(context, 'Failed to update milestone');
     }
   }
 
@@ -529,7 +530,7 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
         });
         await _loadMilestones();
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add: $e')));
+        if (mounted) AppSnackbar.show(context, 'Failed to add: $e');
         setState(() => _loading = false);
       }
     }

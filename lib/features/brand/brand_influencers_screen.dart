@@ -294,6 +294,13 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
             elevation: 0,
             backgroundColor: Colors.transparent,
             actions: [
+              IconButton(
+                icon: const Icon(
+                  Iconsax.map,
+                  size: 24,
+                ),
+                onPressed: () => context.push('/brand/map'),
+              ),
               Stack(
                 alignment: Alignment.center,
                 children: [

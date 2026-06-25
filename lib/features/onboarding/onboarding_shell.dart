@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -477,9 +478,7 @@ class _Step1WelcomeState extends ConsumerState<_Step1Welcome> {
               }
             } catch (e) {
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to update account type: $e')),
-                );
+                AppSnackbar.show(context, 'Failed to update account type: $e');
               }
             } finally {
               if (mounted) {
@@ -565,9 +564,7 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
           onTap: () {
             final name = widget.role == 'brand' ? state.companyName : state.displayName;
             if (name.trim().isEmpty || state.bio.trim().isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please fill out Display/Company Name and Bio.')),
-              );
+              AppSnackbar.show(context, 'Please fill out Display/Company Name and Bio.');
               return;
             }
             context.go('/onboarding/3');
@@ -589,9 +586,7 @@ class _Step3Visual extends ConsumerWidget {
       if (image == null) return;
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Uploading photo...'), duration: Duration(seconds: 2)),
-      );
+      AppSnackbar.info(context, 'Uploading photo...');
 
       final bytes = await image.readAsBytes();
       final user = ref.read(authProvider).user;
@@ -611,14 +606,10 @@ class _Step3Visual extends ConsumerWidget {
 
       ref.read(onboardingStateProvider.notifier).updateField('avatarUrl', url);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Photo uploaded successfully!')),
-      );
+      AppSnackbar.show(context, 'Photo uploaded successfully!');
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: $e')),
-      );
+      AppSnackbar.show(context, 'Upload failed: $e');
     }
   }
 
@@ -698,9 +689,7 @@ class _Step3Visual extends ConsumerWidget {
           label: 'Continue',
           onTap: () {
             if (role == 'influencer' && state.niches.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please select at least one content niche.')),
-              );
+              AppSnackbar.show(context, 'Please select at least one content niche.');
               return;
             }
             context.go('/onboarding/4');
@@ -750,15 +739,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Location services are disabled on your device.'),
-              action: SnackBarAction(
-                label: 'Enable',
-                onPressed: () => Geolocator.openLocationSettings(),
-              ),
-            ),
-          );
+          AppSnackbar.warning(context, 'Location services are disabled. Please enable them.');
         }
         setState(() {
           _isLoadingLocation = false;
@@ -771,11 +752,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Location permissions are denied. You can enter location details manually below.'),
-              ),
-            );
+            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
           }
           setState(() {
             _isLoadingLocation = false;
@@ -786,16 +763,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
       
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Location permissions are permanently denied. Please enable them in settings.'),
-              action: SnackBarAction(
-                label: 'Settings',
-                onPressed: () => Geolocator.openAppSettings(),
-              ),
-              duration: const Duration(seconds: 5),
-            ),
-          );
+          AppSnackbar.warning(context, 'Location permissions permanently denied. Enable in settings.');
         }
         setState(() {
           _isLoadingLocation = false;
@@ -838,18 +806,14 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
           notifier.updateField('latitude', position.latitude);
           notifier.updateField('longitude', position.longitude);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location updated successfully!')),
-          );
+          AppSnackbar.show(context, 'Location updated successfully!');
         }
       } else {
         throw 'Failed to reverse geocode location';
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: $e')),
-        );
+        AppSnackbar.show(context, 'Error getting location: $e');
       }
     } finally {
       if (mounted) {
@@ -973,9 +937,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
 
     ref.read(onboardingStateProvider.notifier).connectPlatform(platform, handle, followers);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Linked $platform account! Followers count set to: $followers')),
-      );
+      AppSnackbar.show(context, 'Linked $platform account! Followers count set to: $followers');
     }
   }
 
@@ -1065,16 +1027,16 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
           onTap: () {
             if (widget.role == 'influencer') {
               if (state.location.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter your location.')));
+                AppSnackbar.show(context, 'Please enter your location.');
                 return;
               }
               if (state.platforms.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please connect at least one platform.')));
+                AppSnackbar.show(context, 'Please connect at least one platform.');
                 return;
               }
             } else {
               if (state.targetBudgetRange.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter target budget range.')));
+                AppSnackbar.show(context, 'Please enter target budget range.');
                 return;
               }
             }
@@ -1164,7 +1126,7 @@ class _Step5Launch extends ConsumerWidget {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
+                  AppSnackbar.show(context, 'Failed to save profile: $e');
                 }
               }
             } else {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
@@ -106,7 +107,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> with SingleTicker
 
   Future<void> _submit() async {
     if (_subjectCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
-      AppToast.show(context, 'Please fill in all fields.', icon: Iconsax.info_circle, iconColor: AppColors.error);
+      AppSnackbar.warning(context, 'Please fill in all fields.');
       return;
     }
     setState(() => _submitting = true);
@@ -124,11 +125,11 @@ class _SupportScreenState extends ConsumerState<SupportScreen> with SingleTicker
       _tabCtrl.animateTo(2); // Switch to My Tickets
       _loadTickets();
       if (mounted) {
-        AppToast.show(context, 'Support ticket submitted!');
+        AppSnackbar.success(context, 'Support ticket submitted!');
       }
     } catch (e) {
       if (mounted) {
-        AppToast.show(context, AppErrorHandler.toUserMessage(e), icon: Iconsax.info_circle, iconColor: AppColors.error);
+        AppSnackbar.error(context, AppErrorHandler.toUserMessage(e));
       }
     }
     if (mounted) setState(() => _submitting = false);

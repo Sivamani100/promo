@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,12 +67,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   Future<void> _downloadImage(String url) async {
     await Clipboard.setData(ClipboardData(text: url));
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image link copied to clipboard for download'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AppSnackbar.success(context, 'Image link copied to clipboard');
     }
   }
 
@@ -87,12 +83,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
   Future<void> _copyLink(String url) async {
     await Clipboard.setData(ClipboardData(text: url));
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Link copied to clipboard'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AppSnackbar.success(context, 'Link copied to clipboard');
     }
   }
 
@@ -152,9 +143,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                           forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
                         );
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Photo forwarded to $title')),
-                          );
+                          AppSnackbar.show(context, 'Photo forwarded to $title');
                         }
                       } catch (e) {
                         print('Error forwarding photo: $e');

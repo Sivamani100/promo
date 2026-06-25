@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
@@ -113,15 +114,11 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
       await ref.read(authProvider.notifier).refreshProfile();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connected platforms and followers count updated! Total followers: $totalFollowers')),
-        );
+        AppSnackbar.show(context, 'Connected platforms and followers count updated! Total followers: $totalFollowers');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save platform connections: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to save platform connections: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);

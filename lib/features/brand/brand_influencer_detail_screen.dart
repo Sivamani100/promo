@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -112,9 +113,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     } catch (err) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open chat: $err')),
-        );
+        AppSnackbar.show(context, 'Failed to open chat: $err');
       }
     }
   }
@@ -1456,9 +1455,7 @@ class _WriteReviewSheetState extends ConsumerState<_WriteReviewSheet> {
 
     final comment = _commentCtrl.text.trim();
     if (comment.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write a comment for your review.')),
-      );
+      AppSnackbar.show(context, 'Please write a comment for your review.');
       return;
     }
 
@@ -1484,15 +1481,11 @@ class _WriteReviewSheetState extends ConsumerState<_WriteReviewSheet> {
       if (mounted) {
         Navigator.pop(context); // Close sheet
         widget.onSuccess(); // Trigger UI reload
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Review submitted successfully!')),
-        );
+        AppSnackbar.show(context, 'Review submitted successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit review: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to submit review: $e');
       }
     } finally {
       if (mounted) {

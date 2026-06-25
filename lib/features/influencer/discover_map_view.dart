@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -240,12 +241,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       _updateScatteredPositions();
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Location "$locationQuery" not found'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AppSnackbar.warning(context, 'Location "$locationQuery" not found');
       }
     }
 
@@ -545,6 +541,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
   Widget _buildEntityCard(Map<String, dynamic> e) {
     final isBrand = e['role'] == 'brand';
     final user = ref.read(authProvider).user;
+    final currentUserRole = ref.read(authProvider).role;
 
     return Dismissible(
       key: Key(e['id'] ?? ''),
@@ -586,8 +583,16 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                   onTap: () {
                     final id = e['id'];
                     if (id != null) {
-                      if (isBrand) {
-                        context.push('/influencer/brands/$id');
+                      if (currentUserRole == 'brand') {
+                        if (!isBrand) {
+                          context.push('/brand/influencers/$id');
+                        } else {
+                          context.push('/influencer/brands/$id');
+                        }
+                      } else {
+                        if (isBrand) {
+                          context.push('/influencer/brands/$id');
+                        }
                       }
                     }
                   },
@@ -598,8 +603,16 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                     onTap: () {
                       final id = e['id'];
                       if (id != null) {
-                        if (isBrand) {
-                          context.push('/influencer/brands/$id');
+                        if (currentUserRole == 'brand') {
+                          if (!isBrand) {
+                            context.push('/brand/influencers/$id');
+                          } else {
+                            context.push('/influencer/brands/$id');
+                          }
+                        } else {
+                          if (isBrand) {
+                            context.push('/influencer/brands/$id');
+                          }
                         }
                       }
                     },
@@ -666,46 +679,60 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                     isPrimary: false,
                     onTap: () {
                       final id = e['id'];
-                      if (isBrand) {
-                        context.push('/influencer/brands/$id');
-                      } else {
-                        context.push('/search');
+                      if (id != null) {
+                        if (currentUserRole == 'brand') {
+                          if (!isBrand) {
+                            context.push('/brand/influencers/$id');
+                          } else {
+                            context.push('/influencer/brands/$id');
+                          }
+                        } else {
+                          if (isBrand) {
+                            context.push('/influencer/brands/$id');
+                          } else {
+                            context.push('/search');
+                          }
+                        }
                       }
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppButton(
-                    label: 'Message',
-                    icon: Iconsax.message,
-                    onTap: () async {
-                      if (user == null) return;
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (_) => const Center(child: CircularProgressIndicator()),
-                      );
-                      try {
-                        final room = await ChatService().getOrCreate1to1Room(
-                          brandId: isBrand ? e['id'] : user.id,
-                          influencerId: isBrand ? user.id : e['id'],
+                if (currentUserRole != e['role']) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppButton(
+                      label: 'Message',
+                      icon: Iconsax.message,
+                      onTap: () async {
+                        if (user == null) return;
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => const Center(child: CircularProgressIndicator()),
                         );
-                        if (mounted) {
-                          Navigator.pop(context);
-                          context.push('/influencer/chats/${room['id']}');
-                        }
-                      } catch (err) {
-                        if (mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to open chat: $err')),
+                        try {
+                          final room = await ChatService().getOrCreate1to1Room(
+                            brandId: isBrand ? e['id'] : user.id,
+                            influencerId: isBrand ? user.id : e['id'],
                           );
+                          if (mounted) {
+                            Navigator.pop(context);
+                            if (currentUserRole == 'brand') {
+                              context.push('/brand/chats/${room['id']}');
+                            } else {
+                              context.push('/influencer/chats/${room['id']}');
+                            }
+                          }
+                        } catch (err) {
+                          if (mounted) {
+                            Navigator.pop(context);
+                            AppSnackbar.show(context, 'Failed to open chat: $err');
+                          }
                         }
-                      }
-                    },
+                      },
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ],

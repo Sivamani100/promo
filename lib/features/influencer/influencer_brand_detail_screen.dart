@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -99,9 +100,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   Future<void> _toggleFollow() async {
     final user = ref.read(authProvider).user;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to follow brands.')),
-      );
+      AppSnackbar.show(context, 'Please log in to follow brands.');
       return;
     }
 
@@ -120,9 +119,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update follow status: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to update follow status: $e');
       }
     } finally {
       if (mounted) {
@@ -153,9 +150,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     } catch (err) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open chat: $err')),
-        );
+        AppSnackbar.show(context, 'Failed to open chat: $err');
       }
     }
   }

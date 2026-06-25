@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -94,13 +95,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
             final now = DateTime.now();
             if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
               _lastPressedAt = now;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Press back again to exit'),
-                  duration: Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppSnackbar.info(context, 'Press back again to exit');
             } else {
               await SystemNavigator.pop();
             }

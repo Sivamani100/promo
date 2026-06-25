@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter/services.dart'; // for Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -629,9 +630,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
                         );
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Message forwarded to $title')),
-                          );
+                          AppSnackbar.show(context, 'Message forwarded to $title');
                         }
                       } catch (e) {
                         print('Error forwarding message: $e');
@@ -673,23 +672,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (await url_launcher.canLaunchUrl(uri)) {
       await url_launcher.launchUrl(uri, mode: url_launcher.LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open link: $url')),
-      );
+      AppSnackbar.show(context, 'Could not open link: $url');
     }
   }
 
   Future<void> _downloadFile(String url, String fileName) async {
     await Clipboard.setData(ClipboardData(text: url));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('File link copied to clipboard: $fileName'),
-        action: SnackBarAction(
-          label: 'Open',
-          onPressed: () => _launchURL(url),
-        ),
-      ),
-    );
+    AppSnackbar.success(context, 'File link copied: $fileName');
   }
 
   void _showSharedMediaGallery() {
@@ -851,9 +840,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             setState(() {
               _messages = _filterMessages(_messages);
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Chat history cleared')),
-            );
+            AppSnackbar.show(context, 'Chat history cleared');
           }
         } catch (e) {
           print('Error clearing chat history: $e');
@@ -1198,9 +1185,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 if (isGroup) {
                   _showGroupInfoPanel();
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chat Info - Coming Soon!')),
-                  );
+                  AppSnackbar.show(context, 'Chat Info - Coming Soon!');
                 }
               } else if (val == 'starred') {
                 _showStarredMessages();
@@ -1948,9 +1933,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   onTap: () {
                     Navigator.pop(ctx);
                     Clipboard.setData(ClipboardData(text: msg['content'] ?? ''));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copied to clipboard')),
-                    );
+                    AppSnackbar.show(context, 'Copied to clipboard');
                   },
                 ),
                 ListTile(
@@ -2975,9 +2958,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _uploading = false;
           _uploadingLabel = '';
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload file: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to upload file: $e');
       }
     }
   }
@@ -3042,9 +3023,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _uploading = false;
           _uploadingLabel = '';
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to upload image: $e');
       }
     }
   }

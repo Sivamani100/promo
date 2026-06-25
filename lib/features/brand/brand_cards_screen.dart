@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -74,10 +75,10 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     final newStatus = isActive ? 'paused' : 'active';
     try {
       await CardService().updateCard(cardId, {'status': newStatus});
-      _showDarkSnackBar(isActive ? 'Card paused' : 'Card is now active');
+      AppSnackbar.success(context, isActive ? 'Card paused' : 'Card is now active');
       _load();
     } catch (e) {
-      _showDarkSnackBar('Failed to update status');
+      AppSnackbar.error(context, 'Failed to update status');
     }
     return false; // Don't dismiss the item
   }
@@ -95,10 +96,10 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     if (confirmed == true) {
       try {
         await CardService().deleteCard(cardId);
-        _showDarkSnackBar('Card deleted');
+        AppSnackbar.success(context, 'Card deleted');
         _load();
       } catch (e) {
-        _showDarkSnackBar('Failed to delete card');
+        AppSnackbar.error(context, 'Failed to delete card');
       }
     }
     return false; // Don't dismiss the item
@@ -207,29 +208,7 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     );
   }
 
-  void _showDarkSnackBar(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        duration: const Duration(seconds: 2),
-        elevation: 0,
-      ),
-    );
-  }
+
 
   List<Map<String, dynamic>> get _filtered {
     if (_filter == 'all') return _cards;

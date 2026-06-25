@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
@@ -63,9 +64,7 @@ class _ApiKeysSettingsScreenState extends ConsumerState<ApiKeysSettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate key: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to generate key: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -88,15 +87,11 @@ class _ApiKeysSettingsScreenState extends ConsumerState<ApiKeysSettingsScreen> {
     try {
       await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('API Key revoked.')),
-        );
+        AppSnackbar.show(context, 'API Key revoked.');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to revoke key: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to revoke key: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -137,9 +132,7 @@ class _ApiKeysSettingsScreenState extends ConsumerState<ApiKeysSettingsScreen> {
                   icon: Icon(Iconsax.copy, size: 18, color: AppColors.accent),
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: token));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Key copied to clipboard!'), duration: Duration(seconds: 1)),
-                    );
+                    AppSnackbar.success(context, 'Key copied to clipboard!');
                   },
                 ),
               ],

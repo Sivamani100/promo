@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -63,7 +64,7 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     } catch (e) {
       print('Error creating group chat for card: $e');
       if (mounted) {
-        _showDarkSnackBar('Failed to open group chat');
+        AppSnackbar.error(context, 'Failed to open group chat');
       }
     } finally {
       if (mounted) {
@@ -111,42 +112,20 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
         await CardService().updateCard(widget.cardId, {'status': newStatus});
         await _load();
         if (mounted) {
-          _showDarkSnackBar(
+          AppSnackbar.success(context,
             isActive ? 'Card set to inactive' : 'Card is now active',
           );
         }
       } catch (e) {
         if (mounted) {
-          _showDarkSnackBar('Failed to update card status');
+          AppSnackbar.error(context, 'Failed to update card status');
           setState(() => _loading = false);
         }
       }
     }
   }
 
-  void _showDarkSnackBar(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        duration: const Duration(seconds: 2),
-        elevation: 0,
-      ),
-    );
-  }
+
 
   Future<void> _handleAccept(Map<String, dynamic> app) async {
     final c = _card;
@@ -169,11 +148,11 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
           await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
           await _load();
           if (mounted) {
-            _showDarkSnackBar('Openings increased and application accepted');
+            AppSnackbar.success(context, 'Openings increased and application accepted');
           }
         } catch (e) {
           if (mounted) {
-            _showDarkSnackBar('Failed to update');
+            AppSnackbar.error(context, 'Failed to update');
           }
         } finally {
           if (mounted) {
@@ -330,12 +309,12 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                       try {
                         await CardService().deleteCard(widget.cardId);
                         if (mounted) {
-                          _showDarkSnackBar('Card deleted successfully');
+                          AppSnackbar.success(context, 'Card deleted successfully');
                           context.pop();
                         }
                       } catch (e) {
                         if (mounted) {
-                          _showDarkSnackBar('Failed to delete card');
+                          AppSnackbar.error(context, 'Failed to delete card');
                         }
                       }
                     }

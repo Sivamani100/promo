@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -254,9 +255,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cover image uploaded successfully!')),
-        );
+        AppSnackbar.show(context, 'Cover image uploaded successfully!');
       }
     } catch (e) {
       print('Error picking/uploading cover image: $e');
@@ -264,16 +263,14 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         setState(() {
           _uploadingCover = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload image: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to upload image: $e');
       }
     }
   }
 
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _descCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill in title and description.')));
+      AppSnackbar.show(context, 'Please fill in title and description.');
       return;
     }
 
@@ -313,19 +310,19 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       if (widget.card != null) {
         await CardService().updateCard(widget.card!['id'], cardData);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Campaign card updated successfully!')));
+          AppSnackbar.show(context, 'Campaign card updated successfully!');
           context.pop(true);
         }
       } else {
         await CardService().createCard(cardData);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Campaign card published successfully!')));
+          AppSnackbar.show(context, 'Campaign card published successfully!');
           context.pop(true);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save card: $e')));
+        AppSnackbar.show(context, 'Failed to save card: $e');
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -335,7 +332,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   void _nextStep() {
     if (_currentStep == 0) {
       if (_titleCtrl.text.trim().isEmpty || _descCtrl.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill in title and description.')));
+        AppSnackbar.show(context, 'Please fill in title and description.');
         return;
       }
     }

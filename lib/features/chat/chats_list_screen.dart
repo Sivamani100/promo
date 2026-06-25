@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -397,9 +398,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
 
       if (campaigns.isEmpty) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You must have an active campaign card to link a campaign group.')),
-          );
+          AppSnackbar.show(context, 'You must have an active campaign card to link a campaign group.');
         }
         return;
       }
@@ -662,18 +661,14 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Group "$title" created successfully!')),
-        );
+        AppSnackbar.show(context, 'Group "$title" created successfully!');
       }
       _load(ignoreCache: true);
     } catch (e) {
       print('Error creating group room: $e');
       setState(() => _loading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create group chat')),
-        );
+        AppSnackbar.show(context, 'Failed to create group chat');
       }
     }
   }
@@ -730,9 +725,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                     pinned.remove(roomId);
                   } else {
                     if (pinned.length >= 3) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('You can pin up to 3 chats only!')),
-                      );
+                      AppSnackbar.show(context, 'You can pin up to 3 chats only!');
                       return;
                     }
                     pinned.add(roomId);

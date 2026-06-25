@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
@@ -41,9 +42,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
     if (_uploadedDocName == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload a verification document.')),
-      );
+      AppSnackbar.show(context, 'Please upload a verification document.');
       return;
     }
 
@@ -72,15 +71,11 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
       });
       await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification request submitted successfully!')),
-        );
+        AppSnackbar.show(context, 'Verification request submitted successfully!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit request: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to submit request: $e');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shimmer/shimmer.dart';
@@ -2099,73 +2100,3 @@ class PortfolioItemDetailSheet extends StatelessWidget {
     );
   }
 }
-
-// ---------- AppToast ----------
-class AppToast {
-  static void show(BuildContext context, String message, {IconData? icon, Color? iconColor}) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        padding: EdgeInsets.zero,
-        margin: const EdgeInsets.only(bottom: 90, left: 24, right: 24),
-        duration: const Duration(seconds: 2),
-        content: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: ShapeDecoration(
-              color: Colors.black,
-              shape: StadiumBorder(
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1.2),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, color: iconColor ?? Colors.white, size: 16),
-                  const SizedBox(width: 8),
-                ] else ...[
-                  Container(
-                    width: 14,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(color: Colors.white),
-                        ),
-                        Expanded(
-                          child: Container(color: Colors.transparent),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
-                Flexible(
-                  child: Text(
-                    message,
-                    style: AppTextStyles.bodySm.copyWith(
-                      color: const Color(0xFFFBFBEF),
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

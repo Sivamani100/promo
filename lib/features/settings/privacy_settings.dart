@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
@@ -30,9 +31,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       await ref.read(authProvider.notifier).refreshProfile();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update visibility: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to update visibility: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -52,9 +51,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
       await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update preference: $e')),
-        );
+        AppSnackbar.show(context, 'Failed to update preference: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
