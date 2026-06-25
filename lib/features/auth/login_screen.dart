@@ -176,7 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     });
 
     Widget content = Scaffold(
-      backgroundColor: const Color(0xFFFAF9F6), // --bg-base
+      backgroundColor: isDark ? AppColors.background : const Color(0xFFFAF9F6), // --bg-base
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24), // Screen horizontal padding: 24px
@@ -192,10 +192,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFFFFF), // --surface
+                      color: isDark ? AppColors.surface : const Color(0xFFFFFFFF), // --surface
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFE7E4DD), // --border
+                        color: isDark ? AppColors.border : const Color(0xFFE7E4DD), // --border
                         width: 1.0,
                       ),
                       boxShadow: [
@@ -209,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                       child: CustomPaint(
                         size: const Size(16, 16),
                         painter: SvgBackIconPainter(
-                          color: const Color(0xFF15171C), // --ink-900
+                          color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
                         ),
                       ),
                     ),
@@ -243,7 +243,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               fontWeight: FontWeight.w500,
                               fontSize: 32,
                               height: 1.1875,
-                              color: const Color(0xFF15171C), // --ink-900
+                              color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
                               letterSpacing: -0.32,
                             ),
                           ),
@@ -254,7 +254,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               fontWeight: FontWeight.w400,
                               fontSize: 15,
                               height: 1.4667,
-                              color: const Color(0xFF888B92), // --ink-400
+                              color: isDark ? AppColors.textSecondary : const Color(0xFF888B92), // --ink-400
                             ),
                           ),
                         ],
@@ -332,7 +332,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                       delay: const Duration(milliseconds: 300),
                       child: Row(
                         children: [
-                          Expanded(child: Container(height: 1, color: const Color(0xFFE7E4DD))),
+                          Expanded(child: Container(height: 1, color: isDark ? AppColors.border : const Color(0xFFE7E4DD))),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
@@ -340,12 +340,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
-                                color: const Color(0xFF888B92), // --ink-400
+                                color: isDark ? AppColors.textMuted : const Color(0xFF888B92), // --ink-400
                                 letterSpacing: 0.08 * 12,
                               ),
                             ),
                           ),
-                          Expanded(child: Container(height: 1, color: const Color(0xFFE7E4DD))),
+                          Expanded(child: Container(height: 1, color: isDark ? AppColors.border : const Color(0xFFE7E4DD))),
                         ],
                       ),
                     ),
@@ -375,7 +375,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: const Color(0xFF888B92), // --ink-400
+                                color: isDark ? AppColors.textSecondary : const Color(0xFF888B92), // --ink-400
                                 height: 1.4286,
                               ),
                             ),
@@ -386,7 +386,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFFB08D57), // --accent
+                                  color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57), // --accent
                                   height: 1.4286,
                                 ),
                               ),
@@ -566,20 +566,21 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = widget.errorText != null;
     
-    Color borderColor = const Color(0xFFE7E4DD); // --border
+    Color borderColor = isDark ? AppColors.border : const Color(0xFFE7E4DD); // --border
     if (hasError) {
       borderColor = const Color(0xFFC2483A); // --error
     } else if (_isFocused) {
-      borderColor = const Color(0xFFB08D57); // --border-focus
+      borderColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57); // --border-focus
     }
 
-    Color labelColor = const Color(0xFF33353B); // --ink-700
+    Color labelColor = isDark ? AppColors.textSecondary : const Color(0xFF33353B); // --ink-700
     if (hasError) {
       labelColor = const Color(0xFFC2483A);
     } else if (_isFocused) {
-      labelColor = const Color(0xFFB08D57); // --accent
+      labelColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57); // --accent
     }
 
     return Column(
@@ -603,7 +604,7 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
             boxShadow: (_isFocused && !hasError)
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFB08D57).withOpacity(0.12),
+                      color: (isDark ? AppColors.purple : const Color(0xFFB08D57)).withOpacity(0.12),
                       blurRadius: 3,
                       spreadRadius: 3,
                     )
@@ -615,20 +616,20 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
             focusNode: widget.focusNode,
             obscureText: widget.obscure,
             keyboardType: widget.keyboardType,
-            cursorColor: const Color(0xFFB08D57),
+            cursorColor: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
             style: GoogleFonts.inter(
               fontSize: 16,
               height: 1.5,
-              color: const Color(0xFF15171C), // --ink-900
+              color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
             ),
             decoration: InputDecoration(
               hintText: widget.hint,
               hintStyle: GoogleFonts.inter(
                 fontSize: 16,
-                color: const Color(0xFF888B92), // --ink-400
+                color: isDark ? AppColors.textMuted : const Color(0xFF888B92), // --ink-400
               ),
               filled: true,
-              fillColor: const Color(0xFFFFFFFF), // --surface
+              fillColor: isDark ? AppColors.surface : const Color(0xFFFFFFFF), // --surface
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -772,11 +773,14 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (widget.isDisabled) {
       return Container(
         height: 52,
         decoration: BoxDecoration(
-          color: const Color(0xFF888B92).withOpacity(0.4),
+          color: isDark 
+              ? Colors.white.withOpacity(0.12)
+              : const Color(0xFF888B92).withOpacity(0.4),
           borderRadius: BorderRadius.circular(14),
         ),
         alignment: Alignment.center,
@@ -785,22 +789,29 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
             fontSize: 15,
-            color: const Color(0xFFFAF9F6).withOpacity(0.6),
+            color: isDark 
+                ? Colors.white.withOpacity(0.3)
+                : const Color(0xFFFAF9F6).withOpacity(0.6),
             letterSpacing: 0.01,
           ),
         ),
       );
     }
 
-    final bgColor = _isHovered ? const Color(0xFF1F2128) : const Color(0xFF15171C);
+    final bgColor = isDark
+        ? (_isHovered ? const Color(0xFFEEEEEE) : const Color(0xFFFFFFFF))
+        : (_isHovered ? const Color(0xFF1F2128) : const Color(0xFF15171C));
+    final textColor = isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6);
     final scale = _isPressed ? 0.98 : 1.0;
     
     final shadow = (_isHovered && !_isPressed)
-        ? const [
+        ? [
             BoxShadow(
-              color: Color.fromRGBO(21, 23, 28, 0.18),
+              color: isDark 
+                  ? Colors.white.withOpacity(0.08)
+                  : const Color.fromRGBO(21, 23, 28, 0.18),
               blurRadius: 20,
-              offset: Offset(0, 8),
+              offset: const Offset(0, 8),
             )
           ]
         : <BoxShadow>[];
@@ -826,12 +837,12 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
           transform: Matrix4.translationValues(0, translateOffset, 0)..scale(scale, scale),
           alignment: Alignment.center,
           child: widget.isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFAF9F6)),
+                    valueColor: AlwaysStoppedAnimation<Color>(textColor),
                   ),
                 )
               : Text(
@@ -839,7 +850,7 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: const Color(0xFFFAF9F6), // --text-on-inverse
+                    color: textColor, // --text-on-inverse
                     letterSpacing: 0.01,
                   ),
                 ),
@@ -862,8 +873,15 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = _isHovered ? const Color(0xFFF5F3EE) : const Color(0xFFFFFFFF);
-    final borderColor = _isHovered ? const Color(0xFFD8D4CB) : const Color(0xFFE7E4DD);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final bgColor = isDark
+        ? (_isHovered ? const Color(0xFF24242E) : const Color(0xFF1C1C26))
+        : (_isHovered ? const Color(0xFFF5F3EE) : const Color(0xFFFFFFFF));
+    final borderColor = isDark
+        ? (_isHovered ? const Color(0xFF3A3A4A) : const Color(0xFF2C2C3A))
+        : (_isHovered ? const Color(0xFFD8D4CB) : const Color(0xFFE7E4DD));
+    final textColor = isDark ? AppColors.textPrimary : const Color(0xFF33353B);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -889,9 +907,9 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                   width: 18,
                   height: 18,
                   errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
+                    return Icon(
                       Icons.g_mobiledata_rounded,
-                      color: Color(0xFF33353B),
+                      color: textColor,
                       size: 22,
                     );
                   },
@@ -902,7 +920,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: const Color(0xFF33353B), // --ink-700
+                    color: textColor, // --ink-700
                     letterSpacing: 0.01,
                   ),
                 ),

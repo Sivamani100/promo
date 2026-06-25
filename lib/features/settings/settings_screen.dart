@@ -62,16 +62,18 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _SettingsSection(title: 'Preferences', items: [
             _SettingsItem(
-              icon: Iconsax.moon,
-              label: 'Dark Mode',
-              subtitle: 'Use dark theme colors',
-              trailing: Switch.adaptive(
-                value: ref.watch(themeModeProvider) == ThemeMode.dark,
-                activeThumbColor: AppColors.accent,
-                onChanged: (val) {
-                  ref.read(themeModeProvider.notifier).setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
-                },
-              ),
+              icon: ref.watch(themeModeProvider) == ThemeMode.system
+                  ? Iconsax.mobile
+                  : ref.watch(themeModeProvider) == ThemeMode.dark
+                      ? Iconsax.moon
+                      : Iconsax.sun_1,
+              label: 'Theme Mode',
+              subtitle: ref.watch(themeModeProvider) == ThemeMode.system
+                  ? 'System Default'
+                  : ref.watch(themeModeProvider) == ThemeMode.dark
+                      ? 'Dark Mode'
+                      : 'Light Mode',
+              onTap: () => _showThemeSelectionSheet(context, ref),
             ),
           ]),
           const SizedBox(height: 20),
@@ -126,7 +128,113 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  void _showThemeSelectionSheet(BuildContext context, WidgetRef ref) {
+    final currentMode = ref.read(themeModeProvider);
 
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Text(
+                    'Theme Mode',
+                    style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildThemeOption(
+                  context: context,
+                  ref: ref,
+                  mode: ThemeMode.system,
+                  label: 'System Default',
+                  subtitle: 'Match phone settings',
+                  icon: Iconsax.mobile,
+                  isSelected: currentMode == ThemeMode.system,
+                ),
+                _buildThemeOption(
+                  context: context,
+                  ref: ref,
+                  mode: ThemeMode.light,
+                  label: 'Light Mode',
+                  subtitle: 'Bright and clear',
+                  icon: Iconsax.sun_1,
+                  isSelected: currentMode == ThemeMode.light,
+                ),
+                _buildThemeOption(
+                  context: context,
+                  ref: ref,
+                  mode: ThemeMode.dark,
+                  label: 'Dark Mode',
+                  subtitle: 'Sleek dark layout',
+                  icon: Iconsax.moon,
+                  isSelected: currentMode == ThemeMode.dark,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext context,
+    required WidgetRef ref,
+    required ThemeMode mode,
+    required String label,
+    required String subtitle,
+    required IconData icon,
+    required bool isSelected,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.purple.withValues(alpha: 0.1)
+              : AppColors.surface2,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? AppColors.purple : AppColors.textSecondary,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        label,
+        style: AppTextStyles.body.copyWith(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          color: isSelected ? AppColors.purple : AppColors.textPrimary,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: AppTextStyles.caption.copyWith(
+          color: AppColors.textMuted,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle_rounded, color: AppColors.purple, size: 22)
+          : null,
+      onTap: () {
+        ref.read(themeModeProvider.notifier).setThemeMode(mode);
+        Navigator.pop(context);
+      },
+    );
+  }
 }
 
 class _SettingsSection extends StatelessWidget {

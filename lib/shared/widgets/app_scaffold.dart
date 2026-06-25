@@ -66,11 +66,11 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Dynamic Bottom Nav Colors
-    final navBgColor = isDark ? Colors.white : Colors.black;
-    final shadowColor = isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.35);
-    final activePillColor = isDark ? Colors.black : Colors.white;
-    final activeTextColor = isDark ? Colors.white : Colors.black;
-    final inactiveIconColor = isDark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.6);
+    final navBgColor = isDark ? const Color(0xFF1E1E22) : Colors.black;
+    final shadowColor = isDark ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.35);
+    final activePillColor = Colors.white;
+    final activeTextColor = Colors.black;
+    final inactiveIconColor = isDark ? Colors.white.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.6);
 
     return PopScope(
       canPop: false,
@@ -123,6 +123,9 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                 decoration: BoxDecoration(
                   color: navBgColor,
                   borderRadius: BorderRadius.circular(100),
+                  border: isDark
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1)
+                      : null,
                   boxShadow: [
                     BoxShadow(
                       color: shadowColor,

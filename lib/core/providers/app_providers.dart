@@ -584,7 +584,7 @@ final unreadOverridesProvider = Provider<List<String>>((ref) {
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   static const _key = 'theme_mode';
 
-  ThemeModeNotifier() : super(ThemeMode.light) {
+  ThemeModeNotifier() : super(ThemeMode.system) {
     _load();
   }
 
@@ -594,8 +594,10 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
       final value = prefs.getString(_key);
       if (value == 'dark') {
         state = ThemeMode.dark;
-      } else {
+      } else if (value == 'light') {
         state = ThemeMode.light;
+      } else {
+        state = ThemeMode.system;
       }
     } catch (_) {}
   }
@@ -604,12 +606,20 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     state = mode;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_key, mode == ThemeMode.dark ? 'dark' : 'light');
+      if (mode == ThemeMode.system) {
+        await prefs.setString(_key, 'system');
+      } else {
+        await prefs.setString(_key, mode == ThemeMode.dark ? 'dark' : 'light');
+      }
     } catch (_) {}
   }
 
   void toggle() {
-    setThemeMode(state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+    if (state == ThemeMode.system) {
+      setThemeMode(ThemeMode.dark);
+    } else {
+      setThemeMode(state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+    }
   }
 }
 

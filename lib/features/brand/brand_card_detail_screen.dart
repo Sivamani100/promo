@@ -63,9 +63,7 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     } catch (e) {
       print('Error creating group chat for card: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to open or create group chat')),
-        );
+        _showDarkSnackBar('Failed to open group chat');
       }
     } finally {
       if (mounted) {
@@ -91,6 +89,65 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     _load();
   }
 
+  Future<void> _toggleCardStatus() async {
+    if (_card == null) return;
+    final currentStatus = _card!['status'] as String? ?? 'active';
+    final isActive = currentStatus == 'active';
+    final newStatus = isActive ? 'paused' : 'active';
+
+    final confirmed = await showPremiumConfirmDialog(
+      context: context,
+      title: isActive ? 'Set Card Inactive' : 'Set Card Active',
+      message: isActive
+          ? 'This card will no longer be visible to influencers. You can reactivate it anytime.'
+          : 'This card will be visible to all influencers and they can apply to it.',
+      confirmLabel: isActive ? 'Set Inactive' : 'Set Active',
+      icon: isActive ? Iconsax.pause_circle : Iconsax.play_circle,
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        setState(() => _loading = true);
+        await CardService().updateCard(widget.cardId, {'status': newStatus});
+        await _load();
+        if (mounted) {
+          _showDarkSnackBar(
+            isActive ? 'Card set to inactive' : 'Card is now active',
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          _showDarkSnackBar('Failed to update card status');
+          setState(() => _loading = false);
+        }
+      }
+    }
+  }
+
+  void _showDarkSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        duration: const Duration(seconds: 2),
+        elevation: 0,
+      ),
+    );
+  }
+
   Future<void> _handleAccept(Map<String, dynamic> app) async {
     final c = _card;
     if (c == null) return;
@@ -112,15 +169,11 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
           await ApplicationService().updateApplicationStatus(app['id'], 'accepted');
           await _load();
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Openings increased and application accepted successfully')),
-            );
+            _showDarkSnackBar('Openings increased and application accepted');
           }
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to update: $e')),
-            );
+            _showDarkSnackBar('Failed to update');
           }
         } finally {
           if (mounted) {
@@ -262,6 +315,8 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                     if (result == true) {
                       _load();
                     }
+                  } else if (value == 'toggle_status') {
+                    await _toggleCardStatus();
                   } else if (value == 'delete') {
                     final confirmed = await showPremiumConfirmDialog(
                       context: context,
@@ -275,25 +330,74 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
                       try {
                         await CardService().deleteCard(widget.cardId);
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Card deleted successfully')),
-                          );
+                          _showDarkSnackBar('Card deleted successfully');
                           context.pop();
                         }
                       } catch (e) {
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to delete card: $e')),
-                          );
+                          _showDarkSnackBar('Failed to delete card');
                         }
                       }
                     }
                   }
                 },
-                itemBuilder: (_) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  const PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
+                itemBuilder: (_) {
+                  final isActive = (_card?['status'] ?? '') == 'active';
+                  return [
+                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(
+                      value: 'toggle_status',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Iconsax.eye,
+                            size: 18,
+                            color: isActive ? const Color(0xFF10B981) : AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              isActive ? 'Active' : 'Inactive',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isActive ? const Color(0xFF10B981) : AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 22,
+                            width: 38,
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: Switch.adaptive(
+                                value: isActive,
+                                onChanged: (_) {
+                                  Navigator.pop(context);
+                                  _toggleCardStatus();
+                                },
+                                activeColor: const Color(0xFF10B981),
+                                activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                inactiveThumbColor: AppColors.isDarkMode ? const Color(0xFF4B4B50) : const Color(0xFF9CA3AF),
+                                inactiveTrackColor: AppColors.isDarkMode ? const Color(0xFF2A2A2E) : const Color(0xFFE5E7EB),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Iconsax.trash, size: 18, color: Color(0xFFF43F5E)),
+                          SizedBox(width: 10),
+                          Text('Delete', style: TextStyle(color: Color(0xFFF43F5E))),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
               ),
             ],
           ),
@@ -307,6 +411,78 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
           AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
         ),
         children: [
+          // Status banner with toggle
+          Builder(builder: (_) {
+            final isCardActive = c['status'] == 'active';
+            final bannerColor = isCardActive ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: bannerColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: bannerColor.withValues(alpha: 0.2),
+                  width: 1.2,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: bannerColor.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isCardActive ? Iconsax.eye : Iconsax.eye_slash,
+                      size: 16,
+                      color: bannerColor,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isCardActive ? 'Card is ACTIVE' : 'Card is ${(c['status'] ?? 'inactive').toString().toUpperCase()}',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: bannerColor,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isCardActive ? 'Visible to all influencers' : 'Not visible to influencers',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 28,
+                    width: 46,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Switch.adaptive(
+                        value: isCardActive,
+                        onChanged: (_) => _toggleCardStatus(),
+                        activeColor: const Color(0xFF10B981),
+                        activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        inactiveThumbColor: isDark ? const Color(0xFF4B4B50) : const Color(0xFF9CA3AF),
+                        inactiveTrackColor: isDark ? const Color(0xFF2A2A2E) : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
           if (c['cover_image_url'] != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(24),

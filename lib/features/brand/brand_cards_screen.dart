@@ -68,6 +68,169 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     }
   }
 
+  Future<bool> _toggleCardStatus(Map<String, dynamic> card) async {
+    final cardId = card['id']?.toString() ?? '';
+    final isActive = (card['status'] ?? '') == 'active';
+    final newStatus = isActive ? 'paused' : 'active';
+    try {
+      await CardService().updateCard(cardId, {'status': newStatus});
+      _showDarkSnackBar(isActive ? 'Card paused' : 'Card is now active');
+      _load();
+    } catch (e) {
+      _showDarkSnackBar('Failed to update status');
+    }
+    return false; // Don't dismiss the item
+  }
+
+  Future<bool> _deleteCard(Map<String, dynamic> card) async {
+    final cardId = card['id']?.toString() ?? '';
+    final confirmed = await showPremiumConfirmDialog(
+      context: context,
+      title: 'Delete Campaign Card',
+      message: 'Are you sure you want to delete this campaign card? This action cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+      icon: Iconsax.trash,
+    );
+    if (confirmed == true) {
+      try {
+        await CardService().deleteCard(cardId);
+        _showDarkSnackBar('Card deleted');
+        _load();
+      } catch (e) {
+        _showDarkSnackBar('Failed to delete card');
+      }
+    }
+    return false; // Don't dismiss the item
+  }
+
+  void _showCardActions(Map<String, dynamic> card) {
+    final isDark = AppColors.isDarkMode;
+    final isActive = (card['status'] ?? '') == 'active';
+    final title = card['title'] as String? ?? 'Card';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  leading: Icon(
+                    Iconsax.eye,
+                    color: isActive ? const Color(0xFF10B981) : AppColors.textMuted,
+                  ),
+                  title: Text(
+                    'Visible to Influencers',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    isActive
+                        ? 'Card is live and discoverable'
+                        : 'Card is hidden from everyone',
+                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+                  ),
+                  trailing: SizedBox(
+                    height: 28,
+                    width: 46,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Switch.adaptive(
+                        value: isActive,
+                        onChanged: (val) {
+                          Navigator.pop(ctx);
+                          _toggleCardStatus(card);
+                        },
+                        activeColor: const Color(0xFF10B981),
+                        activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+                        inactiveThumbColor: isDark ? const Color(0xFF4B4B50) : const Color(0xFF9CA3AF),
+                        inactiveTrackColor: isDark ? const Color(0xFF2A2A2E) : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  leading: const Icon(Iconsax.edit_2, color: Color(0xFF6366F1)),
+                  title: Text(
+                    'Edit Card',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.push('/brand/cards/new', extra: card);
+                  },
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  leading: const Icon(Iconsax.trash, color: Color(0xFFF43F5E)),
+                  title: Text(
+                    'Delete Card',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFF43F5E),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _deleteCard(card);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showDarkSnackBar(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        duration: const Duration(seconds: 2),
+        elevation: 0,
+      ),
+    );
+  }
+
   List<Map<String, dynamic>> get _filtered {
     if (_filter == 'all') return _cards;
     return _cards.where((c) => c['status'] == _filter).toList();
@@ -78,7 +241,7 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     final isDark = AppColors.isDarkMode;
 
     Color activeColor = AppColors.accent;
-    Color activeTextColor = Colors.white;
+    Color activeTextColor = isDark ? Colors.black : Colors.white;
 
     if (filterKey == 'active' && isSelected) {
       activeColor = const Color(0xFF10B981); // Emerald
@@ -321,10 +484,83 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
                           return _buildFooter();
                         }
                         final card = _filtered[i];
-                        return _BentoBrandCard(
-                          card: card,
-                          animationDelayIndex: i,
-                          onTap: () => context.push('/brand/cards/${card['id']}'),
+                        final cardId = card['id']?.toString() ?? '';
+                        final isActive = (card['status'] ?? '') == 'active';
+                        return Dismissible(
+                          key: Key('card_$cardId'),
+                          confirmDismiss: (direction) async {
+                            if (direction == DismissDirection.startToEnd) {
+                              // Toggle status
+                              return await _toggleCardStatus(card);
+                            } else {
+                              // Delete
+                              return await _deleteCard(card);
+                            }
+                          },
+                          background: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? const Color(0xFFF59E0B).withValues(alpha: 0.12)
+                                  : const Color(0xFF10B981).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: 24),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isActive ? Iconsax.pause_circle : Iconsax.play_circle,
+                                  color: isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isActive ? 'Pause' : 'Activate',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          secondaryBackground: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF43F5E).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 24),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Delete',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFFF43F5E),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Iconsax.trash,
+                                  color: Color(0xFFF43F5E),
+                                  size: 22,
+                                ),
+                              ],
+                            ),
+                          ),
+                          child: _BentoBrandCard(
+                            card: card,
+                            animationDelayIndex: i,
+                            onTap: () => context.push('/brand/cards/${card['id']}'),
+                            onLongPress: () => _showCardActions(card),
+                          ),
                         );
                       },
                     ),
@@ -375,11 +611,13 @@ class _BentoBrandCard extends StatelessWidget {
   final Map<String, dynamic> card;
   final int animationDelayIndex;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const _BentoBrandCard({
     required this.card,
     required this.animationDelayIndex,
     required this.onTap,
+    this.onLongPress,
   });
 
   Widget _buildPlatformIcon(String platform) {
@@ -419,20 +657,6 @@ class _BentoBrandCard extends StatelessWidget {
     final openings = card['openings'] as int? ?? 1;
     final platforms = (card['platform_requirements'] as List?)?.cast<String>() ?? [];
 
-    Color statusColor;
-    switch (status.toLowerCase()) {
-      case 'active':
-        statusColor = const Color(0xFF10B981); // Emerald
-        break;
-      case 'paused':
-        statusColor = const Color(0xFFF59E0B); // Amber
-        break;
-      case 'closed':
-        statusColor = const Color(0xFFF43F5E); // Rose
-        break;
-      default:
-        statusColor = const Color(0xFF9CA3AF); // Muted grey
-    }
 
     return Container(
       decoration: BoxDecoration(
@@ -458,33 +682,34 @@ class _BentoBrandCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  // Cover Image on left
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: 68,
-                      height: 68,
-                      color: AppColors.surface2,
-                      child: AppImage(
-                        url: card['cover_image_url'],
-                        fit: BoxFit.cover,
-                        fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+            onLongPress: onLongPress,
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      // Cover Image on left
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          width: 68,
+                          height: 68,
+                          color: AppColors.surface2,
+                          child: AppImage(
+                            url: card['cover_image_url'],
+                            fit: BoxFit.cover,
+                            fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Details on right
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Category and Status row
-                        Row(
+                      const SizedBox(width: 14),
+                      // Details on right
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Category tag
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                               decoration: BoxDecoration(
@@ -505,86 +730,91 @@ class _BentoBrandCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: statusColor.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: statusColor.withValues(alpha: 0.15),
-                                  width: 1,
-                                ),
-                              ),
+                            const SizedBox(height: 6),
+                            // Title
+                            Padding(
+                              padding: const EdgeInsets.only(right: 60),
                               child: Text(
-                                status.toUpperCase(),
+                                title,
                                 style: GoogleFonts.inter(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w800,
-                                  color: statusColor,
-                                  letterSpacing: 0.5,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  height: 1.25,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Budget, Openings & Platform requirements row
+                            Row(
+                              children: [
+                                Icon(
+                                  Iconsax.wallet_3,
+                                  size: 13,
+                                  color: AppColors.textMuted,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  budget,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Icon(
+                                  Iconsax.people,
+                                  size: 13,
+                                  color: AppColors.textMuted,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$openings opening${openings > 1 ? 's' : ''}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (platforms.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  _buildPlatformIcon(platforms.first),
+                                ],
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        // Title
-                        Text(
-                          title,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            height: 1.25,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        // Budget, Openings & Platform requirements row
-                        Row(
-                          children: [
-                            Icon(
-                              Iconsax.wallet_3,
-                              size: 13,
-                              color: AppColors.textMuted,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              budget,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const Spacer(),
-                            Icon(
-                              Iconsax.people,
-                              size: 13,
-                              color: AppColors.textMuted,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$openings opening${openings > 1 ? 's' : ''}',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (platforms.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              _buildPlatformIcon(platforms.first),
-                            ],
-                          ],
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Status pill at top-right
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: status.toLowerCase() == 'active'
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF43F5E),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      status.toUpperCase(),
+                      style: GoogleFonts.inter(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -72,13 +72,19 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
     final isDark = AppColors.isDarkMode;
 
     Color activeColor = AppColors.accent;
-    Color activeTextColor = Colors.white;
+    Color activeTextColor = isDark ? Colors.black : Colors.white;
 
     if (isSelected) {
       if (nicheKey == null) {
         activeColor = AppColors.accent;
+        activeTextColor = isDark ? Colors.black : Colors.white;
       } else {
         activeColor = AppColors.getCategoryColor(nicheKey);
+        if (nicheKey == 'Travel' || (nicheKey == 'Lifestyle' && isDark)) {
+          activeTextColor = Colors.black;
+        } else {
+          activeTextColor = Colors.white;
+        }
       }
     }
 

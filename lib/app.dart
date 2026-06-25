@@ -15,7 +15,8 @@ class BrandApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    AppColors.isDarkMode = themeMode == ThemeMode.dark;
+    final isSystemDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    AppColors.isDarkMode = themeMode == ThemeMode.system ? isSystemDark : (themeMode == ThemeMode.dark);
     
     final router = ref.watch(routerProvider);
 
