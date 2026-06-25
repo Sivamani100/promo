@@ -13,6 +13,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/application_service.dart';
 import '../../core/services/card_service.dart';
 import '../../core/services/chat_service.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class BrandApplicationsScreen extends ConsumerStatefulWidget {
@@ -60,11 +62,13 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
         title: const Text('Applications'),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, __) => const ApplicationCardSkeleton(),
+              ),
             )
           : RefreshIndicator(
               onRefresh: _load,

@@ -12,6 +12,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/data_services.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -204,7 +206,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       ),
       body: _loading
-          ? const ShimmerSearchResults()
+          ? const SkeletonShimmer(child: SearchResultsSkeleton())
           : TabBarView(
               controller: _tabCtrl,
               children: [

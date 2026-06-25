@@ -9,6 +9,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/cache/app_cache.dart';
 
@@ -413,14 +415,16 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.pageMarginHorizontal,
-                vertical: AppSpacing.pageMarginVertical,
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pageMarginHorizontal,
+                  vertical: AppSpacing.pageMarginVertical,
+                ),
+                itemCount: 4,
+                separatorBuilder: (_, index) => const SizedBox(height: 16),
+                itemBuilder: (_, index) => const CampaignCardSkeleton(),
               ),
-              itemCount: 4,
-              separatorBuilder: (_, index) => const SizedBox(height: 16),
-              itemBuilder: (_, index) => const ShimmerCampaignCard(),
             )
           : RefreshIndicator(
               onRefresh: _load,

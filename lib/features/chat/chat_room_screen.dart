@@ -20,6 +20,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import 'invite_group_members_screen.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
@@ -1031,7 +1033,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (_loading) {
       return Scaffold(
         appBar: AppBar(),
-        body: const ShimmerChatRoom(),
+        body: const SkeletonShimmer(child: ChatRoomSkeleton()),
       );
     }
 

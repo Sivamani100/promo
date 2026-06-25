@@ -15,6 +15,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../core/cache/app_cache.dart';
 
 class ChatsListScreen extends ConsumerStatefulWidget {
@@ -542,16 +544,16 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: loadingUsers
-                          ? AppShimmer(
+                          ? SkeletonShimmer(
                               child: ListView.separated(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 itemCount: 4,
                                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                                 itemBuilder: (_, __) => Row(
                                   children: [
-                                    Container(width: 32, height: 32, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                                    const SkeletonBox(width: 32, height: 32, borderRadius: 16),
                                     const SizedBox(width: 12),
-                                    const ShimmerBox(width: 120, height: 14),
+                                    const SkeletonBox(width: 120, height: 14),
                                   ],
                                 ),
                               ),
@@ -976,15 +978,17 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 6,
-              separatorBuilder: (context, __) => Divider(
-                height: 1,
-                thickness: 0.8,
-                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 6,
+                separatorBuilder: (context, __) => Divider(
+                  height: 1,
+                  thickness: 0.8,
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
+                itemBuilder: (_, __) => const ChatTileSkeleton(),
               ),
-              itemBuilder: (_, __) => const ShimmerChatTile(),
             )
           : RefreshIndicator(
               onRefresh: _load,

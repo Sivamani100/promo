@@ -16,6 +16,8 @@ import '../../core/services/data_services.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 // Brand Saved Lists
@@ -64,11 +66,13 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
         }),
       ]),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const GenericListTileSkeleton(),
+              ),
             )
           : _lists.isEmpty
               ? const AppEmptyState(icon: Iconsax.archive_1, title: 'No saved lists', subtitle: 'Create a list to organize influencers')
@@ -255,11 +259,13 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 3,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 3,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const ApplicationCardSkeleton(),
+              ),
             )
           : _applications.isEmpty
               ? const AppEmptyState(
@@ -531,7 +537,7 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
         title: const Text('Analytics'),
       ),
       body: _loading
-          ? const ShimmerAnalyticsScreen()
+          ? SkeletonShimmer(child: AnalyticsScreenSkeleton())
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -999,7 +1005,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         ),
       ),
       body: _loadingData
-          ? const ShimmerProfileDetail()
+          ? SkeletonShimmer(child: ProfileDetailSkeleton())
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();
@@ -1579,11 +1585,13 @@ class _BrandSavedListDetailScreenState extends State<BrandSavedListDetailScreen>
         title: Text(widget.name),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const GenericListTileSkeleton(),
+              ),
             )
           : _items.isEmpty
               ? const AppEmptyState(

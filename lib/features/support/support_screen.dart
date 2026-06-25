@@ -9,6 +9,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../core/utils/error_handler.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
@@ -375,11 +377,13 @@ class _SupportScreenState extends ConsumerState<SupportScreen> with SingleTicker
 
           // 3. My Tickets Tab
           _loadingTickets
-              ? ListView.separated(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  itemCount: 4,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (_, __) => const ShimmerGenericListTile(),
+              ? SkeletonShimmer(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    itemCount: 4,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (_, __) => const GenericListTileSkeleton(),
+                  ),
                 )
               : RefreshIndicator(
                   onRefresh: _loadTickets,

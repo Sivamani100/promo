@@ -17,6 +17,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
 
 class DiscoverMapView extends ConsumerStatefulWidget {
   const DiscoverMapView({super.key});
@@ -428,8 +429,8 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const AppShimmer(
-        child: SizedBox(
+      return const SkeletonShimmer(
+        child: SkeletonBox(
           width: double.infinity,
           height: double.infinity,
         ),

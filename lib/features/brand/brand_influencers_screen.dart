@@ -8,6 +8,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/providers/app_providers.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class BrandInfluencersScreen extends ConsumerStatefulWidget {
@@ -344,14 +346,16 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.pageMarginHorizontal,
-                vertical: AppSpacing.pageMarginVertical,
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pageMarginHorizontal,
+                  vertical: AppSpacing.pageMarginVertical,
+                ),
+                itemCount: 6,
+                separatorBuilder: (_, index) => const SizedBox(height: 12),
+                itemBuilder: (_, index) => const GenericListTileSkeleton(),
               ),
-              itemCount: 6,
-              separatorBuilder: (_, index) => const SizedBox(height: 12),
-              itemBuilder: (_, index) => const ShimmerGenericListTile(),
             )
           : RefreshIndicator(
               onRefresh: _load,

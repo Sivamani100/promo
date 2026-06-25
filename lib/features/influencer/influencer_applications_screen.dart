@@ -13,6 +13,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/application_service.dart';
 import '../../core/services/chat_service.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class InfluencerApplicationsScreen extends ConsumerStatefulWidget {
@@ -227,16 +229,18 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.pageMarginHorizontal,
-                AppSpacing.pageMarginVertical,
-                AppSpacing.pageMarginHorizontal,
-                AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.pageMarginHorizontal,
+                  AppSpacing.pageMarginVertical,
+                  AppSpacing.pageMarginHorizontal,
+                  AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                ),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const BentoApplicationCardSkeleton(),
               ),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const _ShimmerBentoApplicationCard(),
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -1180,71 +1184,5 @@ class _BentoApplicationCard extends StatelessWidget {
           duration: const Duration(milliseconds: 400),
           delay: Duration(milliseconds: 30 * animationDelayIndex),
         );
-  }
-}
-
-// ---------- _ShimmerBentoApplicationCard ----------
-class _ShimmerBentoApplicationCard extends StatelessWidget {
-  const _ShimmerBentoApplicationCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = AppColors.isDarkMode;
-    final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
-    final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
-
-    return AppShimmer(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: shimmerBg,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: borderCol, width: 1.2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const ShimmerBox(width: 32, height: 32, borderRadius: 16),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const ShimmerBox(width: 80, height: 12),
-                      const SizedBox(height: 4),
-                      const ShimmerBox(width: 40, height: 10),
-                    ],
-                  ),
-                ),
-                const ShimmerBox(width: 60, height: 20, borderRadius: 10),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                const ShimmerBox(width: 64, height: 64, borderRadius: 14),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const ShimmerBox(width: double.infinity, height: 14),
-                      const SizedBox(height: 6),
-                      const ShimmerBox(width: 120, height: 12),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const ShimmerBox(width: double.infinity, height: 12),
-            const SizedBox(height: 6),
-            const ShimmerBox(width: 180, height: 12),
-          ],
-        ),
-      ),
-    );
   }
 }

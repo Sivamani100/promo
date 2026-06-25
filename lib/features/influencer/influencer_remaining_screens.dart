@@ -18,6 +18,8 @@ import '../../core/services/application_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
@@ -159,11 +161,13 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
         title: const Text('Browse Brands'),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: AppSpacing.pageMarginVertical),
-              itemCount: 5,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const ShimmerBrandTile(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: AppSpacing.pageMarginVertical),
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const BrandTileSkeleton(),
+              ),
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -321,11 +325,13 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
         title: const Text('Saved Cards'),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerCampaignCard(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, __) => const CampaignCardSkeleton(),
+              ),
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -414,7 +420,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
         ],
       ),
       body: _loading
-          ? AppShimmer(
+          ? SkeletonShimmer(
               child: GridView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -424,11 +430,9 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                   childAspectRatio: 0.75,
                 ),
                 itemCount: 8,
-                itemBuilder: (_, __) => Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
+                itemBuilder: (_, __) => const SkeletonBox(
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
               ),
             )
@@ -1374,7 +1378,7 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
         title: const Text('Analytics'),
       ),
       body: _loading
-          ? const ShimmerAnalyticsScreen()
+          ? const SkeletonShimmer(child: AnalyticsScreenSkeleton())
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -1984,7 +1988,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         ),
       ),
       body: _loadingData
-          ? const ShimmerProfileDetail()
+          ? const SkeletonShimmer(child: ProfileDetailSkeleton())
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();
@@ -3716,11 +3720,13 @@ class _ProfileViewsScreenState extends ConsumerState<ProfileViewsScreen> {
         title: const Text('Profile Views'),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 5,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (_, __) => const ShimmerGenericListTile(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (_, __) => const GenericListTileSkeleton(),
+              ),
             )
           : RefreshIndicator(
               onRefresh: _loadViews,
@@ -4452,11 +4458,13 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
         ),
       ),
       body: _loading
-          ? ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-              itemCount: 4,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (_, __) => const ShimmerApplicationCard(),
+          ? SkeletonShimmer(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, __) => const ApplicationCardSkeleton(),
+              ),
             )
           : RefreshIndicator(
               onRefresh: _loadData,

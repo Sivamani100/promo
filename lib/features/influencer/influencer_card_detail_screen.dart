@@ -11,6 +11,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../core/utils/error_handler.dart';
 
 class InfluencerCardDetailScreen extends ConsumerStatefulWidget {
@@ -122,7 +124,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Scaffold(appBar: AppBar(title: const Text('Campaign Details')), body: const ShimmerCardDetail());
+    if (_loading) return Scaffold(appBar: AppBar(title: const Text('Campaign Details')), body: const SkeletonShimmer(child: CardDetailSkeleton()));
     if (_card == null) return Scaffold(appBar: AppBar(title: const Text('Campaign Details')), body: const AppEmptyState(icon: Icons.error_rounded, title: 'Campaign not found'));
 
     final c = _card!;

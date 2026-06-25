@@ -14,6 +14,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/data_services.dart';
 import '../../core/services/supabase_service.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -181,131 +182,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     if (_loading) {
-      final isDark = AppColors.isDarkMode;
-      final shimmerBg = isDark ? const Color(0xFF0F0F11) : Colors.white;
-      final borderCol = isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB);
-
-      return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: AppSpacing.appBarMarginHorizontal,
-              right: AppSpacing.appBarMarginHorizontal,
-              top: AppSpacing.pageMarginVertical,
-            ),
-            child: AppBar(
-              titleSpacing: 0,
-              title: const AppShimmer(child: ShimmerBox(width: 100, height: 24)),
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-            ),
-          ),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.pageMarginHorizontal,
-            AppSpacing.pageMarginVertical,
-            AppSpacing.pageMarginHorizontal,
-            AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-          ),
-          children: [
-            // Welcome & Profile Shimmer
-            AppShimmer(
-              child: Container(
-                height: 160,
-                decoration: BoxDecoration(
-                  color: shimmerBg,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: borderCol, width: 1.2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Analytics Grid Shimmer
-            AppShimmer(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 135,
-                      decoration: BoxDecoration(
-                        color: shimmerBg,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: borderCol, width: 1.2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      height: 135,
-                      decoration: BoxDecoration(
-                        color: shimmerBg,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: borderCol, width: 1.2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            AppShimmer(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 135,
-                      decoration: BoxDecoration(
-                        color: shimmerBg,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: borderCol, width: 1.2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      height: 135,
-                      decoration: BoxDecoration(
-                        color: shimmerBg,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: borderCol, width: 1.2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Deliverables Shimmer
-            AppShimmer(
-              child: Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  color: shimmerBg,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: borderCol, width: 1.2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Featured Partners Shimmer
-            AppShimmer(
-              child: Container(
-                height: 190,
-                decoration: BoxDecoration(
-                  color: shimmerBg,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: borderCol, width: 1.2),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+      return const InfluencerHomeSkeleton();
     }
 
     return Scaffold(

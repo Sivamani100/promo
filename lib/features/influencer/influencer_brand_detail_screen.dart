@@ -14,6 +14,8 @@ import '../../core/services/chat_service.dart';
 import '../../core/services/data_services.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 
 class InfluencerBrandDetailScreen extends ConsumerStatefulWidget {
   final String brandId;
@@ -160,7 +162,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Brand Profile')),
-        body: const ShimmerProfileDetail(),
+        body: const SkeletonShimmer(child: ProfileDetailSkeleton()),
       );
     }
 

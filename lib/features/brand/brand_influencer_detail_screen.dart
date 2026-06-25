@@ -14,6 +14,8 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/data_services.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/social_agent.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 
 class BrandInfluencerDetailScreen extends ConsumerStatefulWidget {
@@ -150,7 +152,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
             style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
           ),
         ),
-        body: const ShimmerProfileDetail(),
+        body: const SkeletonShimmer(child: ProfileDetailSkeleton()),
       );
     }
 

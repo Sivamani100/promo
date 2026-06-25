@@ -9,6 +9,8 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 
 class InviteGroupMembersScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -263,7 +265,7 @@ class _InviteGroupMembersScreenState extends ConsumerState<InviteGroupMembersScr
                     padding: const EdgeInsets.all(16),
                     itemCount: 5,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (_, __) => const ShimmerGenericListTile(),
+                    itemBuilder: (_, __) => const GenericListTileSkeleton(),
                   )
                 : _filtered.isEmpty
                     ? AppEmptyState(

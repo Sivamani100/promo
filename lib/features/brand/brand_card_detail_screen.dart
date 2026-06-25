@@ -10,6 +10,8 @@ import '../../core/services/card_service.dart';
 import '../../core/services/application_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
+import '../../shared/widgets/app_skeleton.dart';
+import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'brand_applications_screen.dart';
 
@@ -226,7 +228,12 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return Scaffold(appBar: AppBar(), body: const ShimmerCardDetail());
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const SkeletonShimmer(child: CardDetailSkeleton()),
+      );
+    }
     if (_card == null) return Scaffold(appBar: AppBar(), body: const AppEmptyState(icon: Iconsax.info_circle, title: 'Card not found'));
 
     final c = _card!;
