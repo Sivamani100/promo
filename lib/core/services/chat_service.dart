@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
+import '../utils/input_sanitizer.dart';
 
 class ChatService {
   final SupabaseClient _client = SupabaseService.client;
@@ -88,10 +89,12 @@ class ChatService {
     String? attachmentType,
     Map<String, dynamic>? payload,
   }) async {
+    // HARDENING: sec-agent 2026-06-24
+    final sanitizedContent = InputSanitizer.sanitizeText(content);
     await _client.from('messages').insert({
       'room_id': roomId,
       'sender_id': senderId,
-      'content': content,
+      'content': sanitizedContent,
       'attachment_url': attachmentUrl,
       'attachment_type': attachmentType,
       'payload': payload,
@@ -201,9 +204,13 @@ class ChatService {
   }
 
   Future<void> createMilestone(Map<String, dynamic> data) async {
+    // HARDENING: sec-agent 2026-06-24
     final Map<String, dynamic> dbData = Map.from(data);
     if (dbData['status'] == 'completed') {
       dbData['status'] = 'done';
+    }
+    if (dbData.containsKey('title') && dbData['title'] is String) {
+      dbData['title'] = InputSanitizer.sanitizeName(dbData['title'] as String, maxLength: 100);
     }
     await _client.from('milestones').insert(dbData);
   }
@@ -217,8 +224,10 @@ class ChatService {
   }
 
   Future<void> updateMilestoneTitle(String milestoneId, String title) async {
+    // HARDENING: sec-agent 2026-06-24
+    final sanitizedTitle = InputSanitizer.sanitizeName(title, maxLength: 100);
     await _client.from('milestones').update({
-      'title': title,
+      'title': sanitizedTitle,
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', milestoneId);
   }
@@ -599,12 +608,15 @@ class ChatService {
     String? cardId,
     List<String> inviteUserIds = const [],
   }) async {
+    // HARDENING: sec-agent 2026-06-24
+    final sanitizedTitle = InputSanitizer.sanitizeName(title, maxLength: 100);
+    final sanitizedDescription = description != null ? InputSanitizer.sanitizeText(description) : null;
     final data = await _client.from('rooms').insert({
       'brand_id': brandId,
       'influencer_id': null,
       'card_id': cardId,
-      'title': title,
-      'description': description,
+      'title': sanitizedTitle,
+      'description': sanitizedDescription,
       'status': 'group_all',
       'is_active': true,
     }).select().single();

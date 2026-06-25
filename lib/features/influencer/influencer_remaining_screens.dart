@@ -19,6 +19,8 @@ import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 // ========== Influencer Brands Screen ==========
 class InfluencerBrandsScreen extends ConsumerStatefulWidget {
@@ -2515,7 +2517,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                   ),
                                 ),
                                 _menuDivider(),
-                                _menuTile('Help Center', Iconsax.info_circle, () => context.push('/support')),
+                                _menuTile('Help Center', Iconsax.info_circle, () => context.push('/influencer/support')),
                                 _menuDivider(),
                                 _menuTile(
                                   'Sign Out',
@@ -3197,22 +3199,25 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                     itemCount: _portfolio.length,
                     itemBuilder: (context, idx) {
                       final item = _portfolio[idx];
-                      return Container(
-                        width: 100,
-                        margin: const EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF16161A) : const Color(0xFFF9F9FB),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
-                            width: 1.2,
+                      return GestureDetector(
+                        onTap: () => PortfolioItemDetailSheet.show(context, item),
+                        child: Container(
+                          width: 100,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF16161A) : const Color(0xFFF9F9FB),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                              width: 1.2,
+                            ),
                           ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: AppImage(
-                          url: item['media_url'],
-                          fit: BoxFit.cover,
-                          fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+                          clipBehavior: Clip.antiAlias,
+                          child: AppImage(
+                            url: item['media_url'],
+                            fit: BoxFit.cover,
+                            fallback: Icon(Iconsax.image, color: AppColors.textMuted),
+                          ),
                         ),
                       );
                     },
@@ -3226,11 +3231,31 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                     child: AppButton(
                       label: 'Share Digital Card',
                       icon: Iconsax.export_1,
-                      onTap: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Digital card link copied to clipboard!')),
-                        );
+                      onTap: () async {
+                        final profileId = profile?['id'] ?? '';
+                        final displayName = profile?['display_name'] ?? 'Creator';
+                        final followers = followersText;
+                        final nichesStr = niches.join(', ');
+                        final shareUrl = 'https://lokoxgwymvvnxhmavuyv.supabase.co/storage/v1/object/public/cards/index.html?profileId=$profileId';
+                        
+                        final shareText = 'Check out my Digital Card / Media Kit on Promo!\n'
+                            'Name: $displayName\n'
+                            'Followers: $followers\n'
+                            'Niches: $nichesStr\n\n'
+                            'View my full profile here: $shareUrl';
+                            
+                        await Clipboard.setData(ClipboardData(text: shareText));
+                        
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Digital card profile details copied to clipboard!'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          await Share.share(shareText, subject: '$displayName\'s Digital Card');
+                        }
                       },
                     ),
                   ),

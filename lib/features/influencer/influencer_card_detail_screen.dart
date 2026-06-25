@@ -10,6 +10,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/utils/error_handler.dart';
 
 class InfluencerCardDetailScreen extends ConsumerStatefulWidget {
   final String cardId;
@@ -112,7 +113,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
       
       await _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppErrorHandler.toUserMessage(e))));
     } finally {
       if (mounted) setState(() => _applying = false);
     }
@@ -311,7 +312,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                   mainAxisSpacing: 12,
                   padding: EdgeInsets.zero,
                   children: [
-                    _buildMetricGridCard(Iconsax.wallet_3, 'Compensation', c['budget_range'] ?? 'Open'),
+                    _buildMetricGridCard(Iconsax.wallet_3, 'Budget', c['budget_range'] ?? 'Open'),
                     _buildMetricGridCard(Iconsax.clock, 'Timeline', c['timeline'] ?? 'Flexible'),
                     _buildMetricGridCard(Iconsax.user_tick, 'Follower Target', minReqFollowers > 0 ? '${NumberFormat.compact().format(minReqFollowers)}+' : 'Any tier'),
                     _buildMetricGridCard(Iconsax.location, 'Preferred Location', c['preferred_location'] ?? 'Anywhere'),

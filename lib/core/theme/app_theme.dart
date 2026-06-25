@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
@@ -30,6 +31,12 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
+        // HARDENING: devops-agent 2026-06-24
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -113,10 +120,11 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surface2,
-        contentTextStyle: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.black,
+        contentTextStyle: GoogleFonts.inter(color: const Color(0xFFFBFBEF), fontSize: 13, fontWeight: FontWeight.w600),
+        shape: const StadiumBorder(),
         behavior: SnackBarBehavior.floating,
+        elevation: 6,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
@@ -160,6 +168,12 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
+        // HARDENING: devops-agent 2026-06-24
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
         titleTextStyle: GoogleFonts.inter(
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -243,10 +257,11 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.surface2,
-        contentTextStyle: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.black,
+        contentTextStyle: GoogleFonts.inter(color: const Color(0xFFFBFBEF), fontSize: 13, fontWeight: FontWeight.w600),
+        shape: const StadiumBorder(),
         behavior: SnackBarBehavior.floating,
+        elevation: 6,
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,

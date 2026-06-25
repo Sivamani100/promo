@@ -14,6 +14,7 @@ import '../../core/services/card_service.dart';
 import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'discover_map_view.dart';
+import '../../core/cache/app_cache.dart';
 
 class InfluencerDiscoverScreen extends ConsumerStatefulWidget {
   final String? filter;
@@ -34,7 +35,6 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
   // Primary filters
   String? _categoryFilter;
   _SortOption _sortOption = _SortOption.newest;
-  bool _showMap = false;
   bool _matchedOnly = false;
 
   // Advanced filters state
@@ -58,20 +58,58 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
     super.dispose();
   }
 
-  Future<void> _load() async {
-    final data = await CardService().getActiveCards(limit: 50);
+  Future<void> _load({bool background = false}) async {
+    // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
-    Set<String> applied = {};
-    if (user != null) {
-      final appliedIds = await ApplicationService().getAppliedCardIds(user.id);
-      applied = appliedIds.toSet();
+    final cacheKey = 'influencer_discover_${user?.id}';
+
+    if (!background) {
+      final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
+      if (cached != null) {
+        setState(() {
+          _cards = List<Map<String, dynamic>>.from(cached['cards']);
+          _appliedCardIds = Set<String>.from(cached['appliedCardIds']);
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+      }
     }
-    if (mounted) {
-      setState(() {
-        _cards = data;
-        _appliedCardIds = applied;
-        _loading = false;
-      });
+
+    try {
+      final futures = await Future.wait([
+        CardService().getActiveCards(limit: 50),
+        if (user != null)
+          ApplicationService().getAppliedCardIds(user.id)
+        else
+          Future.value(<String>[]),
+      ]);
+
+      final data = futures[0] as List<Map<String, dynamic>>;
+      final applied = (futures[1] as List).cast<String>().toSet();
+
+      // Save to cache
+      AppCache().set(cacheKey, {
+        'cards': data,
+        'appliedCardIds': applied.toList(),
+      }, ttl: const Duration(minutes: 5));
+
+      if (mounted) {
+        setState(() {
+          _cards = data;
+          _appliedCardIds = applied;
+          _loading = false;
+        });
+      }
+
+      if (!background && AppCache().get(cacheKey) != null) {
+        _load(background: true);
+      }
+    } catch (e) {
+      print('Error loading discover data: $e');
+      if (mounted && !background && _cards.isEmpty) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -264,7 +302,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                   const SizedBox(height: 20),
 
                   // Budget range
-                  Text('MINIMUM COMPENSATION (INR)', style: AppTextStyles.overline),
+                  Text('MINIMUM BUDGET (INR)', style: AppTextStyles.overline),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _minBudgetCtrl,
@@ -374,12 +412,11 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
             backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: Icon(
-                  _showMap ? Iconsax.menu : Iconsax.map,
+                icon: const Icon(
+                  Iconsax.map,
                   size: 24,
-                  color: _showMap ? AppColors.accent : AppColors.textPrimary,
                 ),
-                onPressed: () => setState(() => _showMap = !_showMap),
+                onPressed: () => context.push('/influencer/map'),
               ),
               Stack(
                 alignment: Alignment.center,
@@ -435,9 +472,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (_, __) => const _ShimmerBentoListCard(),
             )
-          : _showMap
-              ? const DiscoverMapView()
-              : RefreshIndicator(
+          : RefreshIndicator(
                   onRefresh: _load,
                   child: Column(
                     children: [

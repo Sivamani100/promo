@@ -1,8 +1,25 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 
+import '../utils/input_sanitizer.dart';
+
 class ApplicationService {
   final SupabaseClient _client = SupabaseService.client;
+
+  Map<String, dynamic> _sanitizeApplicationData(Map<String, dynamic> data) {
+    // HARDENING: sec-agent 2026-06-24
+    final sanitized = Map<String, dynamic>.from(data);
+    if (sanitized.containsKey('pitch_message') && sanitized['pitch_message'] is String) {
+      sanitized['pitch_message'] = InputSanitizer.sanitizeText(sanitized['pitch_message'] as String);
+    }
+    if (sanitized.containsKey('brand_note') && sanitized['brand_note'] is String) {
+      sanitized['brand_note'] = InputSanitizer.sanitizeText(sanitized['brand_note'] as String);
+    }
+    if (sanitized.containsKey('proposed_rate') && sanitized['proposed_rate'] is String) {
+      sanitized['proposed_rate'] = InputSanitizer.sanitizeBudget(sanitized['proposed_rate'] as String);
+    }
+    return sanitized;
+  }
 
   Future<List<Map<String, dynamic>>> getApplicationsForBrand(String brandId) async {
     final data = await _client
@@ -24,11 +41,13 @@ class ApplicationService {
   }
 
   Future<void> createApplication(Map<String, dynamic> appData) async {
-    await _client.from('applications').insert(appData);
+    final sanitized = _sanitizeApplicationData(appData);
+    await _client.from('applications').insert(sanitized);
   }
 
   Future<void> updateApplication(String applicationId, Map<String, dynamic> appData) async {
-    await _client.from('applications').update(appData).eq('id', applicationId);
+    final sanitized = _sanitizeApplicationData(appData);
+    await _client.from('applications').update(sanitized).eq('id', applicationId);
   }
 
   Future<Map<String, dynamic>?> getApplicationForCardAndInfluencer(String cardId, String influencerId) async {
@@ -47,7 +66,8 @@ class ApplicationService {
       'updated_at': DateTime.now().toIso8601String(),
     };
     if (brandNote != null) data['brand_note'] = brandNote;
-    await _client.from('applications').update(data).eq('id', applicationId);
+    final sanitized = _sanitizeApplicationData(data);
+    await _client.from('applications').update(sanitized).eq('id', applicationId);
   }
 
   Future<List<String>> getAppliedCardIds(String influencerId) async {

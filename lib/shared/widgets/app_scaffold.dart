@@ -19,20 +19,22 @@ class AppScaffold extends ConsumerStatefulWidget {
 class _AppScaffoldState extends ConsumerState<AppScaffold> {
   int _currentIndex = 0;
   DateTime? _lastPressedAt;
+  final List<int> _history = [];
+  bool _isBackNavigating = false;
 
   List<_NavItem> get _brandItems => [
         _NavItem(icon: Iconsax.home, activeIcon: Iconsax.home_1, label: 'Home', path: '/brand/home'),
         _NavItem(icon: Iconsax.cards, activeIcon: Iconsax.cards, label: 'Cards', path: '/brand/cards'),
         _NavItem(icon: Iconsax.profile_2user, activeIcon: Iconsax.profile_2user, label: 'Influencers', path: '/brand/influencers'),
-        _NavItem(icon: Iconsax.message, activeIcon: Iconsax.message, label: 'Chats', path: '/brand/chats'),
+        _NavItem(icon: Iconsax.send_2, activeIcon: Iconsax.send_1, label: 'Chats', path: '/brand/chats'),
         _NavItem(icon: Iconsax.profile_circle, activeIcon: Iconsax.profile_circle, label: 'Profile', path: '/brand/profile'),
       ];
 
   List<_NavItem> get _influencerItems => [
         _NavItem(icon: Iconsax.home, activeIcon: Iconsax.home_1, label: 'Home', path: '/influencer/home'),
-        _NavItem(icon: Iconsax.discover, activeIcon: Iconsax.discover_1, label: 'Discover', path: '/influencer/discover'),
+        _NavItem(icon: Iconsax.discover_1, activeIcon: Iconsax.discover_1, label: 'Discover', path: '/influencer/discover'),
         _NavItem(icon: Iconsax.briefcase, activeIcon: Iconsax.briefcase, label: 'Applied', path: '/influencer/my-applications'),
-        _NavItem(icon: Iconsax.message, activeIcon: Iconsax.message, label: 'Chats', path: '/influencer/chats'),
+        _NavItem(icon: Iconsax.send_2, activeIcon: Iconsax.send_1, label: 'Chats', path: '/influencer/chats'),
         _NavItem(icon: Iconsax.profile_circle, activeIcon: Iconsax.profile_circle, label: 'Profile', path: '/influencer/profile'),
       ];
 
@@ -44,7 +46,13 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final location = GoRouterState.of(context).uri.path;
     for (int i = 0; i < _items.length; i++) {
       if (location.startsWith(_items[i].path)) {
-        if (_currentIndex != i) setState(() => _currentIndex = i);
+        if (_currentIndex != i) {
+          if (!_isBackNavigating) {
+            _history.remove(i);
+            _history.add(_currentIndex);
+          }
+          setState(() => _currentIndex = i);
+        }
         break;
       }
     }
@@ -68,24 +76,34 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        if (_currentIndex != 0) {
-          setState(() {
-            _currentIndex = 0;
+        if (_history.isNotEmpty) {
+          final prevIndex = _history.removeLast();
+          _isBackNavigating = true;
+          context.go(_items[prevIndex].path);
+          Future.microtask(() {
+            _isBackNavigating = false;
           });
-          context.go(widget.role == 'brand' ? '/brand/home' : '/influencer/home');
         } else {
-          final now = DateTime.now();
-          if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
-            _lastPressedAt = now;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Press back again to exit'),
-                duration: Duration(seconds: 2),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+          if (_currentIndex != 0) {
+            _isBackNavigating = true;
+            context.go(widget.role == 'brand' ? '/brand/home' : '/influencer/home');
+            Future.microtask(() {
+              _isBackNavigating = false;
+            });
           } else {
-            await SystemNavigator.pop();
+            final now = DateTime.now();
+            if (_lastPressedAt == null || now.difference(_lastPressedAt!) > const Duration(seconds: 2)) {
+              _lastPressedAt = now;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Press back again to exit'),
+                  duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            } else {
+              await SystemNavigator.pop();
+            }
           }
         }
       },
@@ -125,7 +143,6 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                       child: GestureDetector(
                         onTap: () {
                           if (_currentIndex != i) {
-                            setState(() => _currentIndex = i);
                             context.go(item.path);
                           }
                         },
@@ -145,11 +162,20 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                               Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  Icon(
-                                    isActive ? item.activeIcon : item.icon,
-                                    size: 20,
-                                    color: isActive ? activeTextColor : inactiveIconColor,
-                                  ),
+                                  item.label == 'Chats'
+                                      ? Transform.rotate(
+                                          angle: -0.22, // HARDENING: ui-agent 2026-06-25 - Tilt send icon upwards to match Instagram style
+                                          child: Icon(
+                                            isActive ? item.activeIcon : item.icon,
+                                            size: 20,
+                                            color: isActive ? activeTextColor : inactiveIconColor,
+                                          ),
+                                        )
+                                      : Icon(
+                                          isActive ? item.activeIcon : item.icon,
+                                          size: 20,
+                                          color: isActive ? activeTextColor : inactiveIconColor,
+                                        ),
                                   if (showBadge)
                                     Positioned(
                                       right: -6,

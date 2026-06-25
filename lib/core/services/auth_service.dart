@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 
+import '../security/session_guard.dart';
+
 class AuthService {
   final SupabaseClient _client = SupabaseService.client;
 
@@ -10,7 +12,10 @@ class AuthService {
   Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 
   Future<AuthResponse> signIn({required String email, required String password}) async {
-    return await _client.auth.signInWithPassword(email: email, password: password);
+    // HARDENING: sec-agent 2026-06-24
+    final response = await _client.auth.signInWithPassword(email: email, password: password);
+    await SessionGuard.updateActivity();
+    return response;
   }
 
   Future<AuthResponse> signUp({
@@ -18,14 +23,19 @@ class AuthService {
     required String password,
     required Map<String, dynamic> metadata,
   }) async {
-    return await _client.auth.signUp(
+    // HARDENING: sec-agent 2026-06-24
+    final response = await _client.auth.signUp(
       email: email,
       password: password,
       data: metadata,
     );
+    await SessionGuard.updateActivity();
+    return response;
   }
 
   Future<void> signOut() async {
+    // HARDENING: sec-agent 2026-06-24
+    await SessionGuard.clearActivity();
     await _client.auth.signOut();
   }
 
@@ -40,7 +50,11 @@ class AuthService {
   }
 
   Future<UserResponse> updatePassword(String newPassword) async {
-    return await _client.auth.updateUser(UserAttributes(password: newPassword));
+    // HARDENING: sec-agent 2026-06-24
+    final response = await _client.auth.updateUser(UserAttributes(password: newPassword));
+    await _client.auth.signOut(scope: SignOutScope.global);
+    await SessionGuard.clearActivity();
+    return response;
   }
 
   Future<Map<String, dynamic>?> fetchProfile(String userId) async {

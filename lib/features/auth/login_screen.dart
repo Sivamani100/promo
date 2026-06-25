@@ -888,6 +888,13 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                   'https://developers.google.com/identity/images/g-logo.png',
                   width: 18,
                   height: 18,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.g_mobiledata_rounded,
+                      color: Color(0xFF33353B),
+                      size: 22,
+                    );
+                  },
                 ),
                 const SizedBox(width: 10),
                 Text(

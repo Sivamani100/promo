@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../providers/app_providers.dart';
 
 // Feature screens
@@ -24,6 +25,7 @@ import '../../features/influencer/influencer_card_detail_screen.dart';
 import '../../features/influencer/influencer_applications_screen.dart';
 import '../../features/influencer/influencer_remaining_screens.dart';
 import '../../features/influencer/influencer_brand_detail_screen.dart';
+import '../../features/influencer/discover_map_screen.dart';
 import '../../features/chat/chats_list_screen.dart';
 import '../../features/chat/chat_room_screen.dart';
 import '../../features/chat/image_viewer_screen.dart';
@@ -65,10 +67,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable.refresh();
   });
 
+  // HARDENING: observability-agent 2026-06-24
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: refreshListenable,
+    observers: [SentryNavigatorObserver()],
     redirect: (context, state) {
       final isSplashCompleted = ref.read(splashCompletedProvider);
       final authState = ref.read(authProvider);
@@ -184,6 +188,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(path: '/influencer/support', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const SupportScreen()),
+      GoRoute(path: '/influencer/map', parentNavigatorKey: _rootNavigatorKey, builder: (_, _) => const DiscoverMapScreen()),
       GoRoute(path: '/brand/influencers/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => BrandInfluencerDetailScreen(influencerId: state.pathParameters['id']!)),
       GoRoute(path: '/influencer/brands/:id', parentNavigatorKey: _rootNavigatorKey, builder: (_, state) => InfluencerBrandDetailScreen(brandId: state.pathParameters['id']!)),
       GoRoute(

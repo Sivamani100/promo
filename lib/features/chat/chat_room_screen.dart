@@ -383,7 +383,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollCtrl.hasClients) {
         _scrollCtrl.animateTo(
-          _scrollCtrl.position.maxScrollExtent,
+          0.0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
@@ -868,19 +868,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final items = <dynamic>[];
     if (_messages.isEmpty) return items;
 
-    DateTime? lastDate;
+    final groups = <DateTime, List<Map<String, dynamic>>>{};
+    final noDateMsgs = <Map<String, dynamic>>[];
+
     for (final msg in _messages) {
       final createdAtStr = msg['created_at'] as String?;
       if (createdAtStr != null) {
         final msgDate = DateTime.parse(createdAtStr).toLocal();
         final dayDate = DateTime(msgDate.year, msgDate.month, msgDate.day);
-
-        if (lastDate == null || dayDate != lastDate) {
-          items.add(dayDate);
-          lastDate = dayDate;
-        }
+        groups.putIfAbsent(dayDate, () => []).add(msg);
+      } else {
+        noDateMsgs.add(msg);
       }
-      items.add(msg);
+    }
+
+    final sortedDays = groups.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    for (int i = noDateMsgs.length - 1; i >= 0; i--) {
+      items.add(noDateMsgs[i]);
+    }
+
+    for (final day in sortedDays) {
+      final dayMsgs = groups[day]!;
+      for (int i = dayMsgs.length - 1; i >= 0; i--) {
+        items.add(dayMsgs[i]);
+      }
+      items.add(day);
     }
     return items;
   }
@@ -967,7 +980,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           Expanded(
             child: InkWell(
               onTap: () {
-                final idx = _messages.indexWhere((m) => m['id'] == pinnedMsg['id']);
+                final idx = _buildMessageItemsList().indexWhere((item) => item is Map && item['id'] == pinnedMsg['id']);
                 if (idx != -1) {
                   final offset = idx * 80.0;
                   if (_scrollCtrl.hasClients) {
@@ -1265,16 +1278,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // Messages List
           Expanded(
             child: ListView.builder(
+              reverse: true,
               controller: _scrollCtrl,
               padding: const EdgeInsets.all(AppSpacing.lg),
               itemCount: items.length + (_uploading ? 1 : 0),
               itemBuilder: (_, i) {
-                // Show uploading placeholder as the last item
-                if (_uploading && i == items.length) {
+                // Show uploading placeholder as the first item (at the bottom)
+                if (_uploading && i == 0) {
                   return _buildUploadingPlaceholder();
                 }
 
-                final item = items[i];
+                final item = items[i - (_uploading ? 1 : 0)];
                 if (item is DateTime) {
                   return Center(
                     child: Container(

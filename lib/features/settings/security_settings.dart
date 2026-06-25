@@ -8,6 +8,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/supabase_service.dart';
 
+import '../../core/services/auth_service.dart';
+
 class SecuritySettingsScreen extends ConsumerStatefulWidget {
   const SecuritySettingsScreen({super.key});
 
@@ -39,14 +41,13 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
     setState(() => _loading = true);
 
     try {
-      // Supabase updateUser method handles password updates directly
-      await SupabaseService.client.auth.updateUser(
-        UserAttributes(password: _newPasswordCtrl.text.trim()),
-      );
+      // HARDENING: sec-agent 2026-06-24
+      // Use AuthService to update password and trigger global sign out
+      await AuthService().updatePassword(_newPasswordCtrl.text.trim());
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password updated successfully!')),
+          const SnackBar(content: Text('Password updated successfully! Signing out all devices...')),
         );
         _oldPasswordCtrl.clear();
         _newPasswordCtrl.clear();

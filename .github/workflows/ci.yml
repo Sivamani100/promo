@@ -1,0 +1,54 @@
+# HARDENING: devops-agent 2026-06-24
+name: PR & Develop CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - develop
+
+jobs:
+  analyze_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Lint & Static Analysis
+        run: dart analyze --fatal-infos --fatal-warnings
+
+      - name: Run Unit & Widget Tests
+        run: flutter test
+
+      - name: Smoke Build Android APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=ENV=dev \
+            --dart-define=SUPABASE_URL="${{ secrets.SUPABASE_URL_DEV }}" \
+            --dart-define=SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY_DEV }}" \
+            --dart-define=FIREBASE_API_KEY_WEB="${{ secrets.FIREBASE_API_KEY_WEB }}" \
+            --dart-define=FIREBASE_API_KEY_ANDROID="${{ secrets.FIREBASE_API_KEY_ANDROID }}" \
+            --dart-define=FIREBASE_API_KEY_IOS="${{ secrets.FIREBASE_API_KEY_IOS }}" \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk

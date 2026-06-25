@@ -1294,7 +1294,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                 _menuDivider(),
                                 _menuTile('Saved Lists', Iconsax.archive_1, () => context.go('/brand/saved-lists')),
                                 _menuDivider(),
-                                _menuTile('Help Center', Iconsax.info_circle, () => context.push('/support')),
+                                _menuTile('Help Center', Iconsax.info_circle, () => context.push('/brand/support')),
                                 _menuDivider(),
                                 _menuTile(
                                   'Sign Out',

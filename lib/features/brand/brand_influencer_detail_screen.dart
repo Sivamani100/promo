@@ -869,14 +869,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
         final item = _portfolio[i];
         final postUrl = item['post_url'] as String?;
         return GestureDetector(
-          onTap: () async {
-            if (postUrl != null && postUrl.trim().isNotEmpty) {
-              final uri = Uri.tryParse(postUrl.trim());
-              if (uri != null && await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            }
-          },
+          onTap: () => PortfolioItemDetailSheet.show(context, item),
           child: Container(
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F0F11) : Colors.white,

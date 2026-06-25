@@ -14,6 +14,7 @@ import '../../core/services/supabase_service.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/cache/app_cache.dart';
 
 class BrandHomeScreen extends ConsumerStatefulWidget {
   const BrandHomeScreen({super.key});
@@ -34,10 +35,43 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData({bool background = false}) async {
+    // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
     if (user == null) return;
     final sb = SupabaseService.client;
+
+    final cacheKey = 'brand_dashboard_${user.id}';
+
+    final profile = ref.read(authProvider).profile;
+    int score = 0;
+    if (profile != null) {
+      if (profile['avatar_url'] != null && (profile['avatar_url'] as String).isNotEmpty) score += 20;
+      if (profile['bio'] != null && (profile['bio'] as String).length > 10) score += 20;
+      if (profile['location'] != null && (profile['location'] as String).isNotEmpty) score += 15;
+      if (profile['industry'] != null && (profile['industry'] as String).isNotEmpty) score += 15;
+      if (profile['company_name'] != null && (profile['company_name'] as String).isNotEmpty) score += 15;
+      if (profile['website_url'] != null && (profile['website_url'] as String).isNotEmpty) score += 15;
+      if (score > 100) score = 100;
+    }
+
+    if (!background) {
+      final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
+      if (cached != null) {
+        setState(() {
+          _activeCards = cached['activeCards'] as int? ?? 0;
+          _totalApps = cached['totalApps'] as int? ?? 0;
+          _activeChats = cached['activeChats'] as int? ?? 0;
+          _acceptedDeals = cached['acceptedDeals'] as int? ?? 0;
+          _activities = List<Map<String, dynamic>>.from(cached['activities']);
+          _bestCreators = List<Map<String, dynamic>>.from(cached['bestCreators']);
+          _profileCompleteness = score;
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+      }
+    }
 
     try {
       final futures = await Future.wait([
@@ -49,33 +83,42 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
         ProfileService().getInfluencers(limit: 10).timeout(const Duration(seconds: 15)),
       ]);
 
-      final profile = ref.read(authProvider).profile;
-      int score = 0;
-      if (profile != null) {
-        if (profile['avatar_url'] != null && (profile['avatar_url'] as String).isNotEmpty) score += 20;
-        if (profile['bio'] != null && (profile['bio'] as String).length > 10) score += 20;
-        if (profile['location'] != null && (profile['location'] as String).isNotEmpty) score += 15;
-        if (profile['industry'] != null && (profile['industry'] as String).isNotEmpty) score += 15;
-        if (profile['company_name'] != null && (profile['company_name'] as String).isNotEmpty) score += 15;
-        if (profile['website_url'] != null && (profile['website_url'] as String).isNotEmpty) score += 15;
-        if (score > 100) score = 100;
-      }
+      final activeCardsVal = (futures[0] as PostgrestResponse).count;
+      final totalAppsVal = (futures[1] as PostgrestResponse).count;
+      final activeChatsVal = (futures[2] as PostgrestResponse).count;
+      final acceptedDealsVal = (futures[3] as PostgrestResponse).count;
+      final activitiesList = List<Map<String, dynamic>>.from(futures[4] as List);
+      final bestCreatorsList = List<Map<String, dynamic>>.from(futures[5] as List);
+
+      // Save to cache
+      AppCache().set(cacheKey, {
+        'activeCards': activeCardsVal,
+        'totalApps': totalAppsVal,
+        'activeChats': activeChatsVal,
+        'acceptedDeals': acceptedDealsVal,
+        'activities': activitiesList,
+        'bestCreators': bestCreatorsList,
+      }, ttl: const Duration(minutes: 5));
 
       if (mounted) {
         setState(() {
-          _activeCards = (futures[0] as PostgrestResponse).count;
-          _totalApps = (futures[1] as PostgrestResponse).count;
-          _activeChats = (futures[2] as PostgrestResponse).count;
-          _acceptedDeals = (futures[3] as PostgrestResponse).count;
-          _activities = List<Map<String, dynamic>>.from(futures[4] as List);
-          _bestCreators = List<Map<String, dynamic>>.from(futures[5] as List);
+          _activeCards = activeCardsVal;
+          _totalApps = totalAppsVal;
+          _activeChats = activeChatsVal;
+          _acceptedDeals = acceptedDealsVal;
+          _activities = activitiesList;
+          _bestCreators = bestCreatorsList;
           _profileCompleteness = score;
           _loading = false;
         });
       }
+
+      if (!background && AppCache().get(cacheKey) != null) {
+        _loadData(background: true);
+      }
     } catch (e) {
       print('Error loading brand dashboard data: $e');
-      if (mounted) {
+      if (mounted && !background && _bestCreators.isEmpty) {
         setState(() {
           _activeCards = 0;
           _totalApps = 0;

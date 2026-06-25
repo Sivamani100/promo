@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:math' as math;
 import 'supabase_service.dart';
 
 class CampaignService {
@@ -240,9 +241,57 @@ class SearchService {
 class StorageService {
   final SupabaseClient _client = SupabaseService.client;
 
+  // HARDENING: sec-agent 2026-06-24
+  static String generateUUID() {
+    final random = math.Random.secure();
+    final values = List<int>.generate(16, (i) => random.nextInt(256));
+    values[6] = (values[6] & 0x0f) | 0x40; // set version to 4
+    values[8] = (values[8] & 0x3f) | 0x80; // set variant to RFC 4122
+    
+    final buffer = StringBuffer();
+    for (var i = 0; i < 16; i++) {
+      if (i == 4 || i == 6 || i == 8 || i == 10) {
+        buffer.write('-');
+      }
+      buffer.write(values[i].toRadixString(16).padLeft(2, '0'));
+    }
+    return buffer.toString();
+  }
+
   Future<String> uploadFile(String bucket, String path, List<int> bytes, String contentType) async {
-    await _client.storage.from(bucket).uploadBinary(path, bytes as dynamic, fileOptions: FileOptions(contentType: contentType, upsert: true));
-    return _client.storage.from(bucket).getPublicUrl(path);
+    // HARDENING: sec-agent 2026-06-24
+    // 1. Max size validation
+    final maxBytes = bucket == 'avatars' ? 10 * 1024 * 1024 : 25 * 1024 * 1024;
+    if (bytes.length > maxBytes) {
+      throw Exception('File size exceeds the limit of ${maxBytes ~/ (1024 * 1024)}MB');
+    }
+
+    // 2. Allowed mime types validation
+    final allowedMime = {
+      'avatars': ['image/jpeg', 'image/png', 'image/webp'],
+      'portfolio': ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      'verification': ['image/jpeg', 'image/png', 'application/pdf'],
+    };
+
+    if (allowedMime.containsKey(bucket) && !allowedMime[bucket]!.contains(contentType)) {
+      throw Exception('Unsupported file type. Allowed: ${allowedMime[bucket]!.join(", ")}');
+    }
+
+    // 3. User-scoped paths and UUID filename generation to prevent path traversal
+    final user = _client.auth.currentUser;
+    final userId = user?.id ?? 'anonymous';
+    final extension = path.contains('.') ? path.split('.').last.toLowerCase() : 'jpg';
+    final uuid = generateUUID();
+    final securePath = '$userId/$uuid.$extension';
+
+    await _client.storage
+        .from(bucket)
+        .uploadBinary(
+          securePath, 
+          bytes as dynamic, 
+          fileOptions: FileOptions(contentType: contentType, upsert: true),
+        );
+    return _client.storage.from(bucket).getPublicUrl(securePath);
   }
 }
 

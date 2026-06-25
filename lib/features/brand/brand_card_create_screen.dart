@@ -528,7 +528,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       case 1:
         return _buildStepTargeting();
       case 2:
-        return _buildStepCompensation();
+        return _buildStepBudget();
       case 3:
         return _buildStepPreview();
       default:
@@ -874,14 +874,14 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     );
   }
 
-  Widget _buildStepCompensation() {
+  Widget _buildStepBudget() {
     return Column(
       key: const ValueKey(2),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Logistics & Deliverables', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        AppTextField(label: 'Budget / Compensation', hint: 'e.g. ₹20,000 - ₹40,000 or Product Exchange', controller: _budgetCtrl),
+        AppTextField(label: 'Budget / Collaboration Terms', hint: 'e.g. ₹20,000 - ₹40,000 or Product Exchange', controller: _budgetCtrl),
         const SizedBox(height: 16),
         AppTextField(label: 'Campaign Duration / Timeline', hint: 'e.g. 3 weeks from receipt of product', controller: _timelineCtrl),
         const SizedBox(height: 16),
@@ -1150,7 +1150,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                         Expanded(
                           child: _buildPreviewDetailItem(
                             Iconsax.wallet_3,
-                            'Compensation',
+                            'Budget',
                             _budgetCtrl.text.isNotEmpty ? _budgetCtrl.text : 'Open / Unspecified',
                           ),
                         ),

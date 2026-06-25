@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/cache/app_cache.dart';
 
 class BrandCardsScreen extends ConsumerStatefulWidget {
   const BrandCardsScreen({super.key});
@@ -27,15 +28,43 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool background = false}) async {
+    // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
     if (user == null) return;
-    final data = await CardService().getBrandCards(user.id);
-    if (mounted) {
-      setState(() {
-        _cards = data;
-        _loading = false;
-      });
+
+    final cacheKey = 'brand_cards_screen_${user.id}';
+
+    if (!background) {
+      final cached = AppCache().get<List<Map<String, dynamic>>>(cacheKey);
+      if (cached != null) {
+        setState(() {
+          _cards = cached;
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+      }
+    }
+
+    try {
+      final data = await CardService().getBrandCards(user.id);
+      AppCache().set(cacheKey, data, ttl: const Duration(minutes: 5));
+      if (mounted) {
+        setState(() {
+          _cards = data;
+          _loading = false;
+        });
+      }
+
+      if (!background && AppCache().get(cacheKey) != null) {
+        _load(background: true);
+      }
+    } catch (e) {
+      print('Error loading brand cards: $e');
+      if (mounted && !background && _cards.isEmpty) {
+        setState(() => _loading = false);
+      }
     }
   }
 

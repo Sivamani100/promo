@@ -6,6 +6,8 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/providers/app_providers.dart';
 import 'core/services/push_notification_manager.dart';
+import 'shared/widgets/offline_banner.dart';
+import 'core/config/app_config.dart';
 
 class BrandApp extends ConsumerWidget {
   const BrandApp({super.key});
@@ -34,15 +36,19 @@ class BrandApp extends ConsumerWidget {
       }
     });
 
+    // HARDENING: devops-agent 2026-06-24
     return MaterialApp.router(
       title: 'Promo',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: AppConfig.showDebugBanner,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
       locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
+      builder: (context, child) {
+        final previewChild = DevicePreview.appBuilder(context, child);
+        return OfflineBanner(child: previewChild);
+      },
     );
   }
 }

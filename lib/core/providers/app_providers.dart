@@ -11,6 +11,8 @@ import '../services/supabase_service.dart';
 import '../services/chat_service.dart';
 import '../services/social_agent.dart';
 import '../services/notification_service.dart';
+import '../security/session_guard.dart';
+import '../utils/error_handler.dart';
 
 // ---------- Auth Provider ----------
 
@@ -266,6 +268,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         unawaited(SocialAgent.syncFollowersIfNecessary(user.id, profile).catchError((_) {}));
       }
     } catch (e) {
+      // HARDENING: sec-agent 2026-06-24
+      if (SessionGuard.isSessionException(e)) {
+        await signOut();
+        state = const AuthState(
+          isLoading: false,
+          error: 'Session expired. Please sign in again.',
+        );
+        return;
+      }
+
       bool localComplete = false;
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -275,7 +287,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(
         user: user,
         isLoading: false,
-        error: e.toString(),
+        error: AppErrorHandler.toUserMessage(e),
         isRecoveryMode: isRecoveryMode,
         isOnboardingComplete: localComplete,
       );
@@ -297,10 +309,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: 'Sign in failed. Please try again.');
       return null;
     } on AuthException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     }
   }
@@ -321,11 +333,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return null;
     } on AuthException catch (e) {
       print('[AUTH] AuthException: ${e.message} (statusCode: ${e.statusCode})');
-      state = state.copyWith(isLoading: false, error: e.message);
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     } catch (e) {
       print('[AUTH] Unexpected error: $e');
-      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     }
   }
@@ -343,10 +355,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: 'Sign up failed. Please try again.');
       return null;
     } on AuthException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'An unexpected error occurred. Please check your connection and try again.');
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
       return null;
     }
   }

@@ -14,6 +14,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/cache/app_cache.dart';
 
 class ChatsListScreen extends ConsumerStatefulWidget {
   final String role;
@@ -68,9 +69,26 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     super.dispose();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool ignoreCache = false}) async {
+    // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
     if (user == null) return;
+
+    final cacheKey = 'chat_rooms_${user.id}_${widget.role}';
+
+    if (!ignoreCache) {
+      final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
+      if (cached != null) {
+        setState(() {
+          _rooms = List<Map<String, dynamic>>.from(cached['rooms']);
+          _lastMessages = Map<String, Map<String, dynamic>?>.from(cached['lastMessages']);
+          _unreadCounts = Map<String, int>.from(cached['unreadCounts']);
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+      }
+    }
 
     try {
       final data = await ChatService().getRooms(user.id, widget.role);
@@ -78,11 +96,23 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       final msgMap = <String, Map<String, dynamic>?>{};
       final unreadMap = <String, int>{};
 
-      for (final room in data) {
+      // Concurrent fetch using Future.wait to avoid N+1 queries
+      await Future.wait(data.map((room) async {
         final roomId = room['id'] as String;
-        msgMap[roomId] = await ChatService().getLastMessage(roomId);
-        unreadMap[roomId] = await ChatService().getUnreadCountForRoom(roomId, user.id);
-      }
+        final results = await Future.wait([
+          ChatService().getLastMessage(roomId),
+          ChatService().getUnreadCountForRoom(roomId, user.id),
+        ]);
+        msgMap[roomId] = results[0] as Map<String, dynamic>?;
+        unreadMap[roomId] = results[1] as int;
+      }));
+
+      // Cache it
+      AppCache().set(cacheKey, {
+        'rooms': data,
+        'lastMessages': msgMap,
+        'unreadCounts': unreadMap,
+      }, ttl: const Duration(minutes: 5));
 
       if (mounted) {
         setState(() {
@@ -95,7 +125,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       }
     } catch (e) {
       print('Error loading rooms: $e');
-      if (mounted) setState(() => _loading = false);
+      if (mounted && !ignoreCache && _rooms.isEmpty) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -120,7 +152,8 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
             schema: 'public',
             table: 'messages',
             callback: (payload) {
-              _load();
+              // HARDENING: devops-agent 2026-06-25
+              _load(ignoreCache: true);
             },
           )
           .subscribe();
@@ -331,14 +364,15 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         brandId: user.id,
         influencerId: otherUserId,
       );
-      _load();
       if (mounted) {
+        setState(() => _loading = false);
         final basePath = widget.role == 'brand' ? '/brand' : '/influencer';
-        context.push('$basePath/chats/${room['id']}');
+        await context.push('$basePath/chats/${room['id']}');
+        _load(ignoreCache: true);
       }
     } catch (e) {
       print('Error starting 1-to-1 chat: $e');
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -632,7 +666,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
           SnackBar(content: Text('Group "$title" created successfully!')),
         );
       }
-      _load();
+      _load(ignoreCache: true);
     } catch (e) {
       print('Error creating group room: $e');
       setState(() => _loading = false);
@@ -1138,7 +1172,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                   return InkWell(
                                     onTap: () async {
                                       await context.push('$basePath/chats/$roomId');
-                                      _load();
+                                      _load(ignoreCache: true);
                                     },
                                     onLongPress: () => _showRoomOptions(room),
                                     child: Padding(

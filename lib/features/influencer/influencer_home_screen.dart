@@ -16,6 +16,7 @@ import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/cache/app_cache.dart';
 
 class InfluencerHomeScreen extends ConsumerStatefulWidget {
   const InfluencerHomeScreen({super.key});
@@ -35,10 +36,13 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
   @override
   void initState() { super.initState(); _load(); }
 
-  Future<void> _load() async {
+  Future<void> _load({bool background = false}) async {
+    // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
     final profile = ref.read(authProvider).profile;
     if (user == null || profile == null) return;
+
+    final cacheKey = 'influencer_dashboard_${user.id}';
 
     // Calculate profile completeness
     int score = 0;
@@ -49,48 +53,68 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     if (profile['platforms'] != null && (profile['platforms'] as List).isNotEmpty) score += 20;
     if (profile['follower_count'] != null && profile['follower_count'] > 0) score += 20;
 
-    // Load matching cards
-    final allCards = await CardService().getActiveCards(limit: 20);
-    final userNiches = (profile['niche'] as List?)?.cast<String>() ?? [];
-    allCards.sort((a, b) {
-      final aNiche = (a['niche_tags'] as List?)?.cast<String>() ?? [];
-      final bNiche = (b['niche_tags'] as List?)?.cast<String>() ?? [];
-      final aMatch = aNiche.where((n) => userNiches.contains(n)).length;
-      final bMatch = bNiche.where((n) => userNiches.contains(n)).length;
-      return bMatch.compareTo(aMatch);
-    });
-
-    // Load best brands
-    List<Map<String, dynamic>> brands = [];
-    try {
-      brands = await ProfileService().getBrands(limit: 10);
-    } catch (e) {
-      print('Error loading best brands: $e');
+    if (!background) {
+      final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
+      if (cached != null) {
+        setState(() {
+          _profileCompleteness = score;
+          _matchedCards = List<Map<String, dynamic>>.from(cached['matchedCards']);
+          _bestBrands = List<Map<String, dynamic>>.from(cached['bestBrands']);
+          _profileViews = cached['profileViews'] as int? ?? 0;
+          _upcomingMilestones = List<Map<String, dynamic>>.from(cached['upcomingMilestones']);
+          _completedMilestonesCount = cached['completedMilestonesCount'] as int? ?? 0;
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = true);
+      }
     }
 
-    // Load profile views count
-    int viewsCount = 0;
     try {
-      viewsCount = await AnalyticsService().getProfileViewCount(user.id);
-    } catch (e) {
-      print('Error loading profile view count on home: $e');
-    }
+      // Concurrent fetching of all main dashboard sections
+      final futures = await Future.wait([
+        CardService().getActiveCards(limit: 20),
+        ProfileService().getBrands(limit: 10),
+        AnalyticsService().getProfileViewCount(user.id),
+        ChatService().getRooms(user.id, 'influencer'),
+      ]);
 
-    // Load deliverables/milestones
-    List<Map<String, dynamic>> milestones = [];
-    int completedMilestonesCount = 0;
-    try {
-      final rooms = await ChatService().getRooms(user.id, 'influencer');
+      final allCards = futures[0] as List<Map<String, dynamic>>;
+      final brands = futures[1] as List<Map<String, dynamic>>;
+      final viewsCount = futures[2] as int;
+      final rooms = futures[3] as List<Map<String, dynamic>>;
+
+      // Sort matched cards by user niches match
+      final userNiches = (profile['niche'] as List?)?.cast<String>() ?? [];
+      allCards.sort((a, b) {
+        final aNiche = (a['niche_tags'] as List?)?.cast<String>() ?? [];
+        final bNiche = (b['niche_tags'] as List?)?.cast<String>() ?? [];
+        final aMatch = aNiche.where((n) => userNiches.contains(n)).length;
+        final bMatch = bNiche.where((n) => userNiches.contains(n)).length;
+        return bMatch.compareTo(aMatch);
+      });
+
+      List<Map<String, dynamic>> milestones = [];
+      int completedMilestonesCount = 0;
+
       final roomIds = rooms.map((r) => r['id'] as String).toList();
       if (roomIds.isNotEmpty) {
-        final milestonesData = await SupabaseService.client
-            .from('milestones')
-            .select()
-            .inFilter('room_id', roomIds)
-            .eq('status', 'pending')
-            .order('due_date', ascending: true);
-        
-        final rawMilestones = List<Map<String, dynamic>>.from(milestonesData);
+        // Fetch milestones and completed count concurrently
+        final milestonesResults = await Future.wait([
+          SupabaseService.client
+              .from('milestones')
+              .select()
+              .inFilter('room_id', roomIds)
+              .eq('status', 'pending')
+              .order('due_date', ascending: true),
+          SupabaseService.client
+              .from('milestones')
+              .select('id')
+              .inFilter('room_id', roomIds)
+              .inFilter('status', ['completed', 'done']),
+        ]);
+
+        final rawMilestones = List<Map<String, dynamic>>.from(milestonesResults[0] as List);
         for (final m in rawMilestones) {
           final room = rooms.firstWhere((r) => r['id'] == m['room_id'], orElse: () => {});
           if (room.isNotEmpty) {
@@ -101,29 +125,39 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             });
           }
         }
+        completedMilestonesCount = (milestonesResults[1] as List).length;
+      }
 
-        // Fetch completed milestones count
-        final completedData = await SupabaseService.client
-            .from('milestones')
-            .select('id')
-            .inFilter('room_id', roomIds)
-            .inFilter('status', ['completed', 'done']);
-        completedMilestonesCount = completedData.length;
+      // Save complete payload to cache
+      AppCache().set(cacheKey, {
+        'matchedCards': allCards,
+        'bestBrands': brands,
+        'profileViews': viewsCount,
+        'upcomingMilestones': milestones,
+        'completedMilestonesCount': completedMilestonesCount,
+      }, ttl: const Duration(minutes: 5));
+
+      if (mounted) {
+        setState(() {
+          _profileCompleteness = score;
+          _matchedCards = allCards;
+          _bestBrands = brands;
+          _profileViews = viewsCount;
+          _upcomingMilestones = milestones;
+          _completedMilestonesCount = completedMilestonesCount;
+          _loading = false;
+        });
+      }
+      
+      // Perform background validation if we used cached data
+      if (!background && AppCache().get(cacheKey) != null) {
+        _load(background: true);
       }
     } catch (e) {
-      print('Error loading milestones for dashboard: $e');
-    }
-
-    if (mounted) {
-      setState(() {
-        _profileCompleteness = score;
-        _matchedCards = allCards;
-        _bestBrands = brands;
-        _profileViews = viewsCount;
-        _upcomingMilestones = milestones;
-        _completedMilestonesCount = completedMilestonesCount;
-        _loading = false;
-      });
+      print('Error loading dashboard: $e');
+      if (mounted && !background && _matchedCards.isEmpty) {
+        setState(() => _loading = false);
+      }
     }
   }
 

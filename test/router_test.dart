@@ -17,6 +17,7 @@ void main() {
   });
 
   testWidgets('App transitions from Splash to Login after animation completes', (tester) async {
+    HttpOverrides.global = MockHttpOverrides();
     // Set a larger viewport to avoid RenderFlex overflows in test layout
     final dpi = tester.view.devicePixelRatio;
     tester.view.physicalSize = Size(600 * dpi, 1200 * dpi);
@@ -96,6 +97,18 @@ class MockHttpClientResponse extends Stream<List<int>> implements HttpClientResp
   ];
 
   @override
+  int get statusCode => 200;
+
+  @override
+  int get contentLength => _transparentImage.length;
+
+  @override
+  HttpHeaders get headers => MockHttpHeaders();
+
+  @override
+  HttpClientResponseCompressionState get compressionState => HttpClientResponseCompressionState.notCompressed;
+
+  @override
   StreamSubscription<List<int>> listen(
     void Function(List<int> event)? onData, {
     Function? onError,
@@ -111,10 +124,5 @@ class MockHttpClientResponse extends Stream<List<int>> implements HttpClientResp
   }
 
   @override
-  dynamic noSuchMethod(Invocation invocation) {
-    if (invocation.memberName == #statusCode) return 200;
-    if (invocation.memberName == #contentLength) return _transparentImage.length;
-    if (invocation.memberName == #headers) return MockHttpHeaders();
-    return null;
-  }
+  dynamic noSuchMethod(Invocation invocation) => null;
 }

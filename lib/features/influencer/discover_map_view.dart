@@ -29,6 +29,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
   bool _loading = true;
   bool _searchingLocation = false;
   Map<String, dynamic>? _selectedEntity;
+  String _selectedFilter = 'both'; // 'both' | 'creators' | 'brands'
 
   final MapController _mapController = MapController();
 
@@ -150,6 +151,15 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
         newPositions[id] = LatLng(lat, lng);
       } else {
+        // HARDENING: ui-agent 2026-06-25 - Try geocoding the profile's text location before scattering
+        final location = e['location'] as String?;
+        if (location != null && location.trim().isNotEmpty) {
+          final coords = await _geocode(location);
+          if (coords != null) {
+            newPositions[id] = LatLng(coords['lat']!, coords['lng']!);
+            continue;
+          }
+        }
         // Fallback: scatter around the current center
         final sLat = _centerLat + (rng.nextDouble() - 0.5) * 0.06;
         final sLng = _centerLng + (rng.nextDouble() - 0.5) * 0.08;
@@ -257,10 +267,20 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       );
     }
 
+    // Filtered entities based on selection
+    final filteredEntities = _entities.where((e) {
+      if (_selectedFilter == 'brands') {
+        return e['role'] == 'brand';
+      } else if (_selectedFilter == 'creators') {
+        return e['role'] == 'influencer';
+      }
+      return true; // 'both'
+    }).toList();
+
     // Entity markers
     final rng = Random(42);
-    for (int i = 0; i < _entities.length; i++) {
-      final e = _entities[i];
+    for (int i = 0; i < filteredEntities.length; i++) {
+      final e = filteredEntities[i];
       final id = e['id'] as String?;
       if (id == null) continue;
 
@@ -273,33 +293,64 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       }
 
       final isBrand = e['role'] == 'brand';
-      final color = isBrand ? const Color(0xFF1E3A8A) : const Color(0xFF7C3AED);
-      final icon = isBrand ? '💼' : '👤';
+      final color = isBrand ? const Color(0xFF1E3A8A) : const Color(0xFF7C3AED); // Blue for brand, Purple for influencer
+      final badgeIcon = isBrand ? Iconsax.briefcase : Iconsax.user;
 
       markers.add(
+        // HARDENING: ui-agent 2026-06-25 - Show profile photo on map markers with role badges
         Marker(
           point: pos,
-          width: 36,
-          height: 36,
+          width: 44,
+          height: 44,
           child: GestureDetector(
             onTap: () => setState(() => _selectedEntity = e),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Profile Photo container with white border and shadow
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(icon, style: const TextStyle(fontSize: 14)),
+                  child: ClipOval(
+                    child: AppAvatar(
+                      url: e['avatar_url'],
+                      fallbackText: e['display_name'] ?? (isBrand ? 'B' : 'I'),
+                      size: 36,
+                    ),
+                  ),
+                ),
+                // Indicator badge (bottom right)
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      badgeIcon,
+                      size: 8,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -307,6 +358,75 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
     }
 
     return markers;
+  }
+
+  // HARDENING: ui-agent 2026-06-25 - Filter chip helper
+  Widget _buildFilterChip(String value, String label, IconData icon) {
+    final isSelected = _selectedFilter == value;
+    
+    // Custom active colors matching the roles
+    Color selectedColor;
+    if (value == 'brands') {
+      selectedColor = const Color(0xFF1E3A8A); // Sleek Brand Blue
+    } else if (value == 'creators') {
+      selectedColor = const Color(0xFF7C3AED); // Sleek Creator Purple
+    } else {
+      selectedColor = AppColors.accent; // Orange or active accent
+    }
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedFilter = value;
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected 
+                ? selectedColor 
+                : Colors.black.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? selectedColor : Colors.white.withValues(alpha: 0.15),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isSelected ? 0.35 : 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: Colors.white.withValues(alpha: isSelected ? 1.0 : 0.7),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: Colors.white.withValues(alpha: isSelected ? 1.0 : 0.75),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -320,121 +440,50 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       );
     }
 
-    final isDark = AppColors.isDarkMode;
-    final tileUrl = isDark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    // HARDENING: ui-agent 2026-06-25 - Force Dark Mode Map Tiles
+    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
     return Stack(
       children: [
         // Flutter Map
-        FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(
-            initialCenter: LatLng(_centerLat, _centerLng),
-            initialZoom: 13.0,
-            maxZoom: 19.0,
-            onTap: (_, __) {
-              if (_selectedEntity != null) {
-                setState(() => _selectedEntity = null);
-              }
-            },
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: tileUrl,
-              subdomains: const ['a', 'b', 'c'],
-              userAgentPackageName: 'com.brand.app',
+        Container(
+          color: const Color(0xFF111111), // HARDENING: ui-agent 2026-06-25 - Dark background under map
+          child: FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: LatLng(_centerLat, _centerLng),
+              initialZoom: 13.0,
+              maxZoom: 19.0,
+              onTap: (_, __) {
+                if (_selectedEntity != null) {
+                  setState(() => _selectedEntity = null);
+                }
+              },
             ),
-            MarkerLayer(markers: _buildMarkers()),
-          ],
+            children: [
+              TileLayer(
+                urlTemplate: tileUrl,
+                subdomains: const ['a', 'b', 'c'],
+                userAgentPackageName: 'com.brand.app',
+              ),
+              MarkerLayer(markers: _buildMarkers()),
+            ],
+          ),
         ),
 
-        // Search Bar Overlay (top)
+        // HARDENING: ui-agent 2026-06-25 - Floating Filter Chips Overlay (top)
         Positioned(
           top: 12,
           left: 12,
           right: 12,
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.surface.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 12),
-                Icon(Iconsax.search_normal, size: 18, color: AppColors.textMuted),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: _currentLocationLabel.isEmpty
-                          ? 'Search location...'
-                          : _currentLocationLabel,
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppColors.textMuted,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    onSubmitted: (val) {
-                      _flyToLocation(val);
-                      _searchCtrl.clear();
-                    },
-                  ),
-                ),
-                if (_searchingLocation)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  )
-                else
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () {
-                        if (_searchCtrl.text.isNotEmpty) {
-                          _flyToLocation(_searchCtrl.text);
-                          _searchCtrl.clear();
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 18,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+          child: Row(
+            children: [
+              _buildFilterChip('both', 'All Profiles', Iconsax.category),
+              const SizedBox(width: 8),
+              _buildFilterChip('creators', 'Creators', Iconsax.user),
+              const SizedBox(width: 8),
+              _buildFilterChip('brands', 'Brands', Iconsax.briefcase),
+            ],
           ),
         ),
 
@@ -445,12 +494,12 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.surface.withOpacity(0.95),
+              color: AppColors.surface.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -509,7 +558,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.12),
+              color: Colors.black.withValues(alpha: 0.12),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
@@ -720,7 +769,7 @@ class _UserLocationDotState extends State<_UserLocationDot>
                     height: 14,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF3B82F6).withOpacity(0.15),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
                     ),
                   ),
                 ),
@@ -737,7 +786,7 @@ class _UserLocationDotState extends State<_UserLocationDot>
               border: Border.all(color: Colors.white, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withOpacity(0.6),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.6),
                   blurRadius: 12,
                 ),
               ],

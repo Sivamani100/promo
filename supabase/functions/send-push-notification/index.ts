@@ -44,8 +44,30 @@ serve(async (req) => {
     const body = await req.json();
     const record = body.record; // The notification record inserted into database
 
-    if (!record || !record.user_id) {
-      return new Response(JSON.stringify({ error: "Missing notification record details." }), {
+    // HARDENING: sec-agent 2026-06-24
+    if (!record || typeof record !== "object") {
+      return new Response(JSON.stringify({ error: "Invalid webhook payload." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!record.user_id || typeof record.user_id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(record.user_id)) {
+      return new Response(JSON.stringify({ error: "Missing or invalid user_id format." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (record.title && typeof record.title !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid title field." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (record.body && typeof record.body !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid body field." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

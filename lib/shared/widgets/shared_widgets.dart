@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ---------- AppButton ----------
 class AppButton extends StatelessWidget {
@@ -758,7 +759,7 @@ class CampaignCardWidget extends StatelessWidget {
                       Expanded(
                         child: _buildDetailItem(
                           Iconsax.wallet_3,
-                          'Compensation',
+                          'Budget',
                           budget,
                         ),
                       ),
@@ -1851,3 +1852,320 @@ class AppImage extends StatelessWidget {
     return imageWidget;
   }
 }
+
+// ---------- PortfolioItemDetailSheet ----------
+class PortfolioItemDetailSheet extends StatelessWidget {
+  final Map<String, dynamic> item;
+
+  const PortfolioItemDetailSheet({super.key, required this.item});
+
+  static void show(BuildContext context, Map<String, dynamic> item) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PortfolioItemDetailSheet(item: item),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mediaUrl = item['media_url'] as String?;
+    final postUrl = item['post_url'] as String?;
+    final title = item['title'] ?? 'Untitled';
+    final platform = item['platform'] ?? '';
+    final desc = item['description'] ?? '';
+    final er = item['engagement_rate'];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+            width: 1.2,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF26262B) : const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Header title and close
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w800),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Media Image
+              if (mediaUrl != null && mediaUrl.trim().isNotEmpty) ...[
+                GestureDetector(
+                  onTap: () {
+                    context.push('/image-viewer', extra: {
+                      'urls': [mediaUrl],
+                      'title': title,
+                    });
+                  },
+                  child: Container(
+                    height: 220,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                        width: 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        AppImage(url: mediaUrl, fit: BoxFit.cover),
+                        Positioned(
+                          bottom: 12,
+                          right: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.fullscreen_rounded, size: 14, color: Colors.white),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'View Fullscreen',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Info Row (Platform & Engagement Rate)
+              Row(
+                children: [
+                  if (platform.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Iconsax.global, size: 12, color: AppColors.accent),
+                          const SizedBox(width: 5),
+                          Text(
+                            platform,
+                            style: AppTextStyles.label.copyWith(
+                              fontSize: 11.5,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (er != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: AppColors.success.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Iconsax.trend_up, size: 12, color: AppColors.success),
+                          const SizedBox(width: 5),
+                          Text(
+                            '$er% ER',
+                            style: AppTextStyles.label.copyWith(
+                              fontSize: 11.5,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              if (desc.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'About this project',
+                  style: AppTextStyles.label.copyWith(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              // Button
+              if (postUrl != null && postUrl.trim().isNotEmpty) ...[
+                AppButton(
+                  label: 'View Original Post',
+                  icon: Iconsax.link,
+                  onTap: () async {
+                    final uri = Uri.tryParse(postUrl.trim());
+                    if (uri != null && await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+              AppButton(
+                label: 'Close',
+                isPrimary: false,
+                onTap: () => Navigator.pop(context),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------- AppToast ----------
+class AppToast {
+  static void show(BuildContext context, String message, {IconData? icon, Color? iconColor}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        padding: EdgeInsets.zero,
+        margin: const EdgeInsets.only(bottom: 90, left: 24, right: 24),
+        duration: const Duration(seconds: 2),
+        content: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: ShapeDecoration(
+              color: Colors.black,
+              shape: StadiumBorder(
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 1.2),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, color: iconColor ?? Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                ] else ...[
+                  Container(
+                    width: 14,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(color: Colors.white),
+                        ),
+                        Expanded(
+                          child: Container(color: Colors.transparent),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Flexible(
+                  child: Text(
+                    message,
+                    style: AppTextStyles.bodySm.copyWith(
+                      color: const Color(0xFFFBFBEF),
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -61,5 +61,20 @@ subprojects {
             configureProject()
         }
     }
+
+    // HARDENING: devops-agent 2026-06-25
+    // Force modern Kotlin language and API version for subprojects using deprecated versions (below 2.0)
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            val lang = languageVersion.orNull
+            if (lang != null && lang < org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0) {
+                languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            }
+            val api = apiVersion.orNull
+            if (api != null && api < org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0) {
+                apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+            }
+        }
+    }
 }
 
