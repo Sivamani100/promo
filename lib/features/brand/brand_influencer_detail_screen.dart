@@ -6,6 +6,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -17,6 +18,8 @@ import '../../core/services/social_agent.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../trust/report_sheet.dart';
+import '../../core/services/block_service.dart';
 
 class BrandInfluencerDetailScreen extends ConsumerStatefulWidget {
   final String influencerId;
@@ -137,6 +140,64 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     );
   }
 
+  Future<void> _confirmBlockUser() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || _influencer == null) return;
+    final displayName = _influencer!['display_name'] ?? 'User';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Block $displayName?'),
+        content: Text('Blocking this user will prevent them from sending you messages, applying to your campaigns, or viewing your profile.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      try {
+        final blocked = await BlockService().blockUser(user.id, widget.influencerId);
+        if (mounted) {
+          Navigator.pop(context); // close loader
+          if (blocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$displayName has been blocked.')),
+            );
+            Navigator.pop(context); // Go back from detail screen
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User is already blocked.')),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // close loader
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to block user: $e')),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = AppColors.isDarkMode;
@@ -245,7 +306,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                 // Archive/save to list
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 8,
-                  right: 12,
+                  right: 56,
                   child: GestureDetector(
                     onTap: _showSaveToListSheet,
                     behavior: HitTestBehavior.opaque,
@@ -261,6 +322,66 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                         size: 18,
                         color: AppColors.textPrimary,
                       ),
+                    ),
+                  ),
+                ),
+                // 3-dot Actions Menu (Report/Block)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 12,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      cardColor: isDark ? const Color(0xFF141416) : Colors.white,
+                    ),
+                    child: PopupMenuButton<String>(
+                      icon: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      padding: EdgeInsets.zero,
+                      onSelected: (value) {
+                        if (value == 'report') {
+                          ReportSheet.show(
+                            context,
+                            reportedId: widget.influencerId,
+                            contentTypeName: 'User',
+                          );
+                        } else if (value == 'block') {
+                          _confirmBlockUser();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'report',
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.danger, color: AppColors.error, size: 18),
+                              const SizedBox(width: 8),
+                              const Text('Report User'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'block',
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.user_remove, color: AppColors.error, size: 18),
+                              const SizedBox(width: 8),
+                              const Text('Block User'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -501,6 +622,35 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     );
   }
 
+  Widget _buildTrustBadge({required IconData icon, required String label, Color? color}) {
+    final isDark = AppColors.isDarkMode;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF141416) : const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF242428) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color ?? AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAboutTab(Map<String, dynamic> inf, List<String> niches, List<String> platforms, String followersText) {
     final prefs = inf['preferences'] as Map<String, dynamic>? ?? {};
     final handles = prefs['platform_handles'] as Map<String, dynamic>? ?? {};
@@ -515,6 +665,63 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
         AppSpacing.bottomScreenPadding + AppSpacing.lg,
       ),
       children: [
+        // Trust Signals Card
+        _buildSectionCard(
+          isDark: isDark,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Iconsax.shield_security, size: 14, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Text(
+                    'TRUST & VERIFICATION',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.success,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  // Member since
+                  _buildTrustBadge(
+                    icon: Iconsax.calendar,
+                    label: 'Member since ${inf['created_at'] != null ? DateFormat('MMMM yyyy').format(DateTime.parse(inf['created_at']).toLocal()) : 'Recent'}',
+                  ),
+                  // New Account Badge
+                  if (inf['created_at'] != null &&
+                      DateTime.now().difference(DateTime.parse(inf['created_at'])).inDays < 7)
+                    _buildTrustBadge(
+                      icon: Iconsax.award,
+                      label: 'New Creator',
+                      color: AppColors.warning,
+                    ),
+                  // Verified Follower date
+                  if (prefs['followers_sync_at'] != null)
+                    _buildTrustBadge(
+                      icon: Iconsax.verify,
+                      label: 'Followers verified ${DateFormat('MMM dd, yyyy').format(DateTime.parse(prefs['followers_sync_at']).toLocal())}',
+                    ),
+                  // Completed collaborations count
+                  _buildTrustBadge(
+                    icon: Iconsax.briefcase,
+                    label: '${_reviews.length} collaborations completed',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
         // Bio section
         if (inf['bio'] != null && (inf['bio'] as String).trim().isNotEmpty) ...[
           _buildSectionCard(

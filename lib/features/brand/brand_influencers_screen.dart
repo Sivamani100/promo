@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -358,7 +359,10 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
               ),
             )
           : RefreshIndicator(
-              onRefresh: _load,
+              onRefresh: () async {
+                HapticFeedback.lightImpact();
+                await _load();
+              },
               color: AppColors.accent,
               backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
               child: Column(

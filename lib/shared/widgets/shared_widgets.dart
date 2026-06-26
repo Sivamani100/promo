@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -7,51 +8,115 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/design_tokens.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/media/image_cache_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ---------- AppButton ----------
-class AppButton extends StatelessWidget {
+// Enhanced with pressed/loading/success/disabled states + haptic feedback.
+class AppButton extends StatefulWidget {
   final String label;
   final VoidCallback? onTap;
   final bool isLoading;
+  final bool isSuccess;
+  final bool isDisabled;
   final bool isPrimary;
   final IconData? icon;
   final double? width;
 
-  const AppButton({super.key, required this.label, this.onTap, this.isLoading = false, this.isPrimary = true, this.icon, this.width});
+  const AppButton({
+    super.key,
+    required this.label,
+    this.onTap,
+    this.isLoading = false,
+    this.isSuccess = false,
+    this.isDisabled = false,
+    this.isPrimary = true,
+    this.icon,
+    this.width,
+  });
+
+  @override
+  State<AppButton> createState() => _AppButtonState();
+}
+
+class _AppButtonState extends State<AppButton> {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails _) {
+    if (widget.isLoading || widget.isDisabled) return;
+    setState(() => _scale = 0.96);
+  }
+
+  void _onTapUp(TapUpDetails _) {
+    if (widget.isLoading || widget.isDisabled) return;
+    setState(() => _scale = 1.0);
+  }
+
+  void _onTapCancel() {
+    setState(() => _scale = 1.0);
+  }
+
+  void _handleTap() {
+    if (widget.isLoading || widget.isDisabled || widget.onTap == null) return;
+    HapticFeedback.lightImpact();
+    widget.onTap!();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width ?? double.infinity,
-      child: isPrimary
-          ? ElevatedButton(
-              onPressed: isLoading ? null : onTap,
-              child: _buildContent(),
-            )
-          : OutlinedButton(
-              onPressed: isLoading ? null : onTap,
-              child: _buildContent(),
-            ),
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: DesignTokens.durationXS,
+        curve: DesignTokens.curveDefault,
+        child: AnimatedOpacity(
+          opacity: widget.isDisabled ? 0.4 : 1.0,
+          duration: DesignTokens.durationSM,
+          child: SizedBox(
+            width: widget.width ?? double.infinity,
+            child: widget.isPrimary
+                ? ElevatedButton(
+                    onPressed: (widget.isLoading || widget.isDisabled) ? null : _handleTap,
+                    child: _buildContent(),
+                  )
+                : OutlinedButton(
+                    onPressed: (widget.isLoading || widget.isDisabled) ? null : _handleTap,
+                    child: _buildContent(),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildContent() {
-    if (isLoading) {
-      return SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accentOnDark));
-    }
-    if (icon != null) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [Icon(icon, size: 20), const SizedBox(width: 8), Text(label)],
+    if (widget.isLoading) {
+      return SizedBox(
+        height: 20, width: 20,
+        child: CircularProgressIndicator(strokeWidth: 2, color: widget.isPrimary ? AppColors.accentOnDark : AppColors.accent),
       );
     }
-    return Text(label);
+    if (widget.isSuccess) {
+      return Icon(Icons.check_rounded, color: widget.isPrimary ? AppColors.accentOnDark : AppColors.success, size: 22);
+    }
+    if (widget.icon != null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [Icon(widget.icon, size: 20), const SizedBox(width: 8), Text(widget.label)],
+      );
+    }
+    return Text(widget.label);
   }
 }
 
 // ---------- AppTextField ----------
+// Enhanced with focusNode, textInputAction, autocorrect, prefixText for keyboard UX.
 class AppTextField extends StatelessWidget {
   final String label;
   final String? hint;
@@ -59,10 +124,17 @@ class AppTextField extends StatelessWidget {
   final bool obscure;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final int? minLines;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
   final Widget? suffix;
   final Widget? prefixIcon;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onSubmitted;
+  final bool autocorrect;
+  final bool enableSuggestions;
+  final String? prefixText;
 
   const AppTextField({
     super.key,
@@ -72,10 +144,17 @@ class AppTextField extends StatelessWidget {
     this.obscure = false,
     this.keyboardType,
     this.maxLines = 1,
+    this.minLines,
     this.validator,
     this.onChanged,
     this.suffix,
     this.prefixIcon,
+    this.focusNode,
+    this.textInputAction,
+    this.onSubmitted,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
+    this.prefixText,
   });
 
   @override
@@ -90,27 +169,34 @@ class AppTextField extends StatelessWidget {
           obscureText: obscure,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          minLines: minLines,
           validator: validator,
           onChanged: onChanged,
+          focusNode: focusNode,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
+          autocorrect: autocorrect,
+          enableSuggestions: enableSuggestions,
           style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: suffix,
             prefixIcon: prefixIcon,
+            prefixText: prefixText,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMD),
               borderSide: BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMD),
               borderSide: BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMD),
               borderSide: BorderSide(color: AppColors.textPrimary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(DesignTokens.radiusMD),
               borderSide: BorderSide(color: AppColors.error),
             ),
           ),
@@ -142,9 +228,19 @@ class AppAvatar extends StatelessWidget {
       child: ClipOval(
         child: isValidImageUrl(url)
             ? CachedNetworkImage(
+                cacheManager: AppCacheManager.instance,
                 imageUrl: url!.trim(),
                 fit: BoxFit.cover,
+                placeholder: (context, url) => Center(
+                  child: SizedBox(
+                    width: size * 0.5,
+                    height: size * 0.5,
+                    child: const CircularProgressIndicator(strokeWidth: 1.5),
+                  ),
+                ),
                 errorWidget: (_, _, _) => _fallback(),
+                memCacheWidth: (size * 2).toInt(),
+                memCacheHeight: (size * 2).toInt(),
               )
             : _fallback(),
       ),
@@ -594,8 +690,11 @@ class CampaignCardWidget extends StatelessWidget {
                       color: AppColors.surface2,
                       child: card['cover_image_url'] != null && card['cover_image_url'].toString().isNotEmpty
                           ? CachedNetworkImage(
+                              cacheManager: AppCacheManager.instance,
                               imageUrl: card['cover_image_url'],
                               fit: BoxFit.cover,
+                              memCacheWidth: 800,
+                              memCacheHeight: 450,
                               placeholder: (context, url) => const Center(
                                 child: SizedBox(
                                   width: 24,
@@ -1824,10 +1923,13 @@ class AppImage extends StatelessWidget {
     final cleanUrl = url!.trim();
 
     Widget imageWidget = CachedNetworkImage(
+      cacheManager: AppCacheManager.instance,
       imageUrl: cleanUrl,
       fit: fit,
       width: width,
       height: height,
+      memCacheWidth: width != null ? (width! * 2).toInt() : null,
+      memCacheHeight: height != null ? (height! * 2).toInt() : null,
       placeholder: (context, url) => Container(
         color: AppColors.surface2,
         width: width,

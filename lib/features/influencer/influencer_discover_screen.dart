@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/media/image_cache_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
@@ -596,7 +598,13 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                       
                       // Bento List Card list
                       Expanded(
-                        child: ListView.separated(
+                        child: RefreshIndicator(
+                          onRefresh: () async {
+                            HapticFeedback.lightImpact();
+                            await _load();
+                          },
+                          color: AppColors.accent,
+                          child: ListView.separated(
                           padding: const EdgeInsets.fromLTRB(
                             AppSpacing.pageMarginHorizontal,
                             AppSpacing.pageMarginVertical,
@@ -612,10 +620,8 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                           itemBuilder: (context, i) {
                             if (filtered.isEmpty) {
                               if (i == 0) {
-                                return const AppEmptyState(
-                                  icon: Icons.campaign_rounded,
-                                  title: 'No campaigns found',
-                                );
+                                final isDark = Theme.of(context).brightness == Brightness.dark;
+                                return _buildDiscoverEmptyState(isDark);
                               } else {
                                 return _buildFooter();
                               }
@@ -630,11 +636,44 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                               animationDelayIndex: i,
                             );
                           },
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildDiscoverEmptyState(bool isDark) {
+    final imagePath = isDark 
+        ? 'assets/illustrations/Discover Cards Night.png' 
+        : 'assets/illustrations/Discover Cards Light.png';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            imagePath,
+            fit: BoxFit.contain,
+            height: 240,
+          ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack).fadeIn(),
+          const SizedBox(height: 24),
+          Text(
+            'No Campaigns Found',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
+        ],
+      ),
     );
   }
 
@@ -753,8 +792,11 @@ class _BentoCampaignListCard extends StatelessWidget {
                           color: AppColors.surface2,
                           child: isValidImageUrl(card['cover_image_url'])
                               ? CachedNetworkImage(
+                                  cacheManager: AppCacheManager.instance,
                                   imageUrl: card['cover_image_url'],
                                   fit: BoxFit.cover,
+                                  memCacheWidth: 176,
+                                  memCacheHeight: 176,
                                 )
                               : Center(
                                   child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),

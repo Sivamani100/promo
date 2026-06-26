@@ -14,6 +14,7 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../core/utils/error_handler.dart';
+import '../trust/report_sheet.dart';
 
 class InfluencerCardDetailScreen extends ConsumerStatefulWidget {
   final String cardId;
@@ -145,17 +146,23 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
       appBar: AppBar(
         title: const Text('Campaign Details'),
         actions: [
-          if (_applied) ...[
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded),
-              onSelected: (val) {
-                if (val == 'edit') {
-                  _showApplyBottomSheetForm();
-                } else if (val == 'info') {
-                  _showApplicationInfoDialog();
-                }
-              },
-              itemBuilder: (context) => [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            onSelected: (val) {
+              if (val == 'edit') {
+                _showApplyBottomSheetForm();
+              } else if (val == 'info') {
+                _showApplicationInfoDialog();
+              } else if (val == 'report') {
+                ReportSheet.show(
+                  context,
+                  reportedCardId: widget.cardId,
+                  contentTypeName: 'Campaign',
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              if (_applied) ...[
                 const PopupMenuItem(
                   value: 'info',
                   child: Row(
@@ -178,8 +185,18 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                     ),
                   ),
               ],
-            ),
-          ],
+              PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Iconsax.danger, color: AppColors.error, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('Report Campaign'),
+                  ],
+                  ),
+              ),
+            ],
+          ),
         ],
       ),
       body: Column(

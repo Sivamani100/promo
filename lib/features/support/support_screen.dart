@@ -1,512 +1,311 @@
 import 'package:flutter/material.dart';
-import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/theme/app_spacing.dart';
+import '../../core/theme/design_tokens.dart';
 import '../../core/providers/app_providers.dart';
+import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
-import '../../shared/widgets/app_skeleton.dart';
-import '../../shared/widgets/screen_skeletons.dart';
-import '../../core/utils/error_handler.dart';
+import '../../shared/widgets/app_card.dart';
+import '../../shared/widgets/staggered_list_item.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
   const SupportScreen({super.key});
+
   @override
   ConsumerState<SupportScreen> createState() => _SupportScreenState();
 }
 
-class _SupportScreenState extends ConsumerState<SupportScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabCtrl;
-  final _subjectCtrl = TextEditingController();
-  final _messageCtrl = TextEditingController();
+class _SupportScreenState extends ConsumerState<SupportScreen> {
   final _searchCtrl = TextEditingController();
-  
-  String _category = 'General';
-  bool _submitting = false;
-  List<Map<String, dynamic>> _tickets = [];
-  bool _loadingTickets = true;
+  List<Map<String, dynamic>> _articles = [];
+  bool _loadingArticles = true;
   String _searchQuery = '';
-
-  // Curated FAQ List
-  final List<Map<String, String>> _faqs = [
-    {
-      'category': 'Account',
-      'question': 'How do I customize my digital card?',
-      'answer': 'Go to your Profile tab, click "Edit Card" or "Edit Profile", and modify your branding details, social media links, templates, and portfolios. Changes are updated in real-time.'
-    },
-    {
-      'category': 'Account',
-      'question': 'Can I change my username or display handle?',
-      'answer': 'Yes, you can edit your public handle and display name in Profile Settings. Ensure your handle is unique as it determines your digital card URL.'
-    },
-    {
-      'category': 'Campaigns',
-      'question': 'How do I apply to a brand campaign?',
-      'answer': 'Open the Discover tab, select an active Brand Card, read the deliverables, and click "Apply". You can enter a customized pitch and rates before submitting.'
-    },
-    {
-      'category': 'Campaigns',
-      'question': 'What happens when a milestone is completed?',
-      'answer': 'Once you complete a milestone, mark it as completed in the chat room. The brand will be notified to review the deliverables. When approved, escrow funds are automatically released.'
-    },
-    {
-      'category': 'Payments',
-      'question': 'When do I receive payment for milestones?',
-      'answer': 'Milestone funds are held securely in escrow. They are released immediately to your wallet balance once the brand signs off on the milestone deliverables.'
-    },
-    {
-      'category': 'Payments',
-      'question': 'How do I withdraw my earnings?',
-      'answer': 'Go to settings, navigate to Wallet / Bank Settings, and link your banking credentials or Stripe account. Once linked, you can withdraw your wallet balance at any time.'
-    },
-    {
-      'category': 'General',
-      'question': 'How long does support response take?',
-      'answer': 'Our dedicated support team reviews every ticket and responds within 24 hours. You will receive updates in real-time on your ticket status in the "My Tickets" tab.'
-    },
-    {
-      'category': 'General',
-      'question': 'How do I report a bug or suggest a feature?',
-      'answer': 'File a ticket using the "New Ticket" form. Choose the "Bug Report" or "Feature Request" category so it gets routed to the appropriate engineering team.'
-    },
-  ];
+  bool _creatingChat = false;
 
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 3, vsync: this);
+    _loadArticles();
     _searchCtrl.addListener(() {
       setState(() {
-        _searchQuery = _searchCtrl.text.toLowerCase().trim();
+        _searchQuery = _searchCtrl.text.trim().toLowerCase();
       });
     });
-    _loadTickets();
-  }
-
-  Future<void> _loadTickets() async {
-    final user = ref.read(authProvider).user;
-    if (user == null) return;
-    try {
-      final data = await SupabaseService.client
-          .from('support_tickets')
-          .select()
-          .eq('user_id', user.id)
-          .order('created_at', ascending: false);
-      if (mounted) {
-        setState(() {
-          _tickets = List<Map<String, dynamic>>.from(data);
-          _loadingTickets = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _loadingTickets = false);
-    }
-  }
-
-  Future<void> _submit() async {
-    if (_subjectCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
-      AppSnackbar.warning(context, 'Please fill in all fields.');
-      return;
-    }
-    setState(() => _submitting = true);
-    try {
-      final user = ref.read(authProvider).user!;
-      await SupabaseService.client.from('support_tickets').insert({
-        'user_id': user.id,
-        'subject': _subjectCtrl.text.trim(),
-        'message': _messageCtrl.text.trim(),
-        'category': _category,
-        'status': 'open',
-      });
-      _subjectCtrl.clear();
-      _messageCtrl.clear();
-      _tabCtrl.animateTo(2); // Switch to My Tickets
-      _loadTickets();
-      if (mounted) {
-        AppSnackbar.success(context, 'Support ticket submitted!');
-      }
-    } catch (e) {
-      if (mounted) {
-        AppSnackbar.error(context, AppErrorHandler.toUserMessage(e));
-      }
-    }
-    if (mounted) setState(() => _submitting = false);
   }
 
   @override
   void dispose() {
-    _tabCtrl.dispose();
-    _subjectCtrl.dispose();
-    _messageCtrl.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
 
+  Future<void> _loadArticles() async {
+    setState(() => _loadingArticles = true);
+    try {
+      final client = SupabaseService.client;
+      final role = ref.read(authProvider).role;
+
+      // Fetch all published articles
+      final query = client
+          .from('help_articles')
+          .select()
+          .eq('is_published', true);
+
+      final data = await query;
+      
+      if (mounted) {
+        setState(() {
+          // Filter articles based on target role: either null or matching user role
+          _articles = List<Map<String, dynamic>>.from(data).where((art) {
+            final targetRole = art['target_role'];
+            return targetRole == null || targetRole == role;
+          }).toList();
+          _loadingArticles = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[SUPPORT] Error loading articles: $e');
+      if (mounted) {
+        setState(() => _loadingArticles = false);
+      }
+    }
+  }
+
+  Future<void> _openSupportChat() async {
+    final user = ref.read(authProvider).user;
+    final role = ref.read(authProvider).role;
+    if (user == null || _creatingChat) return;
+
+    setState(() => _creatingChat = true);
+
+    try {
+      final adminId = '259172c1-8707-4a31-b9ba-2fc81ebbba47';
+      final brandId = role == 'brand' ? user.id : adminId;
+      final influencerId = role == 'influencer' ? user.id : adminId;
+
+      final room = await ChatService().getOrCreate1to1Room(
+        brandId: brandId,
+        influencerId: influencerId,
+      );
+
+      if (mounted) {
+        context.push('/chat/room/${room['id']}');
+      }
+    } catch (e) {
+      debugPrint('[SUPPORT] Error opening support chat: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _creatingChat = false);
+      }
+    }
+  }
+
+  void _emailSupport() async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@promo.app',
+      queryParameters: {
+        'subject': 'Support Request - Promo App',
+      },
+    );
+    try {
+      await url_launcher.launchUrl(emailLaunchUri);
+    } catch (e) {
+      debugPrint('[SUPPORT] Failed to launch email client: $e');
+    }
+  }
+
+  void _launchCommunityUrl(String url) async {
+    try {
+      await url_launcher.launchUrl(Uri.parse(url), mode: url_launcher.LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('[SUPPORT] Failed to launch URL: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDarkMode;
-
-    ref.listen(authProvider, (previous, next) {
-      if (next.user != null && _loadingTickets) {
-        _loadTickets();
-      }
-    });
-
-    // Filter FAQs
-    final filteredFaqs = _faqs.where((faq) {
-      final q = faq['question']!.toLowerCase();
-      final a = faq['answer']!.toLowerCase();
-      final cat = faq['category']!.toLowerCase();
-      return q.contains(_searchQuery) || a.contains(_searchQuery) || cat.contains(_searchQuery);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Filter articles dynamically based on search query
+    final filteredArticles = _articles.where((art) {
+      if (_searchQuery.isEmpty) return true;
+      final title = art['title'].toString().toLowerCase();
+      final content = art['content'].toString().toLowerCase();
+      return title.contains(_searchQuery) || content.contains(_searchQuery);
     }).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: isDark ? AppColors.background : const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        title: const Text('Help & Support'),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          color: AppColors.textPrimary,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Help & Support',
-          style: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
-        ),
-        bottom: TabBar(
-          controller: _tabCtrl,
-          labelColor: AppColors.textPrimary,
-          unselectedLabelColor: AppColors.textMuted,
-          indicatorColor: AppColors.accent,
-          indicatorWeight: 2,
-          dividerColor: AppColors.borderSubtle,
-          labelStyle: AppTextStyles.label.copyWith(fontSize: 13, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: AppTextStyles.label.copyWith(fontSize: 13),
-          tabs: const [
-            Tab(text: 'FAQs'),
-            Tab(text: 'New Ticket'),
-            Tab(text: 'My Tickets'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabCtrl,
-        children: [
-          // 1. FAQs Tab
-          GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.pageMarginHorizontal,
-                vertical: AppSpacing.pageMarginVertical,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: DesignTokens.space16, vertical: DesignTokens.space24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search input
+              TextField(
+                controller: _searchCtrl,
+                style: AppTextStyles.body,
+                decoration: InputDecoration(
+                  hintText: 'Search help articles...',
+                  prefixIcon: const Icon(Iconsax.search_normal),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 28),
+
+              // Help Articles List
+              Text('POPULAR ARTICLES', style: AppTextStyles.overline),
+              const SizedBox(height: 12),
+              if (_loadingArticles)
+                const Center(child: CircularProgressIndicator())
+              else if (filteredArticles.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Text('No articles found matching search.', style: AppTextStyles.bodySm.copyWith(fontStyle: FontStyle.italic)),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredArticles.length,
+                  itemBuilder: (context, idx) {
+                    final art = filteredArticles[idx];
+                    return StaggeredListItem(
+                      index: idx,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: AppCard(
+                          onTap: () {
+                            context.push('/support/article/${art['id']}');
+                          },
+                          padding: const EdgeInsets.symmetric(horizontal: DesignTokens.space16, vertical: DesignTokens.space14),
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.info_circle, color: AppColors.purple, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  art['title'] ?? '',
+                                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              Icon(Iconsax.arrow_right_1, color: AppColors.textMuted, size: 18),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              
+              const SizedBox(height: 32),
+              
+              // Contact Section
+              Text('CONTACT SUPPORT', style: AppTextStyles.overline),
+              const SizedBox(height: 12),
+              Row(
                 children: [
-                  Text(
-                    'Frequently Asked Questions',
-                    style: AppTextStyles.h4.copyWith(fontSize: 18),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Find quick answers to common questions, or submit a ticket if you still need help.',
-                    style: AppTextStyles.caption.copyWith(height: 1.4),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Search Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface2,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    child: TextField(
-                      controller: _searchCtrl,
-                      style: AppTextStyles.body,
-                      decoration: InputDecoration(
-                        hintText: 'Search questions or keywords...',
-                        hintStyle: AppTextStyles.body.copyWith(color: AppColors.textMuted),
-                        prefixIcon: Icon(Iconsax.search_normal, color: AppColors.textMuted, size: 20),
-                        suffixIcon: _searchCtrl.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 20),
-                                onPressed: () {
-                                  _searchCtrl.clear();
-                                  FocusScope.of(context).unfocus();
-                                },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  Expanded(
+                    child: AppCard(
+                      onTap: _openSupportChat,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          Icon(Iconsax.message_programming, color: AppColors.purple, size: 28),
+                          const SizedBox(height: 12),
+                          _creatingChat
+                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                              : Text('Chat with us', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text('Typical reply: < 2 hrs', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // FAQs List
-                  filteredFaqs.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 40),
-                            child: AppEmptyState(
-                              icon: Iconsax.search_status,
-                              title: 'No FAQ matches',
-                              subtitle: 'Try searching for other terms like "payment" or "profile".',
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: filteredFaqs.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (context, i) {
-                            final faq = filteredFaqs[i];
-                            return Theme(
-                              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppColors.border, width: 1.2),
-                                ),
-                                child: ExpansionTile(
-                                  collapsedIconColor: AppColors.textMuted,
-                                  iconColor: AppColors.accent,
-                                  leading: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surface2,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      faq['category'] == 'Payments'
-                                          ? Iconsax.wallet
-                                          : faq['category'] == 'Campaigns'
-                                              ? Iconsax.flag
-                                              : Iconsax.user,
-                                      size: 16,
-                                      color: AppColors.accent,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    faq['question']!,
-                                    style: AppTextStyles.label.copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                      child: Text(
-                                        faq['answer']!,
-                                        style: AppTextStyles.bodySm.copyWith(
-                                          color: AppColors.textSecondary,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. New Ticket Tab
-          GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.pageMarginHorizontal,
-                vertical: AppSpacing.pageMarginVertical,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Submit a support ticket and we\'ll get back to you within 24 hours.',
-                    style: AppTextStyles.caption.copyWith(height: 1.4),
-                  ),
-                  const SizedBox(height: 24),
-                  Text('CATEGORY', style: AppTextStyles.overline),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: ['General', 'Bug Report', 'Account Issue', 'Feature Request', 'Billing'].map((c) => AppChip(
-                      label: c,
-                      selected: _category == c,
-                      onTap: () => setState(() => _category = c),
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  AppTextField(
-                    label: 'Subject',
-                    hint: 'Brief description of the issue',
-                    controller: _subjectCtrl,
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    label: 'Message',
-                    hint: 'Describe your issue in detail...',
-                    controller: _messageCtrl,
-                    maxLines: 6,
-                  ),
-                  const SizedBox(height: 24),
-                  AppButton(
-                    label: 'Submit Ticket',
-                    onTap: _submit,
-                    isLoading: _submitting,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: AppCard(
+                      onTap: _emailSupport,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          Icon(Iconsax.direct_send, color: AppColors.purple, size: 28),
+                          const SizedBox(height: 12),
+                          Text('Email support', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text('Typical reply: 24 hrs', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-
-          // 3. My Tickets Tab
-          _loadingTickets
-              ? SkeletonShimmer(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    itemCount: 4,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (_, __) => const GenericListTileSkeleton(),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadTickets,
-                  color: AppColors.accent,
-                  child: _tickets.isEmpty
-                      ? ListView(
-                          children: const [
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 80),
-                              child: AppEmptyState(
-                                icon: Iconsax.message_question,
-                                title: 'No tickets',
-                                subtitle: 'Your support tickets will appear here.',
-                              ),
-                            ),
-                          ],
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(AppSpacing.lg),
-                          itemCount: _tickets.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 12),
-                          itemBuilder: (_, i) {
-                            final t = _tickets[i];
-                            final status = (t['status'] ?? 'open').toString().toLowerCase();
-                            
-                            Color statusColor;
-                            switch (status) {
-                              case 'resolved':
-                                statusColor = AppColors.success;
-                                break;
-                              case 'in_progress':
-                              case 'progress':
-                                statusColor = AppColors.info;
-                                break;
-                              case 'closed':
-                                statusColor = AppColors.textMuted;
-                                break;
-                              case 'open':
-                              default:
-                                statusColor = AppColors.warning;
-                                break;
-                            }
-
-                            final dateText = t['created_at'] != null
-                                ? DateFormat('MMM d, yyyy').format(DateTime.parse(t['created_at']).toLocal())
-                                : '';
-
-                            return Container(
-                              padding: const EdgeInsets.all(AppSpacing.lg),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.border, width: 1.2),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          t['subject'] ?? '',
-                                          style: AppTextStyles.label.copyWith(
-                                            color: AppColors.textPrimary,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(100),
-                                        ),
-                                        child: Text(
-                                          status.toUpperCase(),
-                                          style: AppTextStyles.captionSm.copyWith(
-                                            color: statusColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 9,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    t['message'] ?? '',
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.textSecondary,
-                                      height: 1.5,
-                                    ),
-                                    maxLines: 4,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        t['category'] ?? 'General',
-                                        style: AppTextStyles.captionSm.copyWith(
-                                          color: AppColors.accent,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      Text(
-                                        dateText,
-                                        style: AppTextStyles.captionSm.copyWith(
-                                          color: AppColors.textMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+              
+              const SizedBox(height: 36),
+              
+              // Community Section
+              Text('JOIN OUR COMMUNITY', style: AppTextStyles.overline),
+              const SizedBox(height: 12),
+              AppCard(
+                onTap: () => _launchCommunityUrl('https://discord.gg/promoapp'),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.discord, color: Color(0xFF5865F2), size: 24),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Join our Discord', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Connect with creators and share tips!', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                        ],
+                      ),
+                    ),
+                    Icon(Iconsax.arrow_right_1, color: AppColors.textMuted, size: 18),
+                  ],
                 ),
-        ],
+              ),
+              const SizedBox(height: 12),
+              AppCard(
+                onTap: () => _launchCommunityUrl('https://instagram.com/promo.app'),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    Icon(Iconsax.instagram, color: const Color(0xFFE1306C), size: 24),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Follow on Instagram', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Get product updates and see campaigns.', style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
+                        ],
+                      ),
+                    ),
+                    Icon(Iconsax.arrow_right_1, color: AppColors.textMuted, size: 18),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

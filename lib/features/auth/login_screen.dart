@@ -14,6 +14,8 @@ import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:iconsax/iconsax.dart';
 
+import '../../shared/widgets/analytics_consent_dialog.dart';
+
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -37,6 +39,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AnalyticsConsentDialog.checkAndShow(context);
+    });
     _emailCtrl.addListener(_onTextChanged);
     _passwordCtrl.addListener(_onTextChanged);
 
@@ -273,6 +278,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                         controller: _emailCtrl,
                         focusNode: _emailFocusNode,
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
                       ),
                     ),
 
@@ -288,6 +295,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                         focusNode: _passwordFocusNode,
                         obscure: _obscurePassword,
                         errorText: _errorMessage,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _handleSignIn(),
                         suffixIcon: HoverablePasswordEye(
                           obscure: _obscurePassword,
                           onPressed: () {
@@ -525,6 +534,8 @@ class PremiumInputField extends StatefulWidget {
   final Widget? suffixIcon;
   final FocusNode focusNode;
   final String? errorText;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onSubmitted;
 
   const PremiumInputField({
     super.key,
@@ -536,6 +547,8 @@ class PremiumInputField extends StatefulWidget {
     this.keyboardType,
     this.suffixIcon,
     this.errorText,
+    this.textInputAction,
+    this.onSubmitted,
   });
 
   @override
@@ -617,6 +630,8 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
             focusNode: widget.focusNode,
             obscureText: widget.obscure,
             keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            onFieldSubmitted: widget.onSubmitted,
             cursorColor: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
             style: GoogleFonts.inter(
               fontSize: 16,

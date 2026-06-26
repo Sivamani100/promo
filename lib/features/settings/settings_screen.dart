@@ -89,6 +89,9 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Meet the creator of Promo',
               onTap: () => context.push('/$role/settings/developers'),
             ),
+          ]),
+          const SizedBox(height: 20),
+          _SettingsSection(title: 'Legal & Privacy', items: [
             _SettingsItem(
               icon: Iconsax.document,
               label: 'Terms of Service',
@@ -98,6 +101,18 @@ class SettingsScreen extends ConsumerWidget {
               icon: Iconsax.shield_tick,
               label: 'Privacy Policy',
               onTap: () => context.push('/$role/settings/privacy-policy'),
+            ),
+            _SettingsItem(
+              icon: Iconsax.setting_3,
+              label: 'Manage Consent',
+              subtitle: 'DPDP Act options',
+              onTap: () => context.push('/consent?from_settings=true'),
+            ),
+            _SettingsItem(
+              icon: Iconsax.personalcard,
+              label: 'Grievance Officer',
+              subtitle: 'DPDP compliance contact',
+              onTap: () => _showGrievanceOfficerDialog(context),
             ),
           ]),
           const SizedBox(height: 20),
@@ -124,6 +139,73 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Center(child: Text('Brand v1.0.0', style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted))),
         ],
+      ),
+    );
+  }
+
+  void _showGrievanceOfficerDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            side: BorderSide(color: AppColors.border),
+          ),
+          title: Text(
+            'Grievance Officer (DPDP Compliance)',
+            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Under the India Digital Personal Data Protection (DPDP) Act 2023, you can contact our designated Grievance Officer regarding data privacy queries, corrections, or erasure requests:',
+                style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, height: 1.45),
+              ),
+              const SizedBox(height: 16),
+              _buildOfficerDetail('Name', 'Ms. Priya Sharma'),
+              _buildOfficerDetail('Designation', 'Grievance & Compliance Officer'),
+              _buildOfficerDetail('Email', 'compliance@promo.app'),
+              _buildOfficerDetail('Address', 'Brand Mobile App Pvt. Ltd., 4th Floor, Tech Hub, Bangalore, India'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Close',
+                style: TextStyle(color: AppColors.purple),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildOfficerDetail(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: RichText(
+        text: TextSpan(
+          text: '$label: ',
+          style: AppTextStyles.bodySm.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+          children: [
+            TextSpan(
+              text: value,
+              style: AppTextStyles.bodySm.copyWith(
+                fontWeight: FontWeight.normal,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

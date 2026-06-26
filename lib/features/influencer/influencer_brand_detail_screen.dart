@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -16,6 +18,8 @@ import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
+import '../trust/report_sheet.dart';
+import '../../core/services/block_service.dart';
 
 class InfluencerBrandDetailScreen extends ConsumerStatefulWidget {
   final String brandId;
@@ -39,6 +43,11 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   bool _togglingFollow = false;
   final _followService = FollowService();
   final _analyticsService = AnalyticsService();
+
+  // Trust metrics
+  double _responseRate = 100.0;
+  Duration? _avgResponseTime;
+  int _collaborationsCount = 0;
 
   @override
   void initState() {
@@ -77,15 +86,25 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
         _analyticsService.getReviews(widget.brandId),
         if (user != null) _followService.isFollowing(user.id, widget.brandId) else Future.value(false),
         if (user != null) ApplicationService().getAppliedCardIds(user.id) else Future.value(<String>[]),
+        ApplicationService().getBrandTrustMetrics(widget.brandId),
       ]);
 
       if (mounted) {
+        final metrics = results[5] as Map<String, dynamic>;
+        final totalApps = metrics['total_applications'] as int? ?? 0;
+        final respondedApps = metrics['responded_applications'] as int? ?? 0;
+        final acceptedApps = metrics['accepted_applications'] as int? ?? 0;
+        final avgResponseTimeSec = metrics['avg_response_time_seconds'] as int? ?? 0;
+
         setState(() {
           _brand = results[0] as Map<String, dynamic>?;
           _campaigns = results[1] as List<Map<String, dynamic>>;
           _reviews = results[2] as List<Map<String, dynamic>>;
           _following = results[3] as bool;
           _appliedCardIds = (results[4] as List<String>).toSet();
+          _responseRate = totalApps > 0 ? (respondedApps / totalApps) * 100.0 : 100.0;
+          _avgResponseTime = avgResponseTimeSec > 0 ? Duration(seconds: avgResponseTimeSec) : null;
+          _collaborationsCount = acceptedApps; // Wait, acceptedApps is count of accepted apps
           _loading = false;
         });
       }
@@ -153,6 +172,64 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
       if (mounted) {
         Navigator.pop(context);
         AppSnackbar.show(context, 'Failed to open chat: $err');
+      }
+    }
+  }
+
+  Future<void> _confirmBlockUser() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || _brand == null) return;
+    final displayName = _brand!['display_name'] ?? 'Brand';
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Block $displayName?'),
+        content: Text('Blocking this brand will prevent them from sending you messages or viewing your profile.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      try {
+        final blocked = await BlockService().blockUser(user.id, widget.brandId);
+        if (mounted) {
+          Navigator.pop(context); // close loader
+          if (blocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$displayName has been blocked.')),
+            );
+            Navigator.pop(context); // Go back from detail screen
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User is already blocked.')),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          Navigator.pop(context); // close loader
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to block user: $e')),
+          );
+        }
       }
     }
   }
@@ -228,6 +305,66 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
                         size: 16,
                         color: AppColors.textPrimary,
                       ),
+                    ),
+                  ),
+                ),
+                // 3-dot Actions Menu (Report/Block)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  right: 12,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      cardColor: isDark ? const Color(0xFF141416) : Colors.white,
+                    ),
+                    child: PopupMenuButton<String>(
+                      icon: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      padding: EdgeInsets.zero,
+                      onSelected: (value) {
+                        if (value == 'report') {
+                          ReportSheet.show(
+                            context,
+                            reportedId: widget.brandId,
+                            contentTypeName: 'User',
+                          );
+                        } else if (value == 'block') {
+                          _confirmBlockUser();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'report',
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.danger, color: AppColors.error, size: 18),
+                              const SizedBox(width: 8),
+                              const Text('Report Brand'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'block',
+                          child: Row(
+                            children: [
+                              Icon(Iconsax.user_remove, color: AppColors.error, size: 18),
+                              const SizedBox(width: 8),
+                              const Text('Block Brand'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -424,9 +561,82 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   }
 
   Widget _buildAboutTab(Map<String, dynamic> b, String website) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
+        // Trust Signals Card
+        _buildSectionCard(
+          isDark: isDark,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Iconsax.shield_security, size: 14, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Text(
+                    'TRUST & VERIFICATION',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.success,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  // Member since
+                  _buildTrustBadge(
+                    icon: Iconsax.calendar,
+                    label: 'Member since ${b['created_at'] != null ? DateFormat('MMMM yyyy').format(DateTime.parse(b['created_at']).toLocal()) : 'Recent'}',
+                  ),
+                  // New Brand Badge
+                  if (b['created_at'] != null &&
+                      DateTime.now().difference(DateTime.parse(b['created_at'])).inDays < 7)
+                    _buildTrustBadge(
+                      icon: Iconsax.award,
+                      label: 'New Brand',
+                      color: AppColors.warning,
+                    ),
+                  // Response rate
+                  _buildTrustBadge(
+                    icon: Iconsax.message_programming,
+                    label: 'Response rate: ${_responseRate.toStringAsFixed(0)}%',
+                    color: _responseRate >= 80
+                        ? AppColors.success
+                        : (_responseRate >= 50 ? AppColors.warning : AppColors.error),
+                  ),
+                  // Avg response time
+                  if (_avgResponseTime != null)
+                    _buildTrustBadge(
+                      icon: Iconsax.timer_1,
+                      label: 'Avg response time: ${_formatResponseTime(_avgResponseTime)}',
+                    ),
+                  // Completed collaborations count
+                  _buildTrustBadge(
+                    icon: Iconsax.briefcase,
+                    label: '$_collaborationsCount collaboration${_collaborationsCount != 1 ? 's' : ''} completed',
+                  ),
+                  // Warning Flags
+                  if (b['account_status'] == 'warned' || (b['warning_count'] ?? 0) > 0)
+                    _buildTrustBadge(
+                      icon: Iconsax.danger,
+                      label: 'Account Warning',
+                      color: AppColors.error,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
         if (b['bio'] != null && (b['bio'] as String).trim().isNotEmpty) ...[
           Text('Company Bio', style: AppTextStyles.label),
           const SizedBox(height: 8),
@@ -664,6 +874,61 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     } catch (_) {
       return 'N/A';
     }
+  }
+
+  String _formatResponseTime(Duration? duration) {
+    if (duration == null) return '—';
+    if (duration.inMinutes < 60) {
+      return '${duration.inMinutes}m';
+    } else if (duration.inHours < 24) {
+      return '${duration.inHours}h';
+    } else {
+      return '${duration.inDays}d';
+    }
+  }
+
+  Widget _buildTrustBadge({required IconData icon, required String label, Color? color}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF141416) : const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF242428) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color ?? AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color ?? AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({required bool isDark, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: child,
+    );
   }
 }
 

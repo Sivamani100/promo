@@ -95,4 +95,56 @@ class ApplicationService {
         .count(CountOption.exact);
     return result.count;
   }
+
+  Future<Map<String, dynamic>> getBrandTrustMetrics(String brandId) async {
+    try {
+      final response = await _client.rpc('get_brand_trust_metrics', params: {
+        'target_brand_id': brandId,
+      });
+      if (response != null && response is List && response.isNotEmpty) {
+        final row = response.first as Map<String, dynamic>;
+        return {
+          'total_applications': row['total_applications'] ?? 0,
+          'responded_applications': row['responded_applications'] ?? 0,
+          'accepted_applications': row['accepted_applications'] ?? 0,
+          'avg_response_time_seconds': row['avg_response_time_seconds'] ?? 0,
+        };
+      }
+    } catch (e) {
+      print('[APPLICATION_SERVICE] Failed to call get_brand_trust_metrics RPC, falling back to local calculation: $e');
+    }
+
+    // Fallback: local calculation (limited by RLS to own applications, but better than crashing)
+    try {
+      final apps = await getApplicationsForBrand(brandId);
+      final total = apps.length;
+      final responded = apps.where((a) => a['status'] != 'pending').toList();
+      final accepted = apps.where((a) => a['status'] == 'accepted').toList();
+      int totalMs = 0;
+      int countWithDates = 0;
+      for (final app in responded) {
+        final created = app['created_at'];
+        final updated = app['updated_at'];
+        if (created != null && updated != null) {
+          final createdDate = DateTime.parse(created);
+          final updatedDate = DateTime.parse(updated);
+          totalMs += updatedDate.difference(createdDate).inMilliseconds;
+          countWithDates++;
+        }
+      }
+      return {
+        'total_applications': total,
+        'responded_applications': responded.length,
+        'accepted_applications': accepted.length,
+        'avg_response_time_seconds': countWithDates > 0 ? (totalMs / (countWithDates * 1000)).round() : 0,
+      };
+    } catch (_) {
+      return {
+        'total_applications': 0,
+        'responded_applications': 0,
+        'accepted_applications': 0,
+        'avg_response_time_seconds': 0,
+      };
+    }
+  }
 }

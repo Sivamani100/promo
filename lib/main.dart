@@ -8,12 +8,17 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/services/supabase_service.dart';
 import 'core/services/push_notification_manager.dart';
 import 'core/config/app_config.dart';
+import 'core/lifecycle/app_lifecycle_manager.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseService.initialize();
+
+  // Explicit ProviderContainer for background/lifecycle sync
+  final container = ProviderContainer();
+  WidgetsBinding.instance.addObserver(AppLifecycleManager(ref: container));
 
   try {
     await Firebase.initializeApp(
@@ -35,8 +40,9 @@ void main() async {
       appRunner: () => runApp(
         DevicePreview(
           enabled: !kReleaseMode,
-          builder: (context) => const ProviderScope(
-            child: BrandApp(),
+          builder: (context) => UncontrolledProviderScope(
+            container: container,
+            child: const BrandApp(),
           ),
         ),
       ),
@@ -45,8 +51,9 @@ void main() async {
     runApp(
       DevicePreview(
         enabled: !kReleaseMode,
-        builder: (context) => const ProviderScope(
-          child: BrandApp(),
+        builder: (context) => UncontrolledProviderScope(
+          container: container,
+          child: const BrandApp(),
         ),
       ),
     );

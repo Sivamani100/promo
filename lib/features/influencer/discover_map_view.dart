@@ -360,6 +360,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
   // HARDENING: ui-agent 2026-06-25 - Filter chip helper
   Widget _buildFilterChip(String value, String label, IconData icon) {
     final isSelected = _selectedFilter == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Custom active colors matching the roles
     Color selectedColor;
@@ -368,8 +369,21 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
     } else if (value == 'creators') {
       selectedColor = const Color(0xFF7C3AED); // Sleek Creator Purple
     } else {
-      selectedColor = AppColors.accent; // Orange or active accent
+      selectedColor = isDark ? AppColors.accent : const Color(0xFF1A1A1A);
     }
+
+    final unselectedBg = isDark
+        ? Colors.black.withValues(alpha: 0.7)
+        : Colors.white.withValues(alpha: 0.9);
+    final unselectedBorder = isDark
+        ? Colors.white.withValues(alpha: 0.15)
+        : Colors.black.withValues(alpha: 0.12);
+    final chipTextColor = isSelected
+        ? Colors.white
+        : (isDark ? Colors.white.withValues(alpha: 0.75) : const Color(0xFF4B5563));
+    final chipIconColor = isSelected
+        ? Colors.white
+        : (isDark ? Colors.white.withValues(alpha: 0.7) : const Color(0xFF6B7280));
 
     return Expanded(
       child: GestureDetector(
@@ -383,12 +397,10 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           decoration: BoxDecoration(
-            color: isSelected 
-                ? selectedColor 
-                : Colors.black.withValues(alpha: 0.7),
+            color: isSelected ? selectedColor : unselectedBg,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? selectedColor : Colors.white.withValues(alpha: 0.15),
+              color: isSelected ? selectedColor : unselectedBorder,
               width: 1.2,
             ),
             boxShadow: [
@@ -405,7 +417,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
               Icon(
                 icon,
                 size: 14,
-                color: Colors.white.withValues(alpha: isSelected ? 1.0 : 0.7),
+                color: chipIconColor,
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -414,7 +426,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: Colors.white.withValues(alpha: isSelected ? 1.0 : 0.75),
+                    color: chipTextColor,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -437,14 +449,17 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
       );
     }
 
-    // HARDENING: ui-agent 2026-06-25 - Force Dark Mode Map Tiles
-    const tileUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    // Theme-aware map tiles: light in light mode, dark in dark mode
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tileUrl = isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
     return Stack(
       children: [
         // Flutter Map
         Container(
-          color: const Color(0xFF111111), // HARDENING: ui-agent 2026-06-25 - Dark background under map
+          color: isDark ? const Color(0xFF111111) : const Color(0xFFE8E8E8),
           child: FlutterMap(
             mapController: _mapController,
             options: MapOptions(

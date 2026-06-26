@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -28,6 +30,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
   Set<String> _appliedCardIds = {};
   bool _loading = false;
   Timer? _debounce;
+  List<String> _recentSearches = [];
 
   @override
   void initState() {
@@ -37,16 +40,63 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       setState(() {});
     });
     _searchCtrl.addListener(_onSearchChanged);
+    _loadRecentSearches();
     _doSearch(''); // Load initial data
+  }
+
+  Future<void> _loadRecentSearches() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('recent_searches_${user.id}') ?? [];
+    if (mounted) {
+      setState(() {
+        _recentSearches = list;
+      });
+    }
+  }
+
+  Future<void> _saveRecentSearch(String query) async {
+    if (query.trim().isEmpty) return;
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    
+    final list = List<String>.from(_recentSearches);
+    list.remove(query);
+    list.insert(0, query);
+    if (list.length > 10) list.removeLast();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('recent_searches_${user.id}', list);
+    if (mounted) {
+      setState(() {
+        _recentSearches = list;
+      });
+    }
+  }
+
+  Future<void> _clearRecentSearches() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('recent_searches_${user.id}');
+    if (mounted) {
+      setState(() {
+        _recentSearches = [];
+      });
+    }
   }
 
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () => _doSearch(_searchCtrl.text));
+    _debounce = Timer(const Duration(milliseconds: 300), () => _doSearch(_searchCtrl.text));
   }
 
   Future<void> _doSearch(String query) async {
     setState(() => _loading = true);
+    if (query.trim().isNotEmpty) {
+      _saveRecentSearch(query.trim());
+    }
     final results = await SearchService().search(query);
     final user = ref.read(authProvider).user;
     Set<String> applied = {};
@@ -219,87 +269,262 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
     );
   }
 
+  Widget _buildRecentSearches() {
+    if (_recentSearches.isEmpty) return const SizedBox.shrink();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recent Searches',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            TextButton(
+              onPressed: _clearRecentSearches,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Clear All',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.accent,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 38,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _recentSearches.length,
+            itemBuilder: (context, index) {
+              final query = _recentSearches[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: InputChip(
+                  label: Text(
+                    query,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                      width: 1.2,
+                    ),
+                  ),
+                  onPressed: () {
+                    _searchCtrl.text = query;
+                    _doSearch(query);
+                  },
+                  onDeleted: () async {
+                    final user = ref.read(authProvider).user;
+                    if (user == null) return;
+                    final list = List<String>.from(_recentSearches);
+                    list.remove(query);
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setStringList('recent_searches_${user.id}', list);
+                    setState(() {
+                      _recentSearches = list;
+                    });
+                  },
+                  deleteIcon: Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: AppColors.textMuted,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
   Widget _buildAllTab() {
-    if (_totalCount == 0) return const AppEmptyState(icon: Iconsax.search_status, title: 'No results found');
     final cards = _results['cards'] ?? [];
     final brands = _results['brands'] ?? [];
     final influencers = _results['influencers'] ?? [];
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-      children: [
-        if (cards.isNotEmpty) ...[
-          SectionHeader(title: 'Campaigns', actionLabel: '${cards.length}'),
-          ...List.generate(cards.take(3).length, (i) {
-            final card = cards[i];
-            return _BentoCampaignSearchCard(
-              card: card,
-              onTap: () => context.push('/influencer/discover/${card['id']}'),
-            );
-          }),
-          const SizedBox(height: 12),
+    Widget content;
+    if (_totalCount == 0) {
+      content = ListView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+        children: [
+          _buildRecentSearches(),
+          const AppEmptyState(icon: Iconsax.search_status, title: 'No results found'),
         ],
-        if (brands.isNotEmpty) ...[
-          SectionHeader(title: 'Brands', actionLabel: '${brands.length}'),
-          ...List.generate(brands.take(5).length, (i) {
-            final brand = brands[i];
-            return _BentoSearchProfileCard(
-              profile: brand,
-              onTap: () => _navigateToProfile(brand),
-            );
-          }),
-          const SizedBox(height: 12),
+      );
+    } else {
+      content = ListView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+        children: [
+          _buildRecentSearches(),
+          if (cards.isNotEmpty) ...[
+            SectionHeader(title: 'Campaigns', actionLabel: '${cards.length}'),
+            ...List.generate(cards.take(3).length, (i) {
+              final card = cards[i];
+              return _BentoCampaignSearchCard(
+                card: card,
+                onTap: () => context.push('/influencer/discover/${card['id']}'),
+              );
+            }),
+            const SizedBox(height: 12),
+          ],
+          if (brands.isNotEmpty) ...[
+            SectionHeader(title: 'Brands', actionLabel: '${brands.length}'),
+            ...List.generate(brands.take(5).length, (i) {
+              final brand = brands[i];
+              return _BentoSearchProfileCard(
+                profile: brand,
+                onTap: () => _navigateToProfile(brand),
+              );
+            }),
+            const SizedBox(height: 12),
+          ],
+          if (influencers.isNotEmpty) ...[
+            SectionHeader(title: 'Influencers', actionLabel: '${influencers.length}'),
+            ...List.generate(influencers.take(5).length, (i) {
+              final influencer = influencers[i];
+              return _BentoSearchProfileCard(
+                profile: influencer,
+                onTap: () => _navigateToProfile(influencer),
+              );
+            }),
+          ],
         ],
-        if (influencers.isNotEmpty) ...[
-          SectionHeader(title: 'Influencers', actionLabel: '${influencers.length}'),
-          ...List.generate(influencers.take(5).length, (i) {
-            final influencer = influencers[i];
-            return _BentoSearchProfileCard(
-              profile: influencer,
-              onTap: () => _navigateToProfile(influencer),
-            );
-          }),
-        ],
-      ],
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.lightImpact();
+        await _doSearch(_searchCtrl.text);
+      },
+      color: AppColors.accent,
+      child: content,
     );
   }
 
   Widget _buildCardsTab() {
     final cards = _results['cards']!;
-    if (cards.isEmpty) return const AppEmptyState(icon: Iconsax.cards, title: 'No campaigns found');
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-      itemCount: cards.length,
-      itemBuilder: (_, i) => _BentoCampaignSearchCard(
-        card: cards[i],
-        onTap: () => context.push('/influencer/discover/${cards[i]['id']}'),
-      ),
+    Widget content;
+    if (cards.isEmpty) {
+      content = ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: const AppEmptyState(icon: Iconsax.cards, title: 'No campaigns found'),
+          ),
+        ],
+      );
+    } else {
+      content = ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+        itemCount: cards.length,
+        itemBuilder: (_, i) => _BentoCampaignSearchCard(
+          card: cards[i],
+          onTap: () => context.push('/influencer/discover/${cards[i]['id']}'),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.lightImpact();
+        await _doSearch(_searchCtrl.text);
+      },
+      color: AppColors.accent,
+      child: content,
     );
   }
 
   Widget _buildBrandsTab() {
     final brands = _results['brands']!;
-    if (brands.isEmpty) return const AppEmptyState(icon: Iconsax.briefcase, title: 'No brands found');
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-      itemCount: brands.length,
-      itemBuilder: (_, i) => _BentoSearchProfileCard(
-        profile: brands[i],
-        onTap: () => _navigateToProfile(brands[i]),
-      ),
+    Widget content;
+    if (brands.isEmpty) {
+      content = ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: const AppEmptyState(icon: Iconsax.briefcase, title: 'No brands found'),
+          ),
+        ],
+      );
+    } else {
+      content = ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+        itemCount: brands.length,
+        itemBuilder: (_, i) => _BentoSearchProfileCard(
+          profile: brands[i],
+          onTap: () => _navigateToProfile(brands[i]),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.lightImpact();
+        await _doSearch(_searchCtrl.text);
+      },
+      color: AppColors.accent,
+      child: content,
     );
   }
 
   Widget _buildInfluencersTab() {
     final infs = _results['influencers']!;
-    if (infs.isEmpty) return const AppEmptyState(icon: Iconsax.profile_2user, title: 'No influencers found');
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-      itemCount: infs.length,
-      itemBuilder: (_, i) => _BentoSearchProfileCard(
-        profile: infs[i],
-        onTap: () => _navigateToProfile(infs[i]),
-      ),
+    Widget content;
+    if (infs.isEmpty) {
+      content = ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: const AppEmptyState(icon: Iconsax.profile_2user, title: 'No influencers found'),
+          ),
+        ],
+      );
+    } else {
+      content = ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
+        itemCount: infs.length,
+        itemBuilder: (_, i) => _BentoSearchProfileCard(
+          profile: infs[i],
+          onTap: () => _navigateToProfile(infs[i]),
+        ),
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: () async {
+        HapticFeedback.lightImpact();
+        await _doSearch(_searchCtrl.text);
+      },
+      color: AppColors.accent,
+      child: content,
     );
   }
 }
@@ -364,7 +589,10 @@ class _BentoSearchProfileCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onTap,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onTap();
+            },
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -607,7 +835,10 @@ class _BentoCampaignSearchCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onTap,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onTap();
+            },
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(

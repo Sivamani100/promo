@@ -20,8 +20,8 @@ class AppSpacing {
   // Bottom Nav offset padding
   static const double bottomScreenPadding = 100.0;
 
-  // Page Margins
-  static const double pageMarginHorizontal = 15.0;
+  // Page Margins (normalized to 16 — matches DesignTokens.space16)
+  static const double pageMarginHorizontal = 16.0;
   static const double pageMarginVertical = 5.0;
   static const double appBarMarginHorizontal = 24.0;
 }

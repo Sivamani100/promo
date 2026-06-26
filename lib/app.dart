@@ -7,6 +7,7 @@ import 'core/theme/app_colors.dart';
 import 'core/providers/app_providers.dart';
 import 'core/services/push_notification_manager.dart';
 import 'shared/widgets/offline_banner.dart';
+import 'core/deeplink/deeplink_service.dart';
 import 'core/config/app_config.dart';
 
 class BrandApp extends ConsumerWidget {
@@ -20,6 +21,11 @@ class BrandApp extends ConsumerWidget {
     
     final router = ref.watch(routerProvider);
 
+    // Initialize deep linking on startup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.initialize(ref);
+    });
+
     // Initialize push notifications if user is already logged in
     final user = ref.watch(authProvider).user;
     if (user != null) {
@@ -32,6 +38,8 @@ class BrandApp extends ConsumerWidget {
     ref.listen(authProvider, (previous, next) {
       if (next.user != null && previous?.user == null) {
         ref.read(pushNotificationManagerProvider).initialize();
+        // Handle any pending deep link navigation after successful login
+        DeepLinkService.handlePendingLink(ref);
       } else if (next.user == null && previous?.user != null) {
         ref.read(pushNotificationManagerProvider).removeTokenFromDatabase();
       }

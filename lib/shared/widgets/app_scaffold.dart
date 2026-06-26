@@ -7,6 +7,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/providers/app_providers.dart';
 import 'package:flutter/services.dart';
 
+import 'analytics_consent_dialog.dart';
+
 class AppScaffold extends ConsumerStatefulWidget {
   final String role;
   final Widget child;
@@ -22,6 +24,14 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
   DateTime? _lastPressedAt;
   final List<int> _history = [];
   bool _isBackNavigating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AnalyticsConsentDialog.checkAndShow(context);
+    });
+  }
 
   List<_NavItem> get _brandItems => [
         _NavItem(icon: Iconsax.home, activeIcon: Iconsax.home_1, label: 'Home', path: '/brand/home'),

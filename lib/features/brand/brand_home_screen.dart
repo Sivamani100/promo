@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,11 @@ import '../../core/services/chat_service.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/cache/app_cache.dart';
+import '../trust/account_status_screens.dart';
+import '../home/profile_nudge_service.dart';
+// Deleted guided tour overlay import
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/services/notification_queue_service.dart';
 
 class BrandHomeScreen extends ConsumerStatefulWidget {
   const BrandHomeScreen({super.key});
@@ -30,6 +36,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
   List<Map<String, dynamic>> _activities = [];
   List<Map<String, dynamic>> _bestCreators = [];
   int _profileCompleteness = 0;
+  NudgeItem? _activeNudge;
 
   @override
   void initState() {
@@ -41,6 +48,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
     // HARDENING: devops-agent 2026-06-25
     final user = ref.read(authProvider).user;
     if (user == null) return;
+    NotificationQueueService.processQueue(user.id);
     final sb = SupabaseService.client;
 
     final cacheKey = 'brand_dashboard_${user.id}';
@@ -57,6 +65,8 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
       if (score > 100) score = 100;
     }
 
+    final nudge = await ProfileNudgeService.getActiveNudge(profile, 'brand');
+
     if (!background) {
       final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
       if (cached != null) {
@@ -68,6 +78,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           _activities = List<Map<String, dynamic>>.from(cached['activities']);
           _bestCreators = List<Map<String, dynamic>>.from(cached['bestCreators']);
           _profileCompleteness = score;
+          _activeNudge = nudge;
           _loading = false;
         });
       } else {
@@ -111,12 +122,22 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           _activities = activitiesList;
           _bestCreators = bestCreatorsList;
           _profileCompleteness = score;
+          _activeNudge = nudge;
           _loading = false;
         });
       }
 
       if (!background && AppCache().get(cacheKey) != null) {
         _loadData(background: true);
+      }
+
+      if (!background) {
+        final prefs = await SharedPreferences.getInstance();
+        final tourKey = 'first_time_tour_shown_${user.id}';
+        final shown = prefs.getBool(tourKey) ?? false;
+        if (!shown && mounted) {
+          context.go('/dashboard-tour');
+        }
       }
     } catch (e) {
       print('Error loading brand dashboard data: $e');
@@ -241,7 +262,10 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: _loadData,
+        onRefresh: () async {
+          HapticFeedback.lightImpact();
+          await _loadData();
+        },
         color: AppColors.accent,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -251,7 +275,15 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
+            if (profile?['account_status'] == 'warned')
+              const WarningBanner(
+                message: 'Your account has been warned for violating community guidelines. Repeated violations will result in account suspension.',
+              ),
             _buildWelcomeBentoBox(profile, 0),
+            if (_activeNudge != null) ...[
+              const SizedBox(height: 12),
+              _buildNudgeCard(_activeNudge!),
+            ],
             const SizedBox(height: 20),
 
             // Stats grid
@@ -1273,6 +1305,77 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildNudgeCard(NudgeItem nudge) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: 0,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(nudge.icon, color: AppColors.accent, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nudge.title,
+                  style: AppTextStyles.label.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  nudge.description,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => context.go(nudge.actionRoute),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: AppColors.accentOnDark,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                  child: Text('Complete Now', style: AppTextStyles.labelSm.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 18, color: AppColors.textMuted),
+            onPressed: () async {
+              final user = ref.read(authProvider).user;
+              if (user != null) {
+                await ProfileNudgeService.dismissNudge(user.id, nudge.id);
+                final nextNudge = await ProfileNudgeService.getActiveNudge(ref.read(authProvider).profile, 'brand');
+                setState(() {
+                  _activeNudge = nextNudge;
+                });
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

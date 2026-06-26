@@ -19,10 +19,14 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/realtime_subscription_manager.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import 'invite_group_members_screen.dart';
+import '../trust/report_sheet.dart';
+import '../agreements/agreement_status_widget.dart';
+import 'widgets/chat_input_bar.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -88,13 +92,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _onlineStatusTimer?.cancel();
     _typingTimer?.cancel();
     _voiceRecordingTimer?.cancel();
-    if (_channel != null) {
-      try {
-        SupabaseService.client.removeChannel(_channel!);
-      } catch (e) {
-        print('Error removing room channel: $e');
-      }
-    }
+    RealtimeSubscriptionManager.unsubscribe('room:${widget.roomId}');
     super.dispose();
   }
 
@@ -258,8 +256,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     });
                   }
                 },
-              )
-              .subscribe();
+              );
+          RealtimeSubscriptionManager.subscribe('room:${widget.roomId}', _channel!);
         } catch (e) {
           print('Error setting up room channel: $e');
         }
@@ -1071,6 +1069,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final items = _buildMessageItemsList();
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         titleSpacing: 0,
         title: InkWell(
@@ -1209,6 +1208,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       body: Column(
         children: [
           _buildPinnedMessageBanner(),
+          if (!isGroup && _room?['card_id'] != null && otherUserMap?['id'] != null)
+            AgreementStatusWidget(
+              roomId: widget.roomId,
+              cardId: _room!['card_id'] as String,
+              otherUserId: otherUserMap!['id'] as String,
+            ),
           // Milestones panel
           if (_showMilestones)
             Container(
@@ -1264,67 +1269,71 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
           // Messages List
           Expanded(
-            child: ListView.builder(
-              reverse: true,
-              controller: _scrollCtrl,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              itemCount: items.length + (_uploading ? 1 : 0),
-              itemBuilder: (_, i) {
-                // Show uploading placeholder as the first item (at the bottom)
-                if (_uploading && i == 0) {
-                  return _buildUploadingPlaceholder();
-                }
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              behavior: HitTestBehavior.translucent,
+              child: ListView.builder(
+                reverse: true,
+                controller: _scrollCtrl,
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                itemCount: items.length + (_uploading ? 1 : 0),
+                itemBuilder: (_, i) {
+                  // Show uploading placeholder as the first item (at the bottom)
+                  if (_uploading && i == 0) {
+                    return _buildUploadingPlaceholder();
+                  }
 
-                final item = items[i - (_uploading ? 1 : 0)];
-                if (item is DateTime) {
-                  return Center(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface2,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
-                      child: Text(
-                        _formatDateHeader(item),
-                        style: AppTextStyles.captionSm.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textMuted,
-                          fontSize: 10,
+                  final item = items[i - (_uploading ? 1 : 0)];
+                  if (item is DateTime) {
+                    return Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface2,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.borderSubtle),
+                        ),
+                        child: Text(
+                          _formatDateHeader(item),
+                          style: AppTextStyles.captionSm.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textMuted,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
+                    );
+                  }
+
+                  final msg = item as Map<String, dynamic>;
+                  final isMe = msg['sender_id'] == userId;
+                  final time = msg['created_at'] != null
+                      ? DateFormat('h:mm a').format(DateTime.parse(msg['created_at']).toLocal())
+                      : '';
+
+                  final bubble = _buildMessageBubble(msg, isMe, time);
+
+                  return Dismissible(
+                    key: Key('msg_${msg['id']}'),
+                    direction: DismissDirection.startToEnd,
+                    confirmDismiss: (direction) async {
+                      setState(() {
+                        _replyingTo = msg;
+                        _editingMessage = null;
+                      });
+                      return false;
+                    },
+                    background: Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 16),
+                      color: Colors.transparent,
+                      child: Icon(Iconsax.undo, color: AppColors.accent),
                     ),
+                    child: bubble,
                   );
-                }
-
-                final msg = item as Map<String, dynamic>;
-                final isMe = msg['sender_id'] == userId;
-                final time = msg['created_at'] != null
-                    ? DateFormat('h:mm a').format(DateTime.parse(msg['created_at']).toLocal())
-                    : '';
-
-                final bubble = _buildMessageBubble(msg, isMe, time);
-
-                return Dismissible(
-                  key: Key('msg_${msg['id']}'),
-                  direction: DismissDirection.startToEnd,
-                  confirmDismiss: (direction) async {
-                    setState(() {
-                      _replyingTo = msg;
-                      _editingMessage = null;
-                    });
-                    return false;
-                  },
-                  background: Container(
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 16),
-                    color: Colors.transparent,
-                    child: Icon(Iconsax.undo, color: AppColors.accent),
-                  ),
-                  child: bubble,
-                );
-              },
+                },
+              ),
             ),
           ),
 
@@ -1366,72 +1375,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
             )
           else
-            Container(
-              color: AppColors.surface,
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                MediaQuery.of(context).viewInsets.bottom > 0
-                    ? AppSpacing.sm
-                    : MediaQuery.of(context).padding.bottom + AppSpacing.sm,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildReplyPreview(),
-                  _buildEditingPreview(),
-                  const SizedBox(height: 4),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface2,
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: AppColors.borderSubtle),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Iconsax.add, color: Color(0xFF3797EF), size: 22),
-                          onPressed: _showFilePicker,
-                          tooltip: 'Attach photos or files',
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: TextField(
-                              controller: _msgCtrl,
-                              style: AppTextStyles.body,
-                              keyboardType: TextInputType.multiline,
-                              maxLines: 5,
-                              minLines: 1,
-                              decoration: InputDecoration(
-                                hintText: 'Message',
-                                hintStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Iconsax.send_1,
-                            color: Color(0xFF3797EF),
-                            size: 22,
-                          ),
-                          onPressed: _msgCtrl.text.trim().isNotEmpty ? _send : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildReplyPreview(),
+                _buildEditingPreview(),
+                ChatInputBar(
+                  controller: _msgCtrl,
+                  onSend: _send,
+                  onAttach: _showFilePicker,
+                ),
+              ],
             ),
         ],
       ),
@@ -1999,6 +1953,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       if (confirmed == true) {
                         _deleteMessageForEveryone(msg['id'] as String, msg['payload'] as Map<String, dynamic>? ?? {});
                       }
+                    },
+                  ),
+                ],
+                if (!isMyMessage) ...[
+                  ListTile(
+                    leading: const Icon(Iconsax.danger, color: Colors.orange),
+                    title: const Text('Report Message', style: TextStyle(color: Colors.orange)),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      ReportSheet.show(
+                        context,
+                        reportedMessageId: msg['id'] as String,
+                        contentTypeName: 'Message',
+                      );
                     },
                   ),
                 ],

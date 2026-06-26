@@ -13,6 +13,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/card_service.dart';
 import '../../core/services/data_services.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/lifecycle/draft_recovery_service.dart';
 
 const _categories = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
@@ -71,6 +72,16 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   final _timelineCtrl = TextEditingController();
   final _openingsCtrl = TextEditingController(text: '1');
   final _customCoverUrlCtrl = TextEditingController();
+  final _tempDelivCountCtrl = TextEditingController(text: '1');
+
+  // Focus Nodes
+  final _titleFocus = FocusNode();
+  final _descFocus = FocusNode();
+  final _customCoverFocus = FocusNode();
+  final _budgetFocus = FocusNode();
+  final _timelineFocus = FocusNode();
+  final _openingsFocus = FocusNode();
+  final _tempDelivCountFocus = FocusNode();
 
   // State
   String _category = 'Fashion';
@@ -88,7 +99,6 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
 
   // Temp deliverable builder fields
   String _tempDelivType = 'Instagram Reel';
-  final _tempDelivCountCtrl = TextEditingController(text: '1');
 
   @override
   void initState() {
@@ -155,6 +165,11 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     } else {
       _deliverables.add({'type': 'Instagram Reel', 'count': 1});
     }
+    if (widget.card == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkForDraft();
+      });
+    }
   }
 
   @override
@@ -166,6 +181,13 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     _openingsCtrl.dispose();
     _customCoverUrlCtrl.dispose();
     _tempDelivCountCtrl.dispose();
+    _titleFocus.dispose();
+    _descFocus.dispose();
+    _customCoverFocus.dispose();
+    _budgetFocus.dispose();
+    _timelineFocus.dispose();
+    _openingsFocus.dispose();
+    _tempDelivCountFocus.dispose();
     super.dispose();
   }
 
@@ -268,6 +290,116 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
     }
   }
 
+  Map<String, dynamic> _getDraftData() {
+    return {
+      'title': _titleCtrl.text,
+      'description': _descCtrl.text,
+      'budget_range': _budgetCtrl.text,
+      'timeline': _timelineCtrl.text,
+      'openings': int.tryParse(_openingsCtrl.text) ?? 1,
+      'custom_cover_url': _customCoverUrlCtrl.text,
+      'category': _category,
+      'niche_tags': _nicheTags,
+      'platform_requirements': _platformReqs,
+      'min_followers': _minFollowers,
+      'preferred_location': _preferredLocation,
+      'application_deadline': _applicationDeadline?.toIso8601String(),
+      'cover_image_url': _coverImageUrl,
+      'selected_cover_index': _selectedCoverIndex,
+      'deliverables': _deliverables,
+    };
+  }
+
+  void _loadDraftData(Map<String, dynamic> data) {
+    setState(() {
+      _titleCtrl.text = data['title'] ?? '';
+      _descCtrl.text = data['description'] ?? '';
+      _budgetCtrl.text = data['budget_range'] ?? '';
+      _timelineCtrl.text = data['timeline'] ?? '';
+      _openingsCtrl.text = (data['openings'] ?? 1).toString();
+      _customCoverUrlCtrl.text = data['custom_cover_url'] ?? '';
+      _category = data['category'] ?? 'Fashion';
+      
+      _nicheTags.clear();
+      if (data['niche_tags'] is List) {
+        _nicheTags.addAll(List<String>.from(data['niche_tags']));
+      }
+      
+      _platformReqs.clear();
+      if (data['platform_requirements'] is List) {
+        _platformReqs.addAll(List<String>.from(data['platform_requirements']));
+      }
+      
+      _minFollowers = data['min_followers'] ?? 0;
+      _preferredLocation = data['preferred_location'] ?? 'Anywhere';
+      _applicationDeadline = data['application_deadline'] != null
+          ? DateTime.tryParse(data['application_deadline'])
+          : null;
+      _coverImageUrl = data['cover_image_url'] ?? _presetCovers[0]['url']!;
+      _selectedCoverIndex = data['selected_cover_index'] ?? 0;
+      
+      _deliverables.clear();
+      if (data['deliverables'] is List) {
+        _deliverables.addAll(List<Map<String, dynamic>>.from(
+          data['deliverables'].map((d) => Map<String, dynamic>.from(d))
+        ));
+      }
+    });
+  }
+
+  Future<void> _saveDraft() async {
+    if (widget.card != null) return;
+    final userId = ref.read(authProvider).user?.id;
+    if (userId != null) {
+      await DraftRecoveryService.saveDraft(
+        userId: userId,
+        formData: _getDraftData(),
+        currentStep: _currentStep,
+      );
+    }
+  }
+
+  Future<void> _checkForDraft() async {
+    final userId = ref.read(authProvider).user?.id;
+    if (userId == null) return;
+
+    final draft = await DraftRecoveryService.getDraft(userId);
+    if (draft != null && mounted) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Unsaved Draft Found'),
+          content: Text(
+            'You have an unsaved draft from ${draft.timeAgo}. Would you like to resume editing?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await DraftRecoveryService.clearDraft(userId);
+              },
+              child: const Text('Start Fresh', style: TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _loadDraftData(draft.formData);
+                setState(() {
+                  _currentStep = draft.currentStep;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.purple,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Resume'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _descCtrl.text.trim().isEmpty) {
       AppSnackbar.show(context, 'Please fill in title and description.');
@@ -315,6 +447,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         }
       } else {
         await CardService().createCard(cardData);
+        await DraftRecoveryService.clearDraft(user.id);
         if (mounted) {
           AppSnackbar.show(context, 'Campaign card published successfully!');
           context.pop(true);
@@ -337,11 +470,13 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       }
     }
     setState(() => _currentStep++);
+    _saveDraft();
   }
 
   void _prevStep() {
     if (_currentStep > 0) {
       setState(() => _currentStep--);
+      _saveDraft();
     }
   }
 
@@ -540,9 +675,24 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       children: [
         Text('Basic Campaign Details', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        AppTextField(label: 'Campaign Title', hint: 'e.g. Summer Fitness Kickoff', controller: _titleCtrl),
+        AppTextField(
+          label: 'Campaign Title',
+          hint: 'e.g. Summer Fitness Kickoff',
+          controller: _titleCtrl,
+          focusNode: _titleFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_descFocus),
+        ),
         const SizedBox(height: 16),
-        AppTextField(label: 'Description', hint: 'Describe the campaign goals, target audience, and collaboration details...', controller: _descCtrl, maxLines: 5),
+        AppTextField(
+          label: 'Description',
+          hint: 'Describe the campaign goals, target audience, and collaboration details...',
+          controller: _descCtrl,
+          focusNode: _descFocus,
+          maxLines: 5,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+        ),
         const SizedBox(height: 16),
         Text('CAMPAIGN TYPE', style: AppTextStyles.overline),
         const SizedBox(height: 8),
@@ -768,6 +918,9 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
           label: 'Or Custom Image URL',
           hint: 'Paste cover photo link...',
           controller: _customCoverUrlCtrl,
+          focusNode: _customCoverFocus,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (val) {
             setState(() {
               _selectedCoverIndex = -1;
@@ -878,11 +1031,33 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       children: [
         Text('Logistics & Deliverables', style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        AppTextField(label: 'Budget / Collaboration Terms', hint: 'e.g. ₹20,000 - ₹40,000 or Product Exchange', controller: _budgetCtrl),
+        AppTextField(
+          label: 'Budget / Collaboration Terms',
+          hint: 'e.g. ₹20,000 - ₹40,000 or Product Exchange',
+          controller: _budgetCtrl,
+          focusNode: _budgetFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_timelineFocus),
+        ),
         const SizedBox(height: 16),
-        AppTextField(label: 'Campaign Duration / Timeline', hint: 'e.g. 3 weeks from receipt of product', controller: _timelineCtrl),
+        AppTextField(
+          label: 'Campaign Duration / Timeline',
+          hint: 'e.g. 3 weeks from receipt of product',
+          controller: _timelineCtrl,
+          focusNode: _timelineFocus,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_openingsFocus),
+        ),
         const SizedBox(height: 16),
-        AppTextField(label: 'Number of Openings / Positions', hint: 'e.g. 5 creators wanted', controller: _openingsCtrl, keyboardType: TextInputType.number),
+        AppTextField(
+          label: 'Number of Openings / Positions',
+          hint: 'e.g. 5 creators wanted',
+          controller: _openingsCtrl,
+          focusNode: _openingsFocus,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
+        ),
         const SizedBox(height: 16),
         Text('APPLICATION DEADLINE', style: AppTextStyles.overline),
         const SizedBox(height: 8),
@@ -998,7 +1173,18 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                     flex: 1,
                     child: TextField(
                       controller: _tempDelivCountCtrl,
+                      focusNode: _tempDelivCountFocus,
                       keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) {
+                        final count = int.tryParse(_tempDelivCountCtrl.text) ?? 1;
+                        if (count > 0) {
+                          setState(() {
+                            _deliverables.add({'type': _tempDelivType, 'count': count});
+                            _tempDelivCountCtrl.text = '1';
+                          });
+                        }
+                      },
                       decoration: InputDecoration(
                         labelText: 'Qty',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
@@ -114,6 +115,21 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
               subtitle: 'Allow others to see when you have read their messages',
               value: readReceipts,
               onChanged: (val) => _togglePreference('privacy_read_receipts', val),
+            ),
+          ]),
+          const SizedBox(height: 20),
+          Text('Trust & Safety', style: AppTextStyles.overline),
+          const SizedBox(height: 8),
+          _buildCard([
+            ListTile(
+              leading: Icon(Iconsax.user_remove, color: AppColors.error, size: 22),
+              title: Text('Blocked Users', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text('Manage the list of users you have blocked', style: AppTextStyles.captionSm),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                final role = ref.read(authProvider).role;
+                context.push('/$role/settings/privacy/blocked-users');
+              },
             ),
           ]),
         ],

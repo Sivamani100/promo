@@ -36,6 +36,14 @@ class NotificationService {
         .eq('is_read', false);
   }
 
+  Future<void> deleteNotification(String notificationId) async {
+    await _client.from('notifications').delete().eq('id', notificationId);
+  }
+
+  Future<void> clearAll(String userId) async {
+    await _client.from('notifications').delete().eq('user_id', userId);
+  }
+
   RealtimeChannel subscribeToNotifications(String userId, void Function() onNotification) {
     return _client
         .channel('notifications:$userId')
@@ -45,7 +53,6 @@ class NotificationService {
           table: 'notifications',
           filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'user_id', value: userId),
           callback: (_) => onNotification(),
-        )
-        .subscribe();
+        );
   }
 }

@@ -14,6 +14,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/chat_service.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/realtime_subscription_manager.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
@@ -55,19 +56,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
   void dispose() {
     _searchCtrl.dispose();
     _onlineTimer?.cancel();
-    if (_messagesSubscription != null) {
-      try {
-        SupabaseService.client.removeChannel(_messagesSubscription!);
-      } catch (e) {
-        print('Error removing message channel: $e');
-      }
-    }
-    for (final channel in _typingChannels.values) {
-      try {
-        SupabaseService.client.removeChannel(channel);
-      } catch (e) {
-        print('Error removing typing channel: $e');
-      }
+    RealtimeSubscriptionManager.unsubscribe('chats_list_messages_${widget.role}');
+    for (final roomId in _typingChannels.keys) {
+      RealtimeSubscriptionManager.unsubscribe('typing:$roomId');
     }
     super.dispose();
   }
@@ -138,28 +129,21 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
-    if (_messagesSubscription != null) {
-      try {
-        SupabaseService.client.removeChannel(_messagesSubscription!);
-      } catch (e) {
-        print('Error removing message channel: $e');
-      }
-      _messagesSubscription = null;
-    }
+    final subscriptionKey = 'chats_list_messages_${widget.role}';
+    RealtimeSubscriptionManager.unsubscribe(subscriptionKey);
 
     try {
       _messagesSubscription = SupabaseService.client
-          .channel('chats_list_messages_changes')
+          .channel('chats_list_messages_${widget.role}')
           .onPostgresChanges(
             event: PostgresChangeEvent.all,
             schema: 'public',
             table: 'messages',
             callback: (payload) {
-              // HARDENING: devops-agent 2026-06-25
               _load(ignoreCache: true);
             },
-          )
-          .subscribe();
+          );
+      RealtimeSubscriptionManager.subscribe(subscriptionKey, _messagesSubscription!);
     } catch (e) {
       print('Error subscribing to messages changes: $e');
     }
@@ -174,14 +158,8 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     // Remove channels no longer in the rooms list
     final removedIds = _typingChannels.keys.where((id) => !activeIds.contains(id)).toList();
     for (final id in removedIds) {
-      final channel = _typingChannels.remove(id);
-      if (channel != null) {
-        try {
-          SupabaseService.client.removeChannel(channel);
-        } catch (e) {
-          print('Error removing typing channel: $e');
-        }
-      }
+      RealtimeSubscriptionManager.unsubscribe('typing:$id');
+      _typingChannels.remove(id);
       _typingNames.remove(id);
     }
 
@@ -209,7 +187,8 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
               });
             }
           },
-        ).subscribe();
+        );
+        RealtimeSubscriptionManager.subscribe('typing:$roomId', channel);
         _typingChannels[roomId] = channel;
       } catch (e) {
         print('Error setting up typing channel: $e');

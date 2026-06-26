@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +18,14 @@ import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/media/image_cache_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/cache/app_cache.dart';
+import '../trust/account_status_screens.dart';
+import '../home/profile_nudge_service.dart';
+// Deleted guided tour overlay import
+import '../../core/services/notification_queue_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class InfluencerHomeScreen extends ConsumerStatefulWidget {
   const InfluencerHomeScreen({super.key});
@@ -34,6 +41,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
   int _profileViews = 0;
   List<Map<String, dynamic>> _upcomingMilestones = [];
   int _completedMilestonesCount = 0;
+  NudgeItem? _activeNudge;
 
   @override
   void initState() { super.initState(); _load(); }
@@ -43,6 +51,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     final user = ref.read(authProvider).user;
     final profile = ref.read(authProvider).profile;
     if (user == null || profile == null) return;
+    NotificationQueueService.processQueue(user.id);
 
     final cacheKey = 'influencer_dashboard_${user.id}';
 
@@ -55,6 +64,8 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     if (profile['platforms'] != null && (profile['platforms'] as List).isNotEmpty) score += 20;
     if (profile['follower_count'] != null && profile['follower_count'] > 0) score += 20;
 
+    final nudge = await ProfileNudgeService.getActiveNudge(profile, 'influencer');
+
     if (!background) {
       final cached = AppCache().get<Map<String, dynamic>>(cacheKey);
       if (cached != null) {
@@ -65,6 +76,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
           _profileViews = cached['profileViews'] as int? ?? 0;
           _upcomingMilestones = List<Map<String, dynamic>>.from(cached['upcomingMilestones']);
           _completedMilestonesCount = cached['completedMilestonesCount'] as int? ?? 0;
+          _activeNudge = nudge;
           _loading = false;
         });
       } else {
@@ -75,7 +87,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     try {
       // Concurrent fetching of all main dashboard sections
       final futures = await Future.wait([
-        CardService().getActiveCards(limit: 20),
+        CardService().getRecommendedCards(user.id),
         ProfileService().getBrands(limit: 10),
         AnalyticsService().getProfileViewCount(user.id),
         ChatService().getRooms(user.id, 'influencer'),
@@ -147,6 +159,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
           _profileViews = viewsCount;
           _upcomingMilestones = milestones;
           _completedMilestonesCount = completedMilestonesCount;
+          _activeNudge = nudge;
           _loading = false;
         });
       }
@@ -154,6 +167,15 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
       // Perform background validation if we used cached data
       if (!background && AppCache().get(cacheKey) != null) {
         _load(background: true);
+      }
+
+      if (!background) {
+        final prefs = await SharedPreferences.getInstance();
+        final tourKey = 'first_time_tour_shown_${user.id}';
+        final shown = prefs.getBool(tourKey) ?? false;
+        if (!shown && mounted) {
+          context.go('/dashboard-tour');
+        }
       }
     } catch (e) {
       print('Error loading dashboard: $e');
@@ -265,7 +287,10 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: () async {
+          HapticFeedback.lightImpact();
+          await _load();
+        },
         color: AppColors.accent,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -275,7 +300,15 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
+            if (profile?['account_status'] == 'warned')
+              const WarningBanner(
+                message: 'Your account has been warned for violating community guidelines. Repeated violations will result in account suspension.',
+              ),
             _buildWelcomeBentoBox(profile, 0),
+            if (_activeNudge != null) ...[
+              const SizedBox(height: 12),
+              _buildNudgeCard(_activeNudge!),
+            ],
             const SizedBox(height: 20),
             
             // Analytics Grid (Bento style)
@@ -1093,8 +1126,11 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                   color: AppColors.surface2,
                   child: isValidImageUrl(card['cover_image_url'])
                       ? CachedNetworkImage(
+                          cacheManager: AppCacheManager.instance,
                           imageUrl: card['cover_image_url'],
                           fit: BoxFit.cover,
+                          memCacheWidth: 144,
+                          memCacheHeight: 144,
                         )
                       : Center(
                           child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
@@ -1382,10 +1418,13 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
                     color: AppColors.surface2,
                     child: isValidImageUrl(card['cover_image_url'])
                         ? CachedNetworkImage(
+                            cacheManager: AppCacheManager.instance,
                             imageUrl: card['cover_image_url'],
                             fit: BoxFit.cover,
                             width: 84,
                             height: 90,
+                            memCacheWidth: 168,
+                            memCacheHeight: 180,
                           )
                         : Center(
                             child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
@@ -1788,6 +1827,77 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
               fontWeight: FontWeight.bold,
               color: isCompleted ? AppColors.accent : AppColors.textSecondary,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNudgeCard(NudgeItem nudge) {
+    final isDark = AppColors.isDarkMode;
+    return _BentoBox(
+      animationDelayIndex: 0,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(nudge.icon, color: AppColors.accent, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nudge.title,
+                  style: AppTextStyles.label.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  nudge.description,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => context.go(nudge.actionRoute),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: AppColors.accentOnDark,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                  ),
+                  child: Text('Complete Now', style: AppTextStyles.labelSm.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 18, color: AppColors.textMuted),
+            onPressed: () async {
+              final user = ref.read(authProvider).user;
+              if (user != null) {
+                await ProfileNudgeService.dismissNudge(user.id, nudge.id);
+                final nextNudge = await ProfileNudgeService.getActiveNudge(ref.read(authProvider).profile, 'influencer');
+                setState(() {
+                  _activeNudge = nextNudge;
+                });
+              }
+            },
           ),
         ],
       ),

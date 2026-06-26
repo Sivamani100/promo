@@ -16,6 +16,7 @@ import '../../core/providers/app_providers.dart';
 import '../../core/services/profile_service.dart';
 import '../../core/services/data_services.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/services/onboarding_analytics_service.dart';
 
 // ---------- Onboarding State Model ----------
 class OnboardingState {
@@ -269,15 +270,126 @@ final onboardingStateProvider = StateNotifierProvider<OnboardingStateNotifier, O
 });
 
 // ---------- Onboarding Shell Widget ----------
-class OnboardingShell extends ConsumerWidget {
+class OnboardingShell extends ConsumerStatefulWidget {
   final int currentStep;
   const OnboardingShell({super.key, required this.currentStep});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OnboardingShell> createState() => _OnboardingShellState();
+}
+
+class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsBindingObserver {
+  DateTime _stepStartTime = DateTime.now();
+  late int _trackedStep;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _trackedStep = widget.currentStep;
+    _logStepStart(_trackedStep);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _logStepAbandonment(_trackedStep);
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(OnboardingShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentStep != widget.currentStep) {
+      final elapsed = DateTime.now().difference(_stepStartTime).inSeconds;
+      _logStepComplete(oldWidget.currentStep, elapsed);
+      _trackedStep = widget.currentStep;
+      _stepStartTime = DateTime.now();
+      _logStepStart(_trackedStep);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      final elapsed = DateTime.now().difference(_stepStartTime).inSeconds;
+      _logEvent(_trackedStep, 'abandoned', timeSpent: elapsed);
+    } else if (state == AppLifecycleState.resumed) {
+      _stepStartTime = DateTime.now();
+      _logEvent(_trackedStep, 'started');
+    }
+  }
+
+  String _getStepName(int step) {
+    switch (step) {
+      case 1: return 'Welcome / Role Selection';
+      case 2: return 'Identity Form';
+      case 3: return 'Visual / Niches';
+      case 4: return 'Connect Platforms / Location';
+      case 5: return 'Launch Launchpad';
+      default: return 'Step $step';
+    }
+  }
+
+  void _logStepStart(int step) {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      OnboardingAnalyticsService.logEvent(
+        userId: user.id,
+        stepNumber: step,
+        stepName: _getStepName(step),
+        eventType: 'started',
+      );
+    }
+  }
+
+  void _logStepComplete(int step, int elapsed) {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      OnboardingAnalyticsService.logEvent(
+        userId: user.id,
+        stepNumber: step,
+        stepName: _getStepName(step),
+        eventType: 'completed',
+        timeSpentSeconds: elapsed,
+      );
+    }
+  }
+
+  void _logStepAbandonment(int step) {
+    final user = ref.read(authProvider).user;
+    final profile = ref.read(authProvider).profile;
+    final isOnboardingComplete = profile?['onboarding_complete'] == true;
+    if (user != null && !isOnboardingComplete) {
+      final elapsed = DateTime.now().difference(_stepStartTime).inSeconds;
+      OnboardingAnalyticsService.logEvent(
+        userId: user.id,
+        stepNumber: step,
+        stepName: _getStepName(step),
+        eventType: 'abandoned',
+        timeSpentSeconds: elapsed,
+      );
+    }
+  }
+
+  void _logEvent(int step, String type, {int? timeSpent}) {
+    final user = ref.read(authProvider).user;
+    if (user != null) {
+      OnboardingAnalyticsService.logEvent(
+        userId: user.id,
+        stepNumber: step,
+        stepName: _getStepName(step),
+        eventType: type,
+        timeSpentSeconds: timeSpent,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final role = auth.role ?? 'influencer';
-    final progress = currentStep / 5;
+    final progress = widget.currentStep / 5;
 
     return Scaffold(
       body: SafeArea(
@@ -296,9 +408,9 @@ class OnboardingShell extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (currentStep > 1)
+                  if (widget.currentStep > 1)
                     GestureDetector(
-                      onTap: () => context.go('/onboarding/${currentStep - 1}'),
+                      onTap: () => context.go('/onboarding/${widget.currentStep - 1}'),
                       child: Row(
                         children: [
                           Icon(Iconsax.arrow_left_2, size: 18, color: AppColors.textSecondary),
@@ -312,7 +424,7 @@ class OnboardingShell extends ConsumerWidget {
                     )
                   else
                     const SizedBox(),
-                  Text('Step $currentStep of 5', style: AppTextStyles.captionSm),
+                  Text('Step ${widget.currentStep} of 5', style: AppTextStyles.captionSm),
                 ],
               ),
             ),
@@ -329,7 +441,7 @@ class OnboardingShell extends ConsumerWidget {
   }
 
   Widget _buildStep(BuildContext context, WidgetRef ref, String role) {
-    switch (currentStep) {
+    switch (widget.currentStep) {
       case 1: return _Step1Welcome(role: role);
       case 2: return _Step2Identity(role: role);
       case 3: return _Step3Visual(role: role);
@@ -507,6 +619,10 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
   late final TextEditingController _bioCtrl;
   late final TextEditingController _websiteCtrl;
 
+  final _nameFocusNode = FocusNode();
+  final _bioFocusNode = FocusNode();
+  final _websiteFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -521,6 +637,9 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
     _nameCtrl.dispose();
     _bioCtrl.dispose();
     _websiteCtrl.dispose();
+    _nameFocusNode.dispose();
+    _bioFocusNode.dispose();
+    _websiteFocusNode.dispose();
     super.dispose();
   }
 
@@ -540,6 +659,9 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
           label: widget.role == 'brand' ? 'Company Name' : 'Display Name',
           hint: widget.role == 'brand' ? 'Acme Corp' : 'Your name',
           controller: _nameCtrl,
+          focusNode: _nameFocusNode,
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_bioFocusNode),
           onChanged: (val) => notifier.updateField(widget.role == 'brand' ? 'companyName' : 'displayName', val),
         ),
         const SizedBox(height: 16),
@@ -548,6 +670,9 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
           hint: 'Describe yourself or company in a few sentences...',
           maxLines: 4,
           controller: _bioCtrl,
+          focusNode: _bioFocusNode,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
           onChanged: (val) => notifier.updateField('bio', val),
         ),
         const SizedBox(height: 16),
@@ -556,6 +681,9 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
           hint: 'https://...',
           keyboardType: TextInputType.url,
           controller: _websiteCtrl,
+          focusNode: _websiteFocusNode,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (val) => notifier.updateField('websiteUrl', val),
         ),
         const SizedBox(height: 32),
@@ -717,6 +845,13 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
   late final TextEditingController _stateCtrl;
   bool _isLoadingLocation = false;
 
+  final _budgetFocusNode = FocusNode();
+  final _audienceFocusNode = FocusNode();
+  final _villageFocusNode = FocusNode();
+  final _mandalFocusNode = FocusNode();
+  final _districtFocusNode = FocusNode();
+  final _stateFocusNode = FocusNode();
+
   List<String> _splitLocation(String loc) {
     if (loc.isEmpty) return ['', '', '', ''];
     final parts = loc.split(',').map((e) => e.trim()).toList();
@@ -752,7 +887,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           if (mounted) {
-            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+            AppSnackbar.warning(context, 'Location permissions are denied.');
           }
           setState(() {
             _isLoadingLocation = false;
@@ -763,7 +898,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
       
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
-          AppSnackbar.warning(context, 'Location permissions permanently denied. Enable in settings.');
+          AppSnackbar.warning(context, 'Location permissions are permanently denied.');
         }
         setState(() {
           _isLoadingLocation = false;
@@ -845,6 +980,12 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     _mandalCtrl.dispose();
     _districtCtrl.dispose();
     _stateCtrl.dispose();
+    _budgetFocusNode.dispose();
+    _audienceFocusNode.dispose();
+    _villageFocusNode.dispose();
+    _mandalFocusNode.dispose();
+    _districtFocusNode.dispose();
+    _stateFocusNode.dispose();
     super.dispose();
   }
 
@@ -853,6 +994,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     final followersCtrl = TextEditingController(
       text: (ref.read(onboardingStateProvider).platformFollowers[platform] ?? '').toString(),
     );
+
+    final handleFocus = FocusNode();
+    final followersFocus = FocusNode();
 
     final result = await showPremiumDialog<Map<String, dynamic>>(
       context: context,
@@ -863,7 +1007,10 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         children: [
           TextField(
             controller: handleCtrl,
+            focusNode: handleFocus,
             autofocus: true,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(followersFocus),
             style: AppTextStyles.body,
             decoration: InputDecoration(
               labelText: 'Username / Handle',
@@ -875,8 +1022,15 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
           const SizedBox(height: 16),
           TextField(
             controller: followersCtrl,
+            focusNode: followersFocus,
             style: AppTextStyles.body,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) {
+              final h = handleCtrl.text.trim();
+              final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
+              Navigator.pop(context, {'handle': h, 'followers': f});
+            },
             decoration: InputDecoration(
               labelText: 'Followers Count',
               hintText: 'e.g. 5000',
@@ -925,6 +1079,8 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
 
     handleCtrl.dispose();
     followersCtrl.dispose();
+    handleFocus.dispose();
+    followersFocus.dispose();
 
     if (result == null) return;
     final handle = result['handle'] as String;
@@ -963,6 +1119,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'Target Budget Range',
             hint: 'e.g. ₹10,000 - ₹50,000',
             controller: _budgetCtrl,
+            focusNode: _budgetFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_audienceFocusNode),
             onChanged: (val) => notifier.updateField('targetBudgetRange', val),
           ),
           const SizedBox(height: 16),
@@ -970,6 +1129,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'Target Audience',
             hint: 'e.g. 18-35 year olds in India',
             controller: _audienceCtrl,
+            focusNode: _audienceFocusNode,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
             onChanged: (val) => notifier.updateField('targetAudience', val),
           ),
         ] else ...[
@@ -988,6 +1150,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'Village / Street',
             hint: 'e.g. Danavaipeta',
             controller: _villageCtrl,
+            focusNode: _villageFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_mandalFocusNode),
             onChanged: (val) => _updateLocation(),
           ),
           const SizedBox(height: 12),
@@ -995,6 +1160,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'Mandal / Town',
             hint: 'e.g. Rajahmundry Urban',
             controller: _mandalCtrl,
+            focusNode: _mandalFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_districtFocusNode),
             onChanged: (val) => _updateLocation(),
           ),
           const SizedBox(height: 12),
@@ -1002,6 +1170,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'District',
             hint: 'e.g. East Godavari',
             controller: _districtCtrl,
+            focusNode: _districtFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_stateFocusNode),
             onChanged: (val) => _updateLocation(),
           ),
           const SizedBox(height: 12),
@@ -1009,6 +1180,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             label: 'State',
             hint: 'e.g. Andhra Pradesh',
             controller: _stateCtrl,
+            focusNode: _stateFocusNode,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
             onChanged: (val) => _updateLocation(),
           ),
           const SizedBox(height: 16),

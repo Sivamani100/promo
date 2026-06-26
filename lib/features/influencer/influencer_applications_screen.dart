@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/media/image_cache_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -1068,8 +1069,11 @@ class _BentoApplicationCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(13),
                       child: isValidImageUrl(card?['cover_image_url'])
                           ? CachedNetworkImage(
+                              cacheManager: AppCacheManager.instance,
                               imageUrl: card?['cover_image_url'] ?? '',
                               fit: BoxFit.cover,
+                              memCacheWidth: 128,
+                              memCacheHeight: 128,
                             )
                           : Center(
                               child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),

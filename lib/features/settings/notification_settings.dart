@@ -18,20 +18,27 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
 class _NotificationSettingsScreenState extends ConsumerState<NotificationSettingsScreen> {
   bool _saving = false;
 
-  Future<void> _togglePreference(String key, bool value) async {
+  Future<void> _updatePreference(String key, dynamic value, {bool isPreferencesColumn = false}) async {
     final user = ref.read(authProvider).user;
     final profile = ref.read(authProvider).profile;
     if (user == null || profile == null) return;
 
-    final currentPrefs = Map<String, dynamic>.from(profile['notification_prefs'] ?? {});
-    currentPrefs[key] = value;
-
     setState(() => _saving = true);
 
     try {
-      await SupabaseService.client.from('profiles').update({
-        'notification_prefs': currentPrefs,
-      }).eq('id', user.id);
+      if (isPreferencesColumn) {
+        final currentPrefs = Map<String, dynamic>.from(profile['preferences'] ?? {});
+        currentPrefs[key] = value;
+        await SupabaseService.client.from('profiles').update({
+          'preferences': currentPrefs,
+        }).eq('id', user.id);
+      } else {
+        final currentPrefs = Map<String, dynamic>.from(profile['notification_prefs'] ?? {});
+        currentPrefs[key] = value;
+        await SupabaseService.client.from('profiles').update({
+          'notification_prefs': currentPrefs,
+        }).eq('id', user.id);
+      }
 
       await ref.read(authProvider.notifier).refreshProfile();
     } catch (e) {
@@ -48,12 +55,17 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     final profile = ref.watch(authProvider).profile;
     final role = ref.watch(authProvider).role;
     final prefs = profile?['notification_prefs'] as Map<String, dynamic>? ?? {};
+    final userPrefs = profile?['preferences'] as Map<String, dynamic>? ?? {};
 
     final emailNotif = prefs['email_notifications'] ?? true;
     final chatNotif = prefs['chat_messages'] ?? true;
     final milestoneNotif = prefs['milestone_changes'] ?? true;
     final pitchNotif = prefs['pitch_updates'] ?? true;
     final inviteNotif = prefs['brand_invites'] ?? true;
+
+    final dndEnabled = userPrefs['dnd_enabled'] ?? false;
+    final dndStart = userPrefs['dnd_start'] ?? '22:00';
+    final dndEnd = userPrefs['dnd_end'] ?? '08:00';
 
     return Scaffold(
       appBar: AppBar(
@@ -81,7 +93,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               title: 'Email Notifications',
               subtitle: 'Receive summaries and updates on email',
               value: emailNotif,
-              onChanged: (val) => _togglePreference('email_notifications', val),
+              onChanged: (val) => _updatePreference('email_notifications', val),
             ),
           ]),
           const SizedBox(height: 20),
@@ -93,7 +105,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               title: 'Chat Messages',
               subtitle: 'Direct messages and group chats alerts',
               value: chatNotif,
-              onChanged: (val) => _togglePreference('chat_messages', val),
+              onChanged: (val) => _updatePreference('chat_messages', val),
             ),
             _buildDivider(),
             _buildSwitchTile(
@@ -101,7 +113,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               title: 'Milestone Activities',
               subtitle: 'Collaboration milestones status changes',
               value: milestoneNotif,
-              onChanged: (val) => _togglePreference('milestone_changes', val),
+              onChanged: (val) => _updatePreference('milestone_changes', val),
             ),
             _buildDivider(),
             if (role == 'brand') ...[
@@ -110,7 +122,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                 title: 'Pitch Updates',
                 subtitle: 'When influencers apply or update pitches',
                 value: pitchNotif,
-                onChanged: (val) => _togglePreference('pitch_updates', val),
+                onChanged: (val) => _updatePreference('pitch_updates', val),
               ),
             ] else ...[
               _buildSwitchTile(
@@ -118,7 +130,61 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
                 title: 'Brand Invitations',
                 subtitle: 'Direct invitation invites from brands',
                 value: inviteNotif,
-                onChanged: (val) => _togglePreference('brand_invites', val),
+                onChanged: (val) => _updatePreference('brand_invites', val),
+              ),
+            ],
+          ]),
+          const SizedBox(height: 20),
+          Text('Quiet Hours (DND)', style: AppTextStyles.overline),
+          const SizedBox(height: 8),
+          _buildCard([
+            _buildSwitchTile(
+              icon: Iconsax.moon,
+              title: 'Do Not Disturb (DND)',
+              subtitle: 'Queue notifications during quiet hours',
+              value: dndEnabled,
+              onChanged: (val) => _updatePreference('dnd_enabled', val, isPreferencesColumn: true),
+            ),
+            if (dndEnabled) ...[
+              _buildDivider(),
+              ListTile(
+                leading: Icon(Iconsax.clock, color: AppColors.accent, size: 22),
+                title: Text('Start Time', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                subtitle: Text(dndStart, style: AppTextStyles.captionSm),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay(
+                      hour: int.parse(dndStart.split(':')[0]),
+                      minute: int.parse(dndStart.split(':')[1]),
+                    ),
+                  );
+                  if (time != null) {
+                    final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    _updatePreference('dnd_start', formatted, isPreferencesColumn: true);
+                  }
+                },
+              ),
+              _buildDivider(),
+              ListTile(
+                leading: Icon(Iconsax.clock, color: AppColors.accent, size: 22),
+                title: Text('End Time', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+                subtitle: Text(dndEnd, style: AppTextStyles.captionSm),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay(
+                      hour: int.parse(dndEnd.split(':')[0]),
+                      minute: int.parse(dndEnd.split(':')[1]),
+                    ),
+                  );
+                  if (time != null) {
+                    final formatted = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    _updatePreference('dnd_end', formatted, isPreferencesColumn: true);
+                  }
+                },
               ),
             ],
           ]),
@@ -165,3 +231,4 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     return Divider(height: 1, indent: 56, color: AppColors.borderSubtle);
   }
 }
+

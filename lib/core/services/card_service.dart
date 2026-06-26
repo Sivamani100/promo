@@ -155,4 +155,22 @@ class CardService {
       return 0;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getRecommendedCards(String influencerId) async {
+    final cacheKey = 'recommended_cards_$influencerId';
+    final cached = AppCache().get<List<Map<String, dynamic>>>(cacheKey);
+    if (cached != null) return cached;
+
+    try {
+      final response = await _client
+          .rpc('get_recommended_cards', params: {'p_influencer_id': influencerId})
+          .timeout(const Duration(seconds: 15));
+      final result = List<Map<String, dynamic>>.from(response as List);
+      AppCache().set(cacheKey, result, ttl: const Duration(minutes: 5));
+      return result;
+    } catch (e) {
+      print('Error getting recommended cards: $e');
+      return getActiveCards(limit: 20);
+    }
+  }
 }

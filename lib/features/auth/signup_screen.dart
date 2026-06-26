@@ -42,6 +42,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final List<String> _selectedNiches = [];
   final List<String> _selectedPlatforms = [];
   final _locationCtrl = TextEditingController();
+
+  // Focus Nodes
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+  final _confirmPasswordFocusNode = FocusNode();
+  final _nameFocusNode = FocusNode();
+  final _companyFocusNode = FocusNode();
+  final _locationFocusNode = FocusNode();
   
   bool _loading = false;
   bool _obscurePassword = true;
@@ -104,6 +112,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _nameCtrl.dispose();
     _companyCtrl.dispose();
     _locationCtrl.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
+    _nameFocusNode.dispose();
+    _companyFocusNode.dispose();
+    _locationFocusNode.dispose();
     super.dispose();
   }
 
@@ -114,6 +128,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     bool obscure = false,
     TextInputType? keyboardType,
     Widget? suffixIcon,
+    FocusNode? focusNode,
+    TextInputAction? textInputAction,
+    void Function(String)? onSubmitted,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
@@ -136,6 +153,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           controller: controller,
           obscureText: obscure,
           keyboardType: keyboardType,
+          focusNode: focusNode,
+          textInputAction: textInputAction,
+          onFieldSubmitted: onSubmitted,
           style: GoogleFonts.inter(
             fontSize: 13,
             color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
@@ -373,6 +393,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         hint: 'you@example.com',
         controller: _emailCtrl,
         keyboardType: TextInputType.emailAddress,
+        focusNode: _emailFocusNode,
+        textInputAction: TextInputAction.next,
+        onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
       ),
       const SizedBox(height: 16),
 
@@ -381,6 +404,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         hint: 'Min 6 characters',
         controller: _passwordCtrl,
         obscure: _obscurePassword,
+        focusNode: _passwordFocusNode,
+        textInputAction: TextInputAction.next,
+        onSubmitted: (_) => FocusScope.of(context).requestFocus(_confirmPasswordFocusNode),
         suffixIcon: IconButton(
           icon: Icon(
             _obscurePassword ? Iconsax.eye : Iconsax.eye_slash,
@@ -397,6 +423,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         hint: '••••••••',
         controller: _confirmPasswordCtrl,
         obscure: _obscureConfirmPassword,
+        focusNode: _confirmPasswordFocusNode,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) {
+          final email = _emailCtrl.text.trim();
+          final pass = _passwordCtrl.text;
+          final confirm = _confirmPasswordCtrl.text;
+          if (email.isEmpty || pass.isEmpty || confirm.isEmpty) {
+            _showSnack('Please fill in all fields.');
+            return;
+          }
+          if (pass.length < 6) {
+            _showSnack('Password must be at least 6 characters.');
+            return;
+          }
+          if (pass != confirm) {
+            _showSnack('Passwords do not match.');
+            return;
+          }
+          setState(() => _step = 2);
+        },
         suffixIcon: IconButton(
           icon: Icon(
             _obscureConfirmPassword ? Iconsax.eye : Iconsax.eye_slash,
@@ -490,6 +536,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         label: 'Your Full Name',
         hint: 'John Doe',
         controller: _nameCtrl,
+        focusNode: _nameFocusNode,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) {
+          if (_nameCtrl.text.trim().isEmpty) {
+            _showSnack('Please enter your name.');
+            return;
+          }
+          setState(() => _step = 3);
+        },
       ),
       const SizedBox(height: 24),
 
@@ -573,6 +628,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           label: 'Your Company Name',
           hint: 'Acme Corp',
           controller: _companyCtrl,
+          focusNode: _companyFocusNode,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _handleSignUp(),
         ),
         const SizedBox(height: 20),
 
@@ -669,6 +727,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           label: 'Location',
           hint: 'e.g. Mumbai',
           controller: _locationCtrl,
+          focusNode: _locationFocusNode,
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _handleSignUp(),
         ),
         const SizedBox(height: 48),
 

@@ -29,7 +29,7 @@ dependencies:
   iconsax: 0.0.8
   file_picker: 11.0.2
   http: 1.6.0
-  shared_preferences: 2.2.3
+  shared_preferences: ^2.3.3
   flutter_map: 7.0.2
   latlong2: 0.9.1
   geolocator: 14.0.2
@@ -40,6 +40,12 @@ dependencies:
   connectivity_plus: 6.0.5
   package_info_plus: 8.0.2
   flutter_secure_storage: 9.2.2
+  # V3.0: PRD Agent 15-22 packages
+  app_links: 6.3.3
+  emoji_picker_flutter: 4.3.0
+  in_app_review: 2.0.10
+  flutter_markdown: 0.7.6
+  flutter_cache_manager: ^3.3.2
 
 dev_dependencies:
   flutter_test:
@@ -51,3 +57,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/illustrations/

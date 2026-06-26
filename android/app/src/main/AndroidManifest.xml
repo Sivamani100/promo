@@ -41,13 +41,20 @@
                 <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-            <!-- Deep Linking filter -->
+            <!-- Deep Linking filter (custom scheme) -->
             <intent-filter android:label="filter_promo">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="io.supabase.promo" />
                 <data android:scheme="promo" />
+            </intent-filter>
+            <!-- V3.0: Universal Links / App Links for https://promo.app -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="promo.app" />
             </intent-filter>
         </activity>
         <meta-data

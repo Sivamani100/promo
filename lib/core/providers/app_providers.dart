@@ -11,6 +11,7 @@ import '../services/supabase_service.dart';
 import '../services/chat_service.dart';
 import '../services/social_agent.dart';
 import '../services/notification_service.dart';
+import '../services/realtime_subscription_manager.dart';
 import '../security/session_guard.dart';
 import '../utils/error_handler.dart';
 
@@ -241,15 +242,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final profile = await _authService.fetchProfile(user.id);
       
+      Map<String, dynamic>? activeProfile = profile;
+      if (activeProfile != null && activeProfile['account_status'] == 'suspended') {
+        final untilStr = activeProfile['suspension_until'] as String?;
+        if (untilStr != null) {
+          final until = DateTime.tryParse(untilStr);
+          if (until != null && until.isBefore(DateTime.now())) {
+            try {
+              // Suspension expired! Update DB status to active
+              await SupabaseService.client.from('profiles').update({
+                'account_status': 'active',
+                'suspension_reason': null,
+                'suspension_until': null,
+              }).eq('id', user.id);
+              
+              // Refetch profile
+              activeProfile = await _authService.fetchProfile(user.id);
+              print('[AUTH] Account suspension expired. Automatically unsuspended user: ${user.id}');
+            } catch (e) {
+              print('[AUTH] Error auto-reversing expired suspension: $e');
+            }
+          }
+        }
+      }
+      
       final prefs = await SharedPreferences.getInstance();
-      if (profile != null) {
-        await prefs.setString('cached_profile_${user.id}', jsonEncode(profile));
+      if (activeProfile != null) {
+        await prefs.setString('cached_profile_${user.id}', jsonEncode(activeProfile));
       }
       final localComplete = prefs.getBool('onboarding_complete_${user.id}') ?? false;
-      final bio = profile?['bio']?.toString().trim();
+      final bio = activeProfile?['bio']?.toString().trim();
       final hasBio = bio != null && bio.isNotEmpty;
-      final isComplete = (profile?['onboarding_complete'] == true) ||
-                         (profile?['onboarding_complete'] == null && hasBio) ||
+      final isComplete = (activeProfile?['onboarding_complete'] == true) ||
+                         (activeProfile?['onboarding_complete'] == null && hasBio) ||
                          localComplete;
       if (isComplete && !localComplete) {
         await prefs.setBool('onboarding_complete_${user.id}', true);
@@ -257,15 +282,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       state = AuthState(
         user: user,
-        profile: profile,
-        role: profile?['role'] as String?,
+        profile: activeProfile,
+        role: activeProfile?['role'] as String?,
         isLoading: false,
         isRecoveryMode: isRecoveryMode,
         isOnboardingComplete: isComplete,
       );
 
-      if (profile != null && profile['role'] == 'influencer') {
-        unawaited(SocialAgent.syncFollowersIfNecessary(user.id, profile).catchError((_) {}));
+      if (activeProfile != null && activeProfile['role'] == 'influencer') {
+        unawaited(SocialAgent.syncFollowersIfNecessary(user.id, activeProfile).catchError((_) {}));
       }
     } catch (e) {
       // HARDENING: sec-agent 2026-06-24
@@ -444,12 +469,14 @@ class UnreadNotificationCountNotifier extends StateNotifier<int> {
   void _init() {
     _fetchCount();
     try {
-      _subscription = NotificationService().subscribeToNotifications(
+      final channel = NotificationService().subscribeToNotifications(
         userId!,
         () {
           _fetchCount();
         },
       );
+      _subscription = channel;
+      RealtimeSubscriptionManager.subscribe('notifications:$userId', channel);
     } catch (e) {
       print('Error subscribing to notifications count: $e');
     }
@@ -476,12 +503,8 @@ class UnreadNotificationCountNotifier extends StateNotifier<int> {
 
   @override
   void dispose() {
-    if (_subscription != null) {
-      try {
-        SupabaseService.client.removeChannel(_subscription!);
-      } catch (e) {
-        print('Error removing notification channel: $e');
-      }
+    if (userId != null) {
+      RealtimeSubscriptionManager.unsubscribe('notifications:$userId');
     }
     super.dispose();
   }
@@ -515,8 +538,8 @@ class UnreadMessageCountNotifier extends StateNotifier<int> {
             callback: (payload) {
               _fetchCount();
             },
-          )
-          .subscribe();
+          );
+      RealtimeSubscriptionManager.subscribe('unread_messages_count:$userId', _subscription!);
     } catch (e) {
       print('Error subscribing to unread messages count: $e');
     }
@@ -537,8 +560,8 @@ class UnreadMessageCountNotifier extends StateNotifier<int> {
 
   @override
   void dispose() {
-    if (_subscription != null) {
-      SupabaseService.client.removeChannel(_subscription!);
+    if (userId != null) {
+      RealtimeSubscriptionManager.unsubscribe('unread_messages_count:$userId');
     }
     super.dispose();
   }
