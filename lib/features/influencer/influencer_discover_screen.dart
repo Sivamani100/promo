@@ -620,7 +620,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                           itemBuilder: (context, i) {
                             if (filtered.isEmpty) {
                               if (i == 0) {
-                                final isDark = Theme.of(context).brightness == Brightness.dark;
+                                final isDark = Theme.of(context).brightness == Brightness.dark || AppColors.isDarkMode;
                                 return _buildDiscoverEmptyState(isDark);
                               } else {
                                 return _buildFooter();
@@ -647,7 +647,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
 
   Widget _buildDiscoverEmptyState(bool isDark) {
     final imagePath = isDark 
-        ? 'assets/illustrations/Discover Cards Night.png' 
+        ? 'assets/illustrations/Discover Cards Dark.png' 
         : 'assets/illustrations/Discover Cards Light.png';
 
     return Padding(
