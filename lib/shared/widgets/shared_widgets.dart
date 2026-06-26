@@ -1096,8 +1096,11 @@ class VerificationBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Image.asset(
-      'assets/Verification badge.png',
+      isDark
+          ? 'assets/verification badge white.png'
+          : 'assets/Verification badge.png',
       width: size,
       height: size,
       fit: BoxFit.contain,
