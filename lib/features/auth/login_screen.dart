@@ -114,7 +114,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       }
 
       final googleSignIn = GoogleSignIn(
-        serverClientId: '857153035385-9fpe4ne2lo2g5hk2pq8bvqc2bllaaikb.apps.googleusercontent.com',
+        serverClientId: '857153035385-ghuulmjm3j1ttisphp10kv34lmhut0vc.apps.googleusercontent.com',
       );
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
