@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -560,28 +561,71 @@ class SectionHeader extends StatelessWidget {
 
 // ---------- AppEmptyState ----------
 class AppEmptyState extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
   final String title;
   final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? lightImagePath;
+  final String? darkImagePath;
+  final double imageHeight;
 
-  const AppEmptyState({super.key, required this.icon, required this.title, this.subtitle, this.actionLabel, this.onAction});
+  const AppEmptyState({
+    super.key,
+    this.icon,
+    required this.title,
+    this.subtitle,
+    this.actionLabel,
+    this.onAction,
+    this.lightImagePath,
+    this.darkImagePath,
+    this.imageHeight = 240,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final imagePath = isDark ? darkImagePath : lightImagePath;
+    final hasImage = imagePath != null;
+
+    final titleStyle = hasImage
+        ? GoogleFonts.plusJakartaSans(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.5,
+          )
+        : AppTextStyles.label;
+
+    final subtitleStyle = hasImage
+        ? GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
+            height: 1.5,
+          )
+        : AppTextStyles.caption;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 48, color: AppColors.textMuted),
-            const SizedBox(height: 16),
-            Text(title, style: AppTextStyles.label, textAlign: TextAlign.center),
+            if (hasImage) ...[
+              Image.asset(
+                imagePath,
+                height: imageHeight,
+                fit: BoxFit.contain,
+              ),
+            ] else if (icon != null) ...[
+              Icon(icon, size: 48, color: AppColors.textMuted),
+            ],
+            const SizedBox(height: 20),
+            Text(title, style: titleStyle, textAlign: TextAlign.center),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
-              Text(subtitle!, style: AppTextStyles.caption, textAlign: TextAlign.center),
+              Text(subtitle!, style: subtitleStyle, textAlign: TextAlign.center),
             ],
             if (actionLabel != null) ...[
               const SizedBox(height: 20),
@@ -1928,8 +1972,8 @@ class AppImage extends StatelessWidget {
       fit: fit,
       width: width,
       height: height,
-      memCacheWidth: width != null ? (width! * 2).toInt() : null,
-      memCacheHeight: height != null ? (height! * 2).toInt() : null,
+      memCacheWidth: (width != null && width!.isFinite) ? (width! * 2).toInt() : null,
+      memCacheHeight: (height != null && height!.isFinite) ? (height! * 2).toInt() : null,
       placeholder: (context, url) => Container(
         color: AppColors.surface2,
         width: width,

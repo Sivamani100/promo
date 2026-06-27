@@ -277,9 +277,10 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                         if (_filtered.isEmpty) {
                           if (i == 0) {
                             return const AppEmptyState(
-                              icon: Icons.assignment_rounded,
                               title: 'No applications',
                               subtitle: 'Your submitted applications will appear here',
+                              lightImagePath: 'assets/illustrations/No Active Applications Light.png',
+                              darkImagePath: 'assets/illustrations/No Active Applications Dark.png',
                             );
                           } else {
                             return _buildFooter();

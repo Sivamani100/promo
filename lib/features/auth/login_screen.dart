@@ -91,13 +91,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       setState(() => _loading = false);
     }
 
-    if (role == 'brand') {
-      if (mounted) context.go('/brand/home');
-    } else if (role == 'influencer') {
-      if (mounted) context.go('/influencer/home');
-    } else if (role == 'admin') {
+    if (role == 'admin') {
       _showSnack('Admin access is web-only. Please use the web dashboard.');
-    } else {
+    } else if (role == null) {
       final error = ref.read(authProvider).error;
       _showSnack(error ?? 'Failed to sign in.');
     }
@@ -144,13 +140,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         setState(() => _loading = false);
       }
 
-      if (role == 'brand') {
-        if (mounted) context.go('/brand/home');
-      } else if (role == 'influencer') {
-        if (mounted) context.go('/influencer/home');
-      } else if (role == 'admin') {
+      if (role == 'admin') {
         _showSnack('Admin access is web-only. Please use the web dashboard.');
-      } else {
+      } else if (role == null) {
         final error = ref.read(authProvider).error;
         _showSnack(error ?? 'Failed to sign in with Google.');
       }

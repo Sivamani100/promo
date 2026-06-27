@@ -299,7 +299,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.link,
+                          assetPath: 'assets/Social media icons/LinkedIn.png',
                           title: 'LinkedIn',
                           subtitle: 'linkedin.com/in/sivamanikanta-mallipurapu',
                           url: 'https://linkedin.com/in/sivamanikanta-mallipurapu',
@@ -308,7 +308,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.bezier,
+                          assetPath: 'assets/Social media icons/Behance.png',
                           title: 'Behance',
                           subtitle: 'behance.net/mallipurapu',
                           url: 'https://www.behance.net/mallipurapu',
@@ -317,7 +317,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.global,
+                          assetPath: 'assets/Social media icons/GitHub.png',
                           title: 'GitHub',
                           subtitle: 'github.com/Sivamani100',
                           url: 'https://github.com/Sivamani100',
@@ -326,7 +326,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.instagram,
+                          assetPath: 'assets/Social media icons/Instagram logo.png',
                           title: 'Instagram',
                           subtitle: '@the_only_one_siva',
                           url: 'https://instagram.com/the_only_one_siva',
@@ -335,7 +335,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.sms,
+                          assetPath: 'assets/Social media icons/Gmail Logo.png',
                           title: 'Email',
                           subtitle: 'mallipurapusiva@gmail.com',
                           url: 'mailto:mallipurapusiva@gmail.com',
@@ -344,7 +344,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.call,
+                          assetPath: 'assets/Social media icons/Phone.png',
                           title: 'Phone',
                           subtitle: '+91 9849497911',
                           url: 'tel:+919849497911',
@@ -353,7 +353,7 @@ class DeveloperSettingsScreen extends ConsumerWidget {
                         _buildThinDivider(isDark),
                         _buildConnectionRow(
                           context: context,
-                          icon: Iconsax.message,
+                          assetPath: 'assets/Social media icons/WhatsApp.png',
                           title: 'WhatsApp',
                           subtitle: '+91 9849497911',
                           url: 'https://wa.me/919849497911',
@@ -408,11 +408,12 @@ class DeveloperSettingsScreen extends ConsumerWidget {
 
   Widget _buildConnectionRow({
     required BuildContext context,
-    required IconData icon,
     required String title,
     required String subtitle,
     required String url,
     required Color brandColor,
+    IconData? icon,
+    String? assetPath,
   }) {
     return InkWell(
       onTap: () => _launchUrl(context, url),
@@ -421,14 +422,14 @@ class DeveloperSettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         child: Row(
           children: [
-            Container(
+            SizedBox(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(
-                color: brandColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+              child: Center(
+                child: assetPath != null
+                    ? Image.asset(assetPath, width: 28, height: 28, fit: BoxFit.contain)
+                    : Icon(icon ?? Iconsax.global, color: brandColor, size: 24),
               ),
-              child: Icon(icon, color: brandColor, size: 18),
             ),
             const SizedBox(width: 12),
             Expanded(

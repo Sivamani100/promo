@@ -442,14 +442,25 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            plat.toLowerCase().contains('instagram')
-                                ? Iconsax.instagram
-                                : plat.toLowerCase().contains('youtube')
-                                    ? Iconsax.video_play
-                                    : Iconsax.global,
-                            size: 14,
-                            color: AppColors.accent,
+                          Builder(
+                            builder: (context) {
+                              final p = plat.toLowerCase();
+                              String? assetPath;
+                              if (p.contains('instagram')) {
+                                assetPath = 'assets/Social media icons/Instagram logo.png';
+                              } else if (p.contains('youtube')) {
+                                assetPath = 'assets/Social media icons/youtube logo.png';
+                              } else if (p.contains('tiktok')) {
+                                assetPath = 'assets/Social media icons/Tiktok logo.png';
+                              } else if (p.contains('twitter') || p.contains('x')) {
+                                assetPath = 'assets/Social media icons/x logo.png';
+                              }
+
+                              if (assetPath != null) {
+                                return Image.asset(assetPath, width: 14, height: 14);
+                              }
+                              return Icon(Iconsax.global, size: 14, color: AppColors.accent);
+                            },
                           ),
                           const SizedBox(width: 6),
                           Text(plat, style: AppTextStyles.captionSm.copyWith(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),

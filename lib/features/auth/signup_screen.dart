@@ -90,11 +90,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       setState(() => _loading = false);
     }
 
-    if (role == 'brand') {
-      if (mounted) context.go('/brand/home');
-    } else if (role == 'influencer') {
-      if (mounted) context.go('/influencer/home');
-    } else {
+    if (role == null) {
       _showSnack(ref.read(authProvider).error ?? 'Failed to sign up.');
     }
   }

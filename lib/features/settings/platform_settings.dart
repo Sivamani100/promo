@@ -146,7 +146,7 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
                     _buildHandleField(
                       controller: _instagramCtrl,
                       label: 'Instagram Handle',
-                      icon: Iconsax.instagram,
+                      assetPath: 'assets/Social media icons/Instagram logo.png',
                       prefix: '@',
                     ),
                     const SizedBox(height: 12),
@@ -159,7 +159,7 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
                     _buildHandleField(
                       controller: _tiktokCtrl,
                       label: 'TikTok Handle',
-                      icon: Iconsax.video_circle,
+                      assetPath: 'assets/Social media icons/Tiktok logo.png',
                       prefix: '@',
                     ),
                     const SizedBox(height: 12),
@@ -172,7 +172,7 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
                     _buildHandleField(
                       controller: _youtubeCtrl,
                       label: 'YouTube Channel / Handle',
-                      icon: Iconsax.play,
+                      assetPath: 'assets/Social media icons/youtube logo.png',
                       prefix: 'c/',
                     ),
                     const SizedBox(height: 12),
@@ -185,7 +185,7 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
                     _buildHandleField(
                       controller: _twitterCtrl,
                       label: 'Twitter / X Handle',
-                      icon: Iconsax.global,
+                      assetPath: 'assets/Social media icons/x logo.png',
                       prefix: '@',
                     ),
                     const SizedBox(height: 12),
@@ -226,15 +226,21 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
   Widget _buildHandleField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
     required String prefix,
+    IconData? icon,
+    String? assetPath,
   }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
         prefixText: prefix,
-        prefixIcon: Icon(icon, color: AppColors.accent, size: 20),
+        prefixIcon: assetPath != null
+            ? Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(assetPath, width: 20, height: 20),
+              )
+            : Icon(icon, color: AppColors.accent, size: 20),
       ),
     );
   }

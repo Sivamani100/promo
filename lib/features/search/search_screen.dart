@@ -761,28 +761,27 @@ class _BentoCampaignSearchCard extends StatelessWidget {
 
   Widget _buildPlatformIcon(String platform) {
     final p = platform.toLowerCase();
-    IconData iconData;
-    Color iconColor;
+    String? assetPath;
     if (p.contains('instagram')) {
-      iconData = Iconsax.instagram;
-      iconColor = const Color(0xFFE1306C);
+      assetPath = 'assets/Social media icons/Instagram logo.png';
     } else if (p.contains('youtube')) {
-      iconData = Icons.video_library_outlined;
-      iconColor = const Color(0xFFFF0000);
+      assetPath = 'assets/Social media icons/youtube logo.png';
     } else if (p.contains('tiktok')) {
-      iconData = Icons.music_note_outlined;
-      iconColor = const Color(0xFF000000);
+      assetPath = 'assets/Social media icons/Tiktok logo.png';
     } else if (p.contains('twitter') || p.contains('x')) {
-      iconData = Icons.close_rounded;
-      iconColor = AppColors.textPrimary;
+      assetPath = 'assets/Social media icons/x logo.png';
     } else if (p.contains('linkedin')) {
-      iconData = Icons.business_outlined;
-      iconColor = const Color(0xFF0077B5);
-    } else {
-      iconData = Iconsax.global;
-      iconColor = AppColors.textMuted;
+      assetPath = 'assets/Social media icons/LinkedIn.png';
+    } else if (p.contains('github')) {
+      assetPath = 'assets/Social media icons/GitHub.png';
+    } else if (p.contains('behance')) {
+      assetPath = 'assets/Social media icons/Behance.png';
     }
-    return Icon(iconData, size: 14, color: iconColor);
+
+    if (assetPath != null) {
+      return Image.asset(assetPath, width: 14, height: 14);
+    }
+    return Icon(Iconsax.global, size: 14, color: AppColors.textMuted);
   }
 
   @override

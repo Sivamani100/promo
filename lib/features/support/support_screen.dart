@@ -288,7 +288,11 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
-                    Icon(Iconsax.instagram, color: const Color(0xFFE1306C), size: 24),
+                    Image.asset(
+                      'assets/Social media icons/Instagram logo.png',
+                      width: 24,
+                      height: 24,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(

@@ -54,10 +54,6 @@ import '../../features/agreements/agreement_builder_screen.dart';
 import '../../features/agreements/agreement_review_screen.dart';
 import '../../features/agreements/payment_tracker_screen.dart';
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _brandShellKey = GlobalKey<NavigatorState>();
-final _influencerShellKey = GlobalKey<NavigatorState>();
-
 class AppRouterRefreshListenable extends ChangeNotifier {
   void refresh() {
     notifyListeners();
@@ -65,6 +61,10 @@ class AppRouterRefreshListenable extends ChangeNotifier {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Recreate the router and root key when the user logs in or out to avoid navigator key reuse assertion errors
+  ref.watch(authProvider.select((s) => s.user?.id));
+
+  final _rootNavigatorKey = GlobalKey<NavigatorState>();
   final refreshListenable = AppRouterRefreshListenable();
   
   ref.listen<bool>(splashCompletedProvider, (previous, next) {
@@ -485,7 +485,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Brand shell (with bottom bar)
       ShellRoute(
-        navigatorKey: _brandShellKey,
         builder: (_, _, child) => AppScaffold(role: 'brand', child: child),
         routes: [
           GoRoute(path: '/brand/home', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const BrandHomeScreen())),
@@ -514,7 +513,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Influencer shell (with bottom bar)
       ShellRoute(
-        navigatorKey: _influencerShellKey,
         builder: (_, _, child) => AppScaffold(role: 'influencer', child: child),
         routes: [
           GoRoute(path: '/influencer/home', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const InfluencerHomeScreen())),

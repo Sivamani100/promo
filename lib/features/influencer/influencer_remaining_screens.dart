@@ -1512,6 +1512,8 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
   bool _isLoadingLocation = false;
   bool _saving = false;
   bool _isEditing = false;
+  String? _avatarUrl;
+  bool _uploadingAvatar = false;
   List<Map<String, dynamic>> _portfolio = [];
   int _appsCount = 0;
   List<Map<String, dynamic>> _followingBrands = [];
@@ -1621,6 +1623,51 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     }
   }
 
+  Future<void> _pickProfileAvatar() async {
+    final picker = ImagePicker();
+    try {
+      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      if (image == null) return;
+
+      if (!mounted) return;
+      setState(() {
+        _uploadingAvatar = true;
+      });
+      AppSnackbar.info(context, 'Uploading photo...');
+
+      final bytes = await image.readAsBytes();
+      final user = ref.read(authProvider).user;
+      if (user == null) return;
+
+      final path = 'avatars/${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String url;
+      try {
+        url = await StorageService().uploadFile('avatars', path, bytes, 'image/jpeg');
+      } catch (e) {
+        try {
+          url = await StorageService().uploadFile('message-attachments', path, bytes, 'image/jpeg');
+        } catch (_) {
+          rethrow;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _avatarUrl = url;
+          _uploadingAvatar = false;
+        });
+        AppSnackbar.show(context, 'Photo uploaded successfully!');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _uploadingAvatar = false;
+        });
+        AppSnackbar.show(context, 'Upload failed: $e');
+      }
+    }
+  }
+
   void _setEditing(bool editing) {
     setState(() {
       _isEditing = editing;
@@ -1644,6 +1691,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       _nameCtrl.text = p['display_name'] ?? '';
       _bioCtrl.text = p['bio'] ?? '';
       _locationCtrl.text = p['location'] ?? '';
+      _avatarUrl = p['avatar_url'];
       
       final parts = _splitLocation(_locationCtrl.text);
       _villageCtrl.text = parts[0];
@@ -1796,6 +1844,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         'display_name': _nameCtrl.text.trim(),
         'bio': _bioCtrl.text.trim(),
         'location': _locationCtrl.text.trim(),
+        'avatar_url': _avatarUrl,
         'follower_count': totalFollowers,
         'platforms': handles.entries.where((e) => e.value.isNotEmpty).map((e) => e.key).toList(),
       });
@@ -1878,6 +1927,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         _nameCtrl.text = next.profile!['display_name'] ?? '';
         _bioCtrl.text = next.profile!['bio'] ?? '';
         _locationCtrl.text = next.profile!['location'] ?? '';
+        _avatarUrl = next.profile!['avatar_url'];
         
         final parts = _splitLocation(_locationCtrl.text);
         _villageCtrl.text = parts[0];
@@ -2004,6 +2054,51 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                 ),
                 children: _isEditing
                     ? [
+                        Center(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              _uploadingAvatar
+                                  ? Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.surface2,
+                                      ),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : AppAvatar(
+                                      url: _avatarUrl,
+                                      fallbackText: _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : 'I',
+                                      size: 100,
+                                    ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: _pickProfileAvatar,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6), width: 2),
+                                    ),
+                                    child: const Icon(
+                                      Iconsax.camera,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         AppTextField(label: 'Display Name', controller: _nameCtrl),
                         const SizedBox(height: 16),
                         AppTextField(label: 'Bio', controller: _bioCtrl, maxLines: 4),
@@ -2036,7 +2131,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           label: 'Instagram Handle',
                           controller: _instagramCtrl,
                           hint: 'username or profile URL',
-                          prefixIcon: const Icon(Iconsax.instagram, color: Color(0xFFE1306C), size: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Image.asset('assets/Social media icons/Instagram logo.png', width: 20, height: 20),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -2051,7 +2149,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           label: 'TikTok Handle',
                           controller: _tiktokCtrl,
                           hint: 'username or profile URL',
-                          prefixIcon: Icon(Iconsax.music, color: AppColors.textPrimary, size: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Image.asset('assets/Social media icons/Tiktok logo.png', width: 20, height: 20),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -2066,7 +2167,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           label: 'YouTube Channel / Handle',
                           controller: _youtubeCtrl,
                           hint: 'channel URL or handle',
-                          prefixIcon: const Icon(Iconsax.video_play, color: Color(0xFFFF0000), size: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Image.asset('assets/Social media icons/youtube logo.png', width: 20, height: 20),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -2081,7 +2185,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                           label: 'Twitter / X Handle',
                           controller: _twitterCtrl,
                           hint: 'username or profile URL',
-                          prefixIcon: const Icon(Iconsax.global, color: Color(0xFF1DA1F2), size: 20),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Image.asset('assets/Social media icons/x logo.png', width: 20, height: 20),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -3464,11 +3571,11 @@ class InfluencerPlatformsScreen extends StatelessWidget {
             style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 12),
-          _inactivePlatformCard('YouTube', Iconsax.video_play, Colors.red),
+          _inactivePlatformCard('YouTube', 'assets/Social media icons/youtube logo.png'),
           const SizedBox(height: 12),
-          _inactivePlatformCard('TikTok', Icons.music_note_rounded, Colors.black),
+          _inactivePlatformCard('TikTok', 'assets/Social media icons/Tiktok logo.png'),
           const SizedBox(height: 12),
-          _inactivePlatformCard('Twitter / X', Icons.close, Colors.grey),
+          _inactivePlatformCard('Twitter / X', 'assets/Social media icons/x logo.png'),
         ],
       ),
     );
@@ -3476,142 +3583,105 @@ class InfluencerPlatformsScreen extends StatelessWidget {
 
   Widget _instagramCard(BuildContext context, bool isDark, String followersText) {
     final handle = '@${displayName.toLowerCase().replaceAll(' ', '_')}';
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF2E1A2B), const Color(0xFF161424)]
-              : [const Color(0xFFFDF0F6), const Color(0xFFF3EFFF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    final username = handle.replaceAll('@', '').trim();
+    final url = Uri.parse('https://www.instagram.com/$username/');
+
+    return GestureDetector(
+      onTap: () async {
+        try {
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          } else {
+            AppSnackbar.show(context, 'Could not launch Instagram: $handle');
+          }
+        } catch (e) {
+          AppSnackbar.show(context, 'Error launching Instagram: $e');
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.border),
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF2E1A2B), const Color(0xFF161424)]
+                : [const Color(0xFFFDF0F6), const Color(0xFFF3EFFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Custom styled instagram logo using Container
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const RadialGradient(
-                    center: Alignment(0.7, -0.7),
-                    radius: 1.5,
-                    colors: [
-                      Colors.yellow,
-                      Colors.amber,
-                      Colors.orange,
-                      Colors.red,
-                      Colors.purple,
-                      Colors.blue,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Image.asset(
+                  'assets/Social media icons/Instagram logo.png',
+                  width: 48,
+                  height: 48,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Instagram',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        handle,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
-                    stops: [0.0, 0.1, 0.2, 0.4, 0.7, 1.0],
                   ),
                 ),
-                child: Center(
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 2),
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.white, width: 2),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Positioned(
-                            top: 2,
-                            right: 2,
-                            child: Container(
-                              width: 3,
-                              height: 3,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2ECC71).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Active',
+                        style: TextStyle(color: Color(0xFF2ECC71), fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Instagram',
-                      style: GoogleFonts.inter(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      handle,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2ECC71).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(color: Color(0xFF2ECC71), shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'Active',
-                      style: TextStyle(color: Color(0xFF2ECC71), fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Divider(height: 1, color: Colors.black12),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _metricCol('Followers', followersText),
-              _metricCol('Niche', 'Tech / Food'),
-              _metricCol('Engagement', '4.2%'),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Divider(height: 1, color: Colors.black12),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _metricCol('Followers', followersText),
+                _metricCol('Niche', 'Tech / Food'),
+                _metricCol('Engagement', '4.2%'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -3626,7 +3696,7 @@ class InfluencerPlatformsScreen extends StatelessWidget {
     );
   }
 
-  Widget _inactivePlatformCard(String name, IconData icon, Color color) {
+  Widget _inactivePlatformCard(String name, String assetPath) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -3639,10 +3709,10 @@ class InfluencerPlatformsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: AppColors.surface2,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Image.asset(assetPath, width: 24, height: 24),
           ),
           const SizedBox(width: 16),
           Expanded(

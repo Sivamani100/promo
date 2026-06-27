@@ -1225,6 +1225,19 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     final isConnected = handle != null && handle.isNotEmpty;
     final state = ref.watch(onboardingStateProvider);
     final followers = state.platformFollowers[name] ?? 0;
+
+    String? assetPath;
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('instagram')) {
+      assetPath = 'assets/Social media icons/Instagram logo.png';
+    } else if (lowerName.contains('youtube')) {
+      assetPath = 'assets/Social media icons/youtube logo.png';
+    } else if (lowerName.contains('tiktok')) {
+      assetPath = 'assets/Social media icons/Tiktok logo.png';
+    } else if (lowerName.contains('twitter') || lowerName.contains('x')) {
+      assetPath = 'assets/Social media icons/x logo.png';
+    }
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -1234,7 +1247,9 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 28),
+          assetPath != null
+              ? Image.asset(assetPath, width: 28, height: 28)
+              : Icon(icon, color: color, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

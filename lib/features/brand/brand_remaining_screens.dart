@@ -19,6 +19,7 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:image_picker/image_picker.dart';
 
 // Brand Saved Lists
 class BrandSavedListsScreen extends ConsumerStatefulWidget {
@@ -781,6 +782,8 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   final _websiteCtrl = TextEditingController();
   bool _saving = false;
   bool _isEditing = false;
+  String? _avatarUrl;
+  bool _uploadingAvatar = false;
   List<Map<String, dynamic>> _cards = [];
   int _campaignsCount = 0;
   int _applicantsCount = 0;
@@ -796,6 +799,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       _companyCtrl.text = p['company_name'] ?? '';
       _bioCtrl.text = p['bio'] ?? '';
       _websiteCtrl.text = p['website_url'] ?? '';
+      _avatarUrl = p['avatar_url'];
     }
     _loadDashboardData();
   }
@@ -830,6 +834,51 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     }
   }
 
+  Future<void> _pickProfileAvatar() async {
+    final picker = ImagePicker();
+    try {
+      final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+      if (image == null) return;
+
+      if (!mounted) return;
+      setState(() {
+        _uploadingAvatar = true;
+      });
+      AppSnackbar.info(context, 'Uploading photo...');
+
+      final bytes = await image.readAsBytes();
+      final user = ref.read(authProvider).user;
+      if (user == null) return;
+
+      final path = 'avatars/${user.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String url;
+      try {
+        url = await StorageService().uploadFile('avatars', path, bytes, 'image/jpeg');
+      } catch (e) {
+        try {
+          url = await StorageService().uploadFile('message-attachments', path, bytes, 'image/jpeg');
+        } catch (_) {
+          rethrow;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _avatarUrl = url;
+          _uploadingAvatar = false;
+        });
+        AppSnackbar.show(context, 'Photo uploaded successfully!');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _uploadingAvatar = false;
+        });
+        AppSnackbar.show(context, 'Upload failed: $e');
+      }
+    }
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
@@ -839,6 +888,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         'company_name': _companyCtrl.text.trim(),
         'bio': _bioCtrl.text.trim(),
         'website_url': _websiteCtrl.text.trim(),
+        'avatar_url': _avatarUrl,
       });
       ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
@@ -916,6 +966,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         _companyCtrl.text = next.profile!['company_name'] ?? '';
         _bioCtrl.text = next.profile!['bio'] ?? '';
         _websiteCtrl.text = next.profile!['website_url'] ?? '';
+        _avatarUrl = next.profile!['avatar_url'];
       }
     });
 
@@ -1021,6 +1072,51 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                 ),
                 children: _isEditing
                     ? [
+                        Center(
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              _uploadingAvatar
+                                  ? Container(
+                                      width: 100,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.surface2,
+                                      ),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : AppAvatar(
+                                      url: _avatarUrl,
+                                      fallbackText: _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : 'B',
+                                      size: 100,
+                                    ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: _pickProfileAvatar,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6), width: 2),
+                                    ),
+                                    child: const Icon(
+                                      Iconsax.camera,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         AppTextField(label: 'Display Name', controller: _nameCtrl),
                         const SizedBox(height: 16),
                         AppTextField(label: 'Company Name', controller: _companyCtrl),

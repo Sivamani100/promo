@@ -885,7 +885,28 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                                 color: brandColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Icon(icon, color: brandColor, size: 18),
+                              child: Center(
+                                child: Builder(
+                                  builder: (context) {
+                                    final p = platform.toLowerCase();
+                                    String? assetPath;
+                                    if (p == 'instagram') {
+                                      assetPath = 'assets/Social media icons/Instagram logo.png';
+                                    } else if (p == 'youtube') {
+                                      assetPath = 'assets/Social media icons/youtube logo.png';
+                                    } else if (p == 'tiktok') {
+                                      assetPath = 'assets/Social media icons/Tiktok logo.png';
+                                    } else if (p.contains('twitter') || p == 'x') {
+                                      assetPath = 'assets/Social media icons/x logo.png';
+                                    }
+
+                                    if (assetPath != null) {
+                                      return Image.asset(assetPath, width: 18, height: 18);
+                                    }
+                                    return Icon(icon, color: brandColor, size: 18);
+                                  },
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
