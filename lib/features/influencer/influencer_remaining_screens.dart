@@ -338,7 +338,7 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
           : RefreshIndicator(
               onRefresh: _load,
               child: _saved.isEmpty
-                  ? const AppEmptyState(icon: Iconsax.archive_1, title: 'No saved campaigns', subtitle: 'Bookmark campaigns to view them later')
+                  ? const AppEmptyState(icon: Iconsax.archive_1, title: "No saved cards yet.", subtitle: "")
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.pageMarginHorizontal,
@@ -443,8 +443,8 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
               child: _items.isEmpty
                   ? AppEmptyState(
                       icon: Iconsax.gallery,
-                      title: 'No portfolio items',
-                      subtitle: 'Add your best work to showcase to brands',
+                      title: "Add your first work sample!",
+                      subtitle: "",
                       actionLabel: 'Add Item',
                       onAction: () => _showAddDialog(),
                     )
@@ -1520,6 +1520,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
   int _appsCount = 0;
   List<Map<String, dynamic>> _followingBrands = [];
   bool _loadingData = true;
+  List<String> _selectedNiches = [];
 
   List<String> _splitLocation(String loc) {
     if (loc.isEmpty) return ['', '', '', ''];
@@ -1552,16 +1553,28 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+        if (mounted) {
+          final proceed = await showPremiumConfirmDialog(
+            context: context,
+            title: 'Location Permission',
+            message: 'Promo uses your location to show nearby brands and creators on the map. Only your city is shown publicly — never your exact coordinates.',
+            confirmLabel: 'Allow',
+            cancelLabel: 'Not Now',
+            icon: Iconsax.location,
+          );
+          if (proceed == true) {
+            permission = await Geolocator.requestPermission();
           }
-          setState(() {
-            _isLoadingLocation = false;
-          });
-          return;
         }
+      }
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+        }
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
       }
       
       if (permission == LocationPermission.deniedForever) {
@@ -1714,6 +1727,9 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       _latitude = (prefs['latitude'] as num?)?.toDouble();
       _longitude = (prefs['longitude'] as num?)?.toDouble();
 
+      final rawNiches = p['niche'] as List<dynamic>? ?? [];
+      _selectedNiches = rawNiches.cast<String>().toList();
+
       _loadSocialHandles(p);
     }
     _loadDashboardData();
@@ -1858,6 +1874,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         'avatar_url': _avatarUrl,
         'follower_count': totalFollowers,
         'platforms': handles.entries.where((e) => e.value.isNotEmpty).map((e) => e.key).toList(),
+        'niche': _selectedNiches,
       });
       await ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
@@ -1949,6 +1966,9 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         final prefs = next.profile!['preferences'] as Map<String, dynamic>? ?? {};
         _latitude = (prefs['latitude'] as num?)?.toDouble();
         _longitude = (prefs['longitude'] as num?)?.toDouble();
+
+        final rawNiches = next.profile!['niche'] as List<dynamic>? ?? [];
+        _selectedNiches = rawNiches.cast<String>().toList();
 
         _loadSocialHandles(next.profile);
       }
@@ -2130,6 +2150,40 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                 isPrimary: false,
                                 onTap: _getCurrentLocation,
                               ),
+                        const SizedBox(height: 24),
+                        Text('Your Niches', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Select your content niches to get matched with campaign cards.',
+                          style: AppTextStyles.captionSm.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'].map((niche) {
+                            final isSelected = _selectedNiches.contains(niche);
+                            return FilterChip(
+                              label: Text(niche),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                setState(() {
+                                  if (selected) {
+                                    _selectedNiches.add(niche);
+                                  } else {
+                                    _selectedNiches.remove(niche);
+                                  }
+                                });
+                              },
+                              selectedColor: AppColors.purple.withOpacity(0.2),
+                              checkmarkColor: AppColors.purple,
+                              labelStyle: AppTextStyles.caption.copyWith(
+                                color: isSelected ? AppColors.purple : AppColors.textPrimary,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            );
+                          }).toList(),
+                        ),
                         const SizedBox(height: 24),
                         Text('Connected Platforms', style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
@@ -4553,8 +4607,8 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
               child: _collaborations.isEmpty
                   ? const AppEmptyState(
                       icon: Iconsax.crown,
-                      title: 'No active collaborations',
-                      subtitle: 'Milestones will appear here once campaign requests are accepted!',
+                      title: "No milestones added yet.",
+                      subtitle: "",
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(

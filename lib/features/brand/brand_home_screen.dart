@@ -20,9 +20,11 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../core/cache/app_cache.dart';
 import '../trust/account_status_screens.dart';
 import '../home/profile_nudge_service.dart';
-// Deleted guided tour overlay import
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/notification_queue_service.dart';
+import '../../core/services/rate_app_service.dart';
+import '../../core/network/connectivity_service.dart';
+import '../../core/services/push_notification_manager.dart';
 
 class BrandHomeScreen extends ConsumerStatefulWidget {
   const BrandHomeScreen({super.key});
@@ -42,6 +44,12 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        RateAppService.checkAndShowRatePrompt(context);
+        ref.read(pushNotificationManagerProvider).showRationaleDialogIfNeeded(context);
+      }
+    });
   }
 
   Future<void> _loadData({bool background = false}) async {
@@ -171,6 +179,13 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
       }
     });
 
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[BRAND HOME] Back online, reloading dashboard...');
+        _loadData();
+      }
+    });
+
     final profile = ref.watch(authProvider).profile;
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
@@ -275,6 +290,53 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
           ),
           children: [
+            if (_profileCompleteness < 60)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.purple.withValues(alpha: 0.15), AppColors.purple.withValues(alpha: 0.05)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.purple.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Iconsax.info_circle, color: AppColors.purple, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Complete your profile',
+                            style: AppTextStyles.label.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Your profile is only $_profileCompleteness% complete. Complete it to unlock campaigns.',
+                            style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () => context.push('/brand/profile?edit=true'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.purple,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      child: const Text('Complete', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
             if (profile?['account_status'] == 'warned')
               const WarningBanner(
                 message: 'Your account has been warned for violating community guidelines. Repeated violations will result in account suspension.',

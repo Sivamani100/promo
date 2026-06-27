@@ -18,6 +18,22 @@ import '../../core/lifecycle/draft_recovery_service.dart';
 const _categories = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
 const _locations = ['Anywhere', 'India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Europe'];
+const _languages = [
+  'English',
+  'Hindi',
+  'Tamil',
+  'Telugu',
+  'Kannada',
+  'Malayalam',
+  'Bengali',
+  'Marathi',
+  'Gujarati',
+  'Punjabi',
+  'Urdu',
+  'Spanish',
+  'French',
+  'German'
+];
 
 const _presetCovers = [
   {
@@ -88,6 +104,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   String _campaignType = 'Sponsored Post';
   final List<String> _nicheTags = [];
   final List<String> _platformReqs = [];
+  final List<String> _selectedLanguages = [];
   int _minFollowers = 0;
   String _preferredLocation = 'Anywhere';
   final List<Map<String, dynamic>> _deliverables = [];
@@ -120,6 +137,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
 
       _nicheTags.addAll((c['niche_tags'] as List?)?.cast<String>() ?? []);
       _platformReqs.addAll((c['platform_requirements'] as List?)?.cast<String>() ?? []);
+      _selectedLanguages.addAll((c['languages'] as List?)?.cast<String>() ?? []);
       
       // Cover image logic
       final savedCoverUrl = c['cover_image_url'] as String?;
@@ -301,6 +319,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       'category': _category,
       'niche_tags': _nicheTags,
       'platform_requirements': _platformReqs,
+      'languages': _selectedLanguages,
       'min_followers': _minFollowers,
       'preferred_location': _preferredLocation,
       'application_deadline': _applicationDeadline?.toIso8601String(),
@@ -328,6 +347,11 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
       _platformReqs.clear();
       if (data['platform_requirements'] is List) {
         _platformReqs.addAll(List<String>.from(data['platform_requirements']));
+      }
+
+      _selectedLanguages.clear();
+      if (data['languages'] is List) {
+        _selectedLanguages.addAll(List<String>.from(data['languages']));
       }
       
       _minFollowers = data['min_followers'] ?? 0;
@@ -428,6 +452,7 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         'category': _category,
         'niche_tags': finalNicheTags.toList(),
         'platform_requirements': _platformReqs.isEmpty ? null : _platformReqs,
+        'languages': _selectedLanguages.isEmpty ? null : _selectedLanguages,
         'min_followers': _minFollowers,
         'preferred_location': _preferredLocation,
         'budget_range': _budgetCtrl.text.trim().isEmpty ? null : _budgetCtrl.text.trim(),
@@ -998,6 +1023,29 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
           },
         ),
         const SizedBox(height: 16),
+        Text('REQUIRED LANGUAGES', style: AppTextStyles.overline),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _languages.map((lang) {
+            final isSelected = _selectedLanguages.contains(lang);
+            return AppChip(
+              label: lang,
+              selected: isSelected,
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    _selectedLanguages.remove(lang);
+                  } else {
+                    _selectedLanguages.add(lang);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
         Text('NICHE TAGS (SELECT TO ADD OR CHOOSE CATEGORIES)', style: AppTextStyles.overline),
         const SizedBox(height: 8),
         Wrap(
@@ -1382,7 +1430,15 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
                             '${int.tryParse(_openingsCtrl.text) ?? 1} spots available',
                           ),
                         ),
-                        const Spacer(),
+                        Expanded(
+                          child: _buildPreviewDetailItem(
+                            Iconsax.translate,
+                            'Required Languages',
+                            _selectedLanguages.isNotEmpty
+                                ? _selectedLanguages.join(', ')
+                                : 'Any Language',
+                          ),
+                        ),
                       ],
                     ),
                     if (deliverableStrings.isNotEmpty) ...[

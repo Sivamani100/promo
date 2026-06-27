@@ -44,6 +44,7 @@ dependencies:
   app_links: 6.3.3
   emoji_picker_flutter: 4.3.0
   in_app_review: 2.0.10
+  local_auth: ^2.1.8
   flutter_markdown: 0.7.6
   flutter_cache_manager: ^3.3.2
   image: ^4.8.0

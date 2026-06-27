@@ -19,6 +19,8 @@ import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'discover_map_view.dart';
 import '../../core/cache/app_cache.dart';
+import '../../core/services/block_service.dart';
+import '../../core/network/connectivity_service.dart';
 
 class InfluencerDiscoverScreen extends ConsumerStatefulWidget {
   final String? filter;
@@ -33,6 +35,7 @@ enum _SortOption { newest, budgetHigh, budgetLow, deadline }
 class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScreen> {
   List<Map<String, dynamic>> _cards = [];
   Set<String> _appliedCardIds = {};
+  Set<String> _blockedUserIds = {};
   bool _loading = true;
   final _searchCtrl = TextEditingController();
 
@@ -87,10 +90,15 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
           ApplicationService().getAppliedCardIds(user.id)
         else
           Future.value(<String>[]),
+        if (user != null)
+          BlockService().getAllBlockedUserIds(user.id)
+        else
+          Future.value(<String>{}),
       ]);
 
       final data = futures[0] as List<Map<String, dynamic>>;
       final applied = (futures[1] as List).cast<String>().toSet();
+      final blocked = futures[2] as Set<String>;
 
       // Save to cache
       AppCache().set(cacheKey, {
@@ -102,6 +110,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
         setState(() {
           _cards = data;
           _appliedCardIds = applied;
+          _blockedUserIds = blocked;
           _loading = false;
         });
       }
@@ -135,6 +144,13 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
 
   List<Map<String, dynamic>> get _filtered {
     var results = List<Map<String, dynamic>>.from(_cards);
+
+    if (_blockedUserIds.isNotEmpty) {
+      results = results.where((c) {
+        final brandId = c['brand_id'] as String?;
+        return brandId == null || !_blockedUserIds.contains(brandId);
+      }).toList();
+    }
 
     // Text Search query
     final query = _searchCtrl.text.trim().toLowerCase();
@@ -375,6 +391,13 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[DISCOVER] Back online, reloading campaigns...');
+        _load();
+      }
+    });
+
     final filtered = _filtered;
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
@@ -663,9 +686,9 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
           ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack).fadeIn(),
           const SizedBox(height: 24),
           Text(
-            'No Campaigns Found',
+            'No cards available right now. Check back soon!',
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               letterSpacing: -0.5,

@@ -14,6 +14,7 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/app_skeleton.dart';
+import '../../core/network/connectivity_service.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -463,6 +464,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       }
     });
 
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[NOTIFICATIONS] Back online, reloading...');
+        _load();
+      }
+    });
+
     final role = ref.watch(authProvider).role ?? 'influencer';
     final hasNotifications = _notifications.isNotEmpty;
     final filtered = _filteredNotifications;
@@ -557,13 +565,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               onRefresh: _load,
               color: AppColors.accent,
               child: _notifications.isEmpty
-                  ? const AppEmptyState(icon: Iconsax.notification, title: 'No notifications', subtitle: 'You\'re all caught up!')
+                  ? const AppEmptyState(icon: Iconsax.notification, title: "You're all caught up!", subtitle: "")
                   : Column(
                       children: [
                         _buildFilterTabs(),
                         Expanded(
                           child: filtered.isEmpty
-                              ? const AppEmptyState(icon: Iconsax.notification, title: 'No notifications here', subtitle: 'Try switching tabs!')
+                              ? const AppEmptyState(icon: Iconsax.notification, title: "You're all caught up!", subtitle: "")
                               : ListView.builder(
                                   padding: const EdgeInsets.fromLTRB(
                                     AppSpacing.pageMarginHorizontal,

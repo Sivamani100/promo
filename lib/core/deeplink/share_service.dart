@@ -13,7 +13,7 @@ import 'package:flutter/foundation.dart';
 class ShareService {
   ShareService._();
 
-  static const String _baseUrl = 'https://promo.app';
+  static const String _baseUrl = 'https://promo.arkio.in';
 
   // ── Card Sharing ─────────────────────────────────────────────────────────
 

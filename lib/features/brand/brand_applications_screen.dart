@@ -16,6 +16,7 @@ import '../../core/services/chat_service.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/network/connectivity_service.dart';
 
 class BrandApplicationsScreen extends ConsumerStatefulWidget {
   const BrandApplicationsScreen({super.key});
@@ -49,6 +50,13 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       if (next.user != null && _loading) {
+        _load();
+      }
+    });
+
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[APPLICATIONS] Back online, reloading...');
         _load();
       }
     });
@@ -99,7 +107,7 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                       itemBuilder: (context, i) {
                         if (_filtered.isEmpty) {
                           if (i == 0) {
-                            return const AppEmptyState(icon: Iconsax.receive_square, title: 'No applications');
+                            return const AppEmptyState(icon: Iconsax.receive_square, title: "No applications received yet.");
                           } else {
                             return _buildFooter();
                           }

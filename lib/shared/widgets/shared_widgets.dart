@@ -697,6 +697,7 @@ class CampaignCardWidget extends StatelessWidget {
     final timeline = card['timeline'] as String? ?? 'Flexible';
 
     final deliverables = (card['deliverables'] as List<dynamic>?)?.cast<String>() ?? [];
+    final languages = (card['languages'] as List<dynamic>?)?.cast<String>() ?? [];
 
     DateTime? applicationDeadline;
     if (card['application_deadline'] != null) {
@@ -937,6 +938,24 @@ class CampaignCardWidget extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (languages.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(Iconsax.translate, size: 14, color: AppColors.accent),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Required Languages: ${languages.join(", ")}',
+                            style: AppTextStyles.captionSm.copyWith(
+                              color: AppColors.accent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   if (deliverables.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     Text('DELIVERABLES', style: AppTextStyles.overline),

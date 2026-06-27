@@ -81,7 +81,7 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
               ),
             )
           : _lists.isEmpty
-              ? const AppEmptyState(icon: Iconsax.archive_1, title: 'No saved lists', subtitle: 'Create a list to organize influencers')
+              ? const AppEmptyState(icon: Iconsax.archive_1, title: "No lists created yet.", subtitle: "")
               : ListView.separated(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.pageMarginHorizontal,
@@ -803,6 +803,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   int _applicantsCount = 0;
   int _roomsCount = 0;
   bool _loadingData = true;
+  String? _selectedIndustry;
 
   List<String> _splitLocation(String loc) {
     if (loc.isEmpty) return ['', '', '', ''];
@@ -835,16 +836,28 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+        if (mounted) {
+          final proceed = await showPremiumConfirmDialog(
+            context: context,
+            title: 'Location Permission',
+            message: 'Promo uses your location to show nearby brands and creators on the map. Only your city is shown publicly — never your exact coordinates.',
+            confirmLabel: 'Allow',
+            cancelLabel: 'Not Now',
+            icon: Iconsax.location,
+          );
+          if (proceed == true) {
+            permission = await Geolocator.requestPermission();
           }
-          setState(() {
-            _isLoadingLocation = false;
-          });
-          return;
         }
+      }
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+        }
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
       }
       
       if (permission == LocationPermission.deniedForever) {
@@ -932,6 +945,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       _districtCtrl.text = parts[2];
       _stateCtrl.text = parts[3];
       _avatarUrl = p['avatar_url'];
+      _selectedIndustry = p['industry'] as String?;
     }
     _loadDashboardData();
   }
@@ -1031,6 +1045,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         'website_url': _websiteCtrl.text.trim(),
         'location': _locationCtrl.text.trim(),
         'avatar_url': _avatarUrl,
+        'industry': _selectedIndustry,
       });
       ref.read(authProvider.notifier).refreshProfile();
       if (mounted) {
@@ -1120,6 +1135,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         _districtCtrl.text = parts[2];
         _stateCtrl.text = parts[3];
         _avatarUrl = next.profile!['avatar_url'];
+        _selectedIndustry = next.profile!['industry'] as String?;
       }
     });
 
@@ -1277,6 +1293,35 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                         AppTextField(label: 'Bio', controller: _bioCtrl, maxLines: 4),
                         const SizedBox(height: 16),
                         AppTextField(label: 'Website', controller: _websiteCtrl, keyboardType: TextInputType.url),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedIndustry,
+                          style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+                          dropdownColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                          decoration: InputDecoration(
+                            labelText: 'Industry',
+                            labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: AppColors.border),
+                            ),
+                          ),
+                          items: ['Fashion & Apparel', 'Beauty & Cosmetics', 'Tech & Gadgets', 'Food & Beverage', 'Fitness & Health', 'Travel & Tourism', 'Gaming & Esports', 'Lifestyle & Entertainment', 'Other'].map((ind) {
+                            return DropdownMenuItem<String>(
+                              value: ind,
+                              child: Text(ind),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedIndustry = val;
+                            });
+                          },
+                        ),
                         const SizedBox(height: 16),
                         AppTextField(label: 'Village / Street', controller: _villageCtrl, onChanged: (_) => _updateLocationString()),
                         const SizedBox(height: 16),

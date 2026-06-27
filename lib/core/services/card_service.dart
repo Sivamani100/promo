@@ -24,6 +24,11 @@ class CardService {
     if (sanitized.containsKey('preferred_location') && sanitized['preferred_location'] is String) {
       sanitized['preferred_location'] = InputSanitizer.sanitizeName(sanitized['preferred_location'] as String, maxLength: 100);
     }
+    if (sanitized.containsKey('languages') && sanitized['languages'] is List) {
+      sanitized['languages'] = (sanitized['languages'] as List)
+          .map((e) => InputSanitizer.sanitizeName(e.toString(), maxLength: 50))
+          .toList();
+    }
     return sanitized;
   }
 

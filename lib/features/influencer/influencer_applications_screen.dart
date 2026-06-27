@@ -17,6 +17,7 @@ import '../../core/services/chat_service.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/network/connectivity_service.dart';
 
 class InfluencerApplicationsScreen extends ConsumerStatefulWidget {
   final String? cardId;
@@ -176,6 +177,13 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
       }
     });
 
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[APPLICATIONS] Back online, reloading...');
+        _load();
+      }
+    });
+
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
@@ -277,8 +285,8 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
                         if (_filtered.isEmpty) {
                           if (i == 0) {
                             return const AppEmptyState(
-                              title: 'No applications',
-                              subtitle: 'Your submitted applications will appear here',
+                              title: "You haven't applied to any cards yet.",
+                              subtitle: "",
                               lightImagePath: 'assets/illustrations/No Active Applications Light.png',
                               darkImagePath: 'assets/illustrations/No Active Applications Dark.png',
                             );

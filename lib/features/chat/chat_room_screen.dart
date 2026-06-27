@@ -12,7 +12,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'package:iconsax/iconsax.dart';
-
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -27,6 +26,8 @@ import 'invite_group_members_screen.dart';
 import '../trust/report_sheet.dart';
 import '../agreements/agreement_status_widget.dart';
 import 'widgets/chat_input_bar.dart';
+import '../../core/services/block_service.dart';
+import '../../core/network/connectivity_service.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -64,6 +65,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   bool _showScrollToBottom = false;
   String _otherUserPresence = 'idle'; // 'typing', 'recording', 'uploading', 'idle'
+  bool _isBlocked = false;
 
   // Voice recording simulation
   bool _isRecordingVoice = false;
@@ -189,6 +191,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             });
           }
         }),
+        if (user != null && otherUserId != null)
+          BlockService().isBlockedBidirectional(user.id, otherUserId).then((blocked) {
+            if (mounted) {
+              setState(() {
+                _isBlocked = blocked;
+              });
+            }
+          }),
       ]).catchError((e) {
         print('Error loading background chat room data: $e');
         return <void>[];
@@ -292,6 +302,53 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       return room?['influencer_id'] as String?;
     } else {
       return room?['brand_id'] as String?;
+    }
+  }
+
+  Future<void> _toggleBlockUser() async {
+    final user = ref.read(authProvider).user;
+    final otherUserId = roleId(_room);
+    if (user == null || otherUserId == null) return;
+
+    if (_isBlocked) {
+      final confirmed = await showPremiumConfirmDialog(
+        context: context,
+        title: 'Unblock User',
+        message: 'Are you sure you want to unblock this user?',
+        confirmLabel: 'Unblock',
+        icon: Iconsax.shield_cross,
+      );
+      if (confirmed == true) {
+        try {
+          await BlockService().unblockUser(user.id, otherUserId);
+          AppSnackbar.show(context, 'User unblocked successfully.');
+          setState(() {
+            _isBlocked = false;
+          });
+        } catch (e) {
+          AppSnackbar.show(context, 'Failed to unblock user.');
+        }
+      }
+    } else {
+      final confirmed = await showPremiumConfirmDialog(
+        context: context,
+        title: 'Block User',
+        message: 'Are you sure you want to block this user? This will disable this chat and hide their campaigns and profile from your feed.',
+        confirmLabel: 'Block',
+        isDestructive: true,
+        icon: Iconsax.shield_search,
+      );
+      if (confirmed == true) {
+        try {
+          await BlockService().blockUser(user.id, otherUserId);
+          AppSnackbar.show(context, 'User blocked successfully.');
+          setState(() {
+            _isBlocked = true;
+          });
+        } catch (e) {
+          AppSnackbar.show(context, 'Failed to block user.');
+        }
+      }
     }
   }
 
@@ -1062,6 +1119,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[CHAT] Back online, reloading messages...');
+        _load();
+      }
+    });
+
     final userId = ref.watch(authProvider).user?.id;
     final role = ref.watch(authProvider).role ?? 'brand';
     final dynamic otherUserRaw = role == 'brand' ? (_room?['influencer']) : (_room?['brand']);
@@ -1234,6 +1298,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 _clearChatHistory();
               } else if (val == 'delete') {
                 _deleteChat();
+              } else if (val == 'block') {
+                _toggleBlockUser();
+              } else if (val == 'report') {
+                final otherUserId = roleId(_room);
+                if (otherUserId != null) {
+                  ReportSheet.show(
+                    context,
+                    reportedId: otherUserId,
+                    contentTypeName: 'User',
+                  );
+                }
               }
             },
             itemBuilder: (ctx) => [
@@ -1242,6 +1317,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               const PopupMenuItem(value: 'starred', child: Text('Starred Messages')),
               const PopupMenuItem(value: 'clear', child: Text('Clear Chat')),
               const PopupMenuItem(value: 'delete', child: Text('Delete Chat')),
+              if (!isGroup) ...[
+                PopupMenuItem(
+                  value: 'block',
+                  child: Text(_isBlocked ? 'Unblock User' : 'Block User', style: const TextStyle(color: Colors.red)),
+                ),
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Text('Report User', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ],
           ),
         ],
@@ -1425,6 +1510,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   controller: _msgCtrl,
                   onSend: _send,
                   onAttach: _showFilePicker,
+                  isBlocked: _isBlocked,
                 ),
               ],
             ),
@@ -1799,15 +1885,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   _buildQuotedMessage(msg, isMe),
                   _buildMessageAttachment(msg),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Text(
-                      msg['content'] ?? '',
-                      style: AppTextStyles.body.copyWith(
-                        color: isMe ? AppColors.accentOnDark : AppColors.textPrimary,
-                        height: 1.35,
-                      ),
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final isDeleted = msg['payload']?['deleted_everyone'] == true || msg['content'] == 'This message was deleted';
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Text(
+                          msg['content'] ?? '',
+                          style: AppTextStyles.body.copyWith(
+                            color: isDeleted
+                                ? (isMe ? AppColors.accentOnDark.withValues(alpha: 0.6) : AppColors.textSecondary)
+                                : (isMe ? AppColors.accentOnDark : AppColors.textPrimary),
+                            fontStyle: isDeleted ? FontStyle.italic : FontStyle.normal,
+                            height: 1.35,
+                          ),
+                        ),
+                      );
+                    }
                   ),
 
                   _buildReactionBadges(msg),
@@ -1861,6 +1955,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final isMyMessage = msg['sender_id'] == userId;
     final isStarred = (msg['payload']?['starred_by'] as List<dynamic>?)?.contains(userId) ?? false;
     final isPinned = msg['payload']?['is_pinned'] == true;
+    final createdAtStr = msg['created_at'] as String?;
+    final canDeleteForEveryone = isMyMessage && createdAtStr != null &&
+        DateTime.now().toUtc().difference(DateTime.parse(createdAtStr).toUtc()).inHours < 1;
+    final isDeleted = msg['payload']?['deleted_everyone'] == true || msg['content'] == 'This message was deleted';
 
     showModalBottomSheet(
       context: context,
@@ -1878,86 +1976,88 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Reactions row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: ['👍', '❤️', '😂', '🔥', '😮', '😢'].map((emoji) {
-                    return GestureDetector(
+                if (!isDeleted) ...[
+                  // Reactions row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: ['👍', '❤️', '😂', '🔥', '😮', '😢'].map((emoji) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _reactToMessage(msg['id'] as String, emoji, msg['payload'] as Map<String, dynamic>? ?? {});
+                        },
+                        child: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 28),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const Divider(height: 24),
+                  ListTile(
+                    leading: Icon(isStarred ? Iconsax.star1 : Iconsax.star, color: isStarred ? Colors.amber : null),
+                    title: Text(isStarred ? 'Unstar Message' : 'Star Message', style: AppTextStyles.body),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _toggleStarMessage(msg['id'] as String, !isStarred, msg['payload'] as Map<String, dynamic>? ?? {});
+                    },
+                  ),
+                  if (_room?['influencer_id'] == null) ...[
+                    ListTile(
+                      leading: const Icon(Iconsax.eye),
+                      title: Text('Seen By', style: AppTextStyles.body),
                       onTap: () {
                         Navigator.pop(ctx);
-                        _reactToMessage(msg['id'] as String, emoji, msg['payload'] as Map<String, dynamic>? ?? {});
+                        _showSeenByDialog(msg);
                       },
-                      child: Text(
-                        emoji,
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const Divider(height: 24),
-                ListTile(
-                  leading: Icon(isStarred ? Iconsax.star1 : Iconsax.star, color: isStarred ? Colors.amber : null),
-                  title: Text(isStarred ? 'Unstar Message' : 'Star Message', style: AppTextStyles.body),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _toggleStarMessage(msg['id'] as String, !isStarred, msg['payload'] as Map<String, dynamic>? ?? {});
-                  },
-                ),
-                if (_room?['influencer_id'] == null) ...[
+                    ),
+                  ],
                   ListTile(
-                    leading: const Icon(Iconsax.eye),
-                    title: Text('Seen By', style: AppTextStyles.body),
+                    leading: const Icon(Iconsax.undo),
+                    title: Text('Reply', style: AppTextStyles.body),
                     onTap: () {
                       Navigator.pop(ctx);
-                      _showSeenByDialog(msg);
+                      setState(() {
+                        _replyingTo = msg;
+                        _editingMessage = null;
+                      });
                     },
                   ),
-                ],
-                ListTile(
-                  leading: const Icon(Iconsax.undo),
-                  title: Text('Reply', style: AppTextStyles.body),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    setState(() {
-                      _replyingTo = msg;
-                      _editingMessage = null;
-                    });
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Iconsax.copy),
-                  title: Text('Copy Message', style: AppTextStyles.body),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Clipboard.setData(ClipboardData(text: msg['content'] ?? ''));
-                    AppSnackbar.show(context, 'Copied to clipboard');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Iconsax.forward),
-                  title: Text('Forward Message', style: AppTextStyles.body),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _forwardMessageDialog(msg);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Iconsax.location, color: isPinned ? AppColors.accent : null),
-                  title: Text(isPinned ? 'Unpin Message' : 'Pin Message', style: AppTextStyles.body),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _togglePinMessage(msg['id'] as String, !isPinned, msg['payload'] as Map<String, dynamic>? ?? {});
-                  },
-                ),
-                if (isMyMessage) ...[
                   ListTile(
-                    leading: const Icon(Iconsax.edit),
-                    title: Text('Edit Message', style: AppTextStyles.body),
+                    leading: const Icon(Iconsax.copy),
+                    title: Text('Copy Message', style: AppTextStyles.body),
                     onTap: () {
                       Navigator.pop(ctx);
-                      _startEditingMessage(msg);
+                      Clipboard.setData(ClipboardData(text: msg['content'] ?? ''));
+                      AppSnackbar.show(context, 'Copied to clipboard');
                     },
                   ),
+                  ListTile(
+                    leading: const Icon(Iconsax.forward),
+                    title: Text('Forward Message', style: AppTextStyles.body),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _forwardMessageDialog(msg);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Iconsax.location, color: isPinned ? AppColors.accent : null),
+                    title: Text(isPinned ? 'Unpin Message' : 'Pin Message', style: AppTextStyles.body),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _togglePinMessage(msg['id'] as String, !isPinned, msg['payload'] as Map<String, dynamic>? ?? {});
+                    },
+                  ),
+                  if (isMyMessage) ...[
+                    ListTile(
+                      leading: const Icon(Iconsax.edit),
+                      title: Text('Edit Message', style: AppTextStyles.body),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _startEditingMessage(msg);
+                      },
+                    ),
+                  ],
                 ],
                 ListTile(
                   leading: const Icon(Iconsax.trash, color: Colors.red),
@@ -1977,7 +2077,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     }
                   },
                 ),
-                if (isMyMessage) ...[
+                if (!isDeleted && isMyMessage && canDeleteForEveryone) ...[
                   ListTile(
                     leading: const Icon(Iconsax.trash, color: Colors.red),
                     title: const Text('Delete for Everyone', style: TextStyle(color: Colors.red)),
@@ -1997,7 +2097,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     },
                   ),
                 ],
-                if (!isMyMessage) ...[
+                if (!isDeleted && !isMyMessage) ...[
                   ListTile(
                     leading: const Icon(Iconsax.danger, color: Colors.orange),
                     title: const Text('Report Message', style: TextStyle(color: Colors.orange)),

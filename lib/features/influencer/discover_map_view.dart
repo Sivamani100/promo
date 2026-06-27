@@ -18,6 +18,7 @@ import '../../core/services/chat_service.dart';
 import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
+import '../../core/services/block_service.dart';
 
 class DiscoverMapView extends ConsumerStatefulWidget {
   const DiscoverMapView({super.key});
@@ -62,20 +63,40 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
 
   Future<void> _initializeData() async {
     try {
+      final user = ref.read(authProvider).user;
       // Fetch entities from database
       final results = await Future.wait([
         ProfileService().getBrands(limit: 30),
         ProfileService().getInfluencers(limit: 30),
+        if (user != null) BlockService().getAllBlockedUserIds(user.id) else Future.value(<String>{}),
       ]);
-      final brands = results[0];
-      final creators = results[1];
-      _entities = [...brands, ...creators];
+      final brands = results[0] as List<Map<String, dynamic>>;
+      final creators = results[1] as List<Map<String, dynamic>>;
+      final blocked = results[2] as Set<String>;
+
+      var combined = [...brands, ...creators];
+      if (blocked.isNotEmpty) {
+        combined = combined.where((e) => !blocked.contains(e['id'])).toList();
+      }
+      _entities = combined;
 
       // Request location permission and get current location
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+        if (mounted) {
+          final proceed = await showPremiumConfirmDialog(
+            context: context,
+            title: 'Location Permission',
+            message: 'Promo uses your location to show nearby brands and creators on the map. Only your city is shown publicly — never your exact coordinates.',
+            confirmLabel: 'Allow',
+            cancelLabel: 'Not Now',
+            icon: Iconsax.location,
+          );
+          if (proceed == true) {
+            permission = await Geolocator.requestPermission();
+          }
+        }
       }
 
       if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {

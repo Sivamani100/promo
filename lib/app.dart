@@ -10,11 +10,35 @@ import 'shared/widgets/offline_banner.dart';
 import 'core/deeplink/deeplink_service.dart';
 import 'core/config/app_config.dart';
 
-class BrandApp extends ConsumerWidget {
+class BrandApp extends ConsumerStatefulWidget {
   const BrandApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BrandApp> createState() => _BrandAppState();
+}
+
+class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(authProvider.notifier).validateSession();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isSystemDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     AppColors.isDarkMode = themeMode == ThemeMode.system ? isSystemDark : (themeMode == ThemeMode.dark);

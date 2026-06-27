@@ -74,4 +74,18 @@ class RealtimeSubscriptionManager {
     _active.clear();
     _order.clear();
   }
+
+  /// Force-resumes/re-subscribes all active subscriptions on reconnect.
+  static Future<void> resumeAll() async {
+    debugPrint('[REALTIME_MGR] Resuming all active subscriptions');
+    for (final entry in _active.entries) {
+      final key = entry.key;
+      final channel = entry.value;
+      try {
+        await channel.subscribe();
+      } catch (e) {
+        debugPrint('[REALTIME_MGR] Error resuming channel $key: $e');
+      }
+    }
+  }
 }

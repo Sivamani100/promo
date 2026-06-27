@@ -432,6 +432,104 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(isLoading: false);
   }
 
+  Future<void> validateSession() async {
+    final user = state.user;
+    if (user == null) return;
+
+    try {
+      final session = SupabaseService.client.auth.currentSession;
+      if (session != null && session.isExpired) {
+        try {
+          await SupabaseService.client.auth.refreshSession();
+        } catch (_) {
+          throw AuthException('Session expired. Please sign in again.');
+        }
+      }
+      await SupabaseService.client.auth.getUser();
+    } on AuthException catch (ae) {
+      final msg = ae.message.toLowerCase();
+      if (msg.contains('invalid_grant') || 
+          msg.contains('jwt expired') || 
+          msg.contains('session expired') || 
+          msg.contains('session_not_found') ||
+          msg.contains('refresh_token_not_found')) {
+        print('[AUTH] AuthException session expired on app resume: $msg');
+        await signOut();
+        state = const AuthState(
+          isLoading: false,
+          error: 'Session expired. Please sign in again.',
+        );
+      }
+    } catch (e) {
+      print('[AUTH] Non-auth error during session validation: $e');
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    final userId = state.user?.id;
+    if (userId == null) return;
+
+    // 1. Delete files from Storage (avatars & portfolio)
+    try {
+      final profile = state.profile;
+      final avatarUrl = profile?['avatar_url'] as String?;
+      if (avatarUrl != null) {
+        final uri = Uri.parse(avatarUrl);
+        final pathSegments = uri.pathSegments;
+        final pubIndex = pathSegments.indexOf('public');
+        if (pubIndex != -1 && pathSegments.length > pubIndex + 2) {
+          final bucket = pathSegments[pubIndex + 1];
+          final filePath = pathSegments.sublist(pubIndex + 2).join('/');
+          await SupabaseService.client.storage.from(bucket).remove([filePath]);
+        }
+      }
+
+      if (state.role == 'influencer') {
+        final portfolioData = await SupabaseService.client
+            .from('portfolio_items')
+            .select('media_url')
+            .eq('user_id', userId);
+        for (final item in portfolioData) {
+          final mediaUrl = item['media_url'] as String?;
+          if (mediaUrl != null) {
+            final uri = Uri.parse(mediaUrl);
+            final pathSegments = uri.pathSegments;
+            final pubIndex = pathSegments.indexOf('public');
+            if (pubIndex != -1 && pathSegments.length > pubIndex + 2) {
+              final bucket = pathSegments[pubIndex + 1];
+              final filePath = pathSegments.sublist(pubIndex + 2).join('/');
+              await SupabaseService.client.storage.from(bucket).remove([filePath]);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('[AUTH] Error deleting storage files during account deletion: $e');
+    }
+
+    // 2. Clear Shared Preferences local cache for user
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('cached_profile_$userId');
+      await prefs.remove('onboarding_complete_$userId');
+      await prefs.remove('first_open_date_$userId');
+      await prefs.remove('biometric_lock_enabled');
+      await prefs.remove('push_notifications_asked');
+      await prefs.remove('push_notifications_enabled');
+    } catch (e) {
+      print('[AUTH] Error clearing preferences: $e');
+    }
+
+    // 3. Call delete_user_account database function
+    await SupabaseService.client.rpc('delete_user_account', params: {'p_user_id': userId});
+
+    // 4. Sign out
+    try {
+      await _authService.signOut();
+    } catch (_) {}
+    state = const AuthState(isLoading: false);
+  }
+
   void clearRecoveryMode() {
     state = state.copyWith(isRecoveryMode: false);
   }
@@ -665,4 +763,31 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
 
 final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>(
   (ref) => ThemeModeNotifier(),
+);
+
+class BiometricLockNotifier extends StateNotifier<bool> {
+  static const _key = 'biometric_lock_enabled';
+
+  BiometricLockNotifier() : super(false) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      state = prefs.getBool(_key) ?? false;
+    } catch (_) {}
+  }
+
+  Future<void> setEnabled(bool enabled) async {
+    state = enabled;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_key, enabled);
+    } catch (_) {}
+  }
+}
+
+final biometricLockProvider = StateNotifierProvider<BiometricLockNotifier, bool>(
+  (ref) => BiometricLockNotifier(),
 );

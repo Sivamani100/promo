@@ -14,6 +14,7 @@ import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/cache/app_cache.dart';
+import '../../core/network/connectivity_service.dart';
 
 class BrandCardsScreen extends ConsumerStatefulWidget {
   const BrandCardsScreen({super.key});
@@ -329,6 +330,13 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
       }
     });
 
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[CARDS] Back online, reloading...');
+        _load();
+      }
+    });
+
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
     final isDark = AppColors.isDarkMode;
 
@@ -458,8 +466,8 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
                           if (i == 0) {
                             return AppEmptyState(
                               icon: Iconsax.cards,
-                              title: 'No cards found',
-                              subtitle: 'Create your first campaign card',
+                              title: "No cards yet. Create your first campaign!",
+                              subtitle: "",
                               actionLabel: 'Create Card',
                               onAction: () => context.push('/brand/cards/new'),
                             );

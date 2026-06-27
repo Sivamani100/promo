@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../core/services/realtime_subscription_manager.dart';
 
 class OfflineBanner extends ConsumerWidget {
   final Widget child;
@@ -10,6 +11,13 @@ class OfflineBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[OFFLINE_BANNER] Reconnected. Resuming subscriptions...');
+        RealtimeSubscriptionManager.resumeAll();
+      }
+    });
+
     final isOnline = ref.watch(isOnlineProvider);
 
     return Directionality(

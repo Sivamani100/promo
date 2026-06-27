@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../core/providers/app_providers.dart';
+import '../../core/services/supabase_service.dart';
+import '../../shared/widgets/shared_widgets.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -22,6 +29,172 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _subtitleFade;
   late Animation<double> _dotScale;
   late Animation<double> _shimmerValue;
+
+  bool _isLocked = false;
+
+  bool _isVersionOlder(String current, String minimum) {
+    try {
+      final currentParts = current.split('.').map(int.parse).toList();
+      final minParts = minimum.split('.').map(int.parse).toList();
+      for (int i = 0; i < 3; i++) {
+        final currentVal = i < currentParts.length ? currentParts[i] : 0;
+        final minVal = i < minParts.length ? minParts[i] : 0;
+        if (currentVal < minVal) return true;
+        if (currentVal > minVal) return false;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  void _showForceUpdateDialog(String minVersion) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      pageBuilder: (context, anim1, anim2) {
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            backgroundColor: Colors.black.withOpacity(0.85),
+            body: Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Iconsax.refresh, color: AppColors.error, size: 40),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Update Required',
+                      style: AppTextStyles.h2,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'A new version of Promo is available. \nPlease update to continue.',
+                      style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    AppButton(
+                      label: 'Update Now',
+                      onTap: () async {
+                        final info = await PackageInfo.fromPlatform();
+                        final packageName = info.packageName;
+                        final url = 'https://play.google.com/store/apps/details?id=$packageName';
+                        try {
+                          await url_launcher.launchUrl(
+                            Uri.parse(url),
+                            mode: url_launcher.LaunchMode.externalApplication,
+                          );
+                        } catch (e) {
+                          debugPrint('Could not launch Play Store URL: $e');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _authenticateWithBiometrics() async {
+    final LocalAuthentication auth = LocalAuthentication();
+    try {
+      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final bool canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+      if (!canAuthenticate) return true;
+
+      return await auth.authenticate(
+        localizedReason: 'Please authenticate to unlock Promo',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[BIOMETRIC] Authentication error: $e');
+      return false;
+    }
+  }
+
+  Widget _buildLockScreenOverlay() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 3),
+              Icon(Iconsax.lock, size: 64, color: AppColors.purple),
+              const SizedBox(height: 24),
+              Text(
+                'Promo is Locked',
+                style: GoogleFonts.inter(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Please unlock using biometric authentication to access your account.',
+                style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const Spacer(flex: 2),
+              AppButton(
+                label: 'Unlock App',
+                icon: Iconsax.finger_scan,
+                onTap: () async {
+                  final success = await _authenticateWithBiometrics();
+                  if (success) {
+                    setState(() {
+                      _isLocked = false;
+                    });
+                    ref.read(splashCompletedProvider.notifier).state = true;
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              AppButton(
+                label: 'Sign Out',
+                isPrimary: false,
+                icon: Iconsax.logout,
+                onTap: () async {
+                  await ref.read(authProvider.notifier).signOut();
+                  setState(() {
+                    _isLocked = false;
+                  });
+                  ref.read(splashCompletedProvider.notifier).state = true;
+                },
+              ),
+              const SizedBox(height: 60),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
 
 
@@ -79,6 +252,40 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       _subtitleCtrl.forward();
       _shimmerCtrl.repeat(reverse: true);
 
+      // 1. Check Force Update
+      String? minVersion;
+      try {
+        final configData = await SupabaseService.client
+            .from('platform_config')
+            .select('value')
+            .eq('key', 'min_app_version')
+            .maybeSingle();
+        minVersion = configData?['value'] as String?;
+      } catch (e) {
+        debugPrint('[SPLASH] Error checking config: $e');
+      }
+
+      if (minVersion != null) {
+        final info = await PackageInfo.fromPlatform();
+        if (_isVersionOlder(info.version, minVersion)) {
+          _showForceUpdateDialog(minVersion);
+          return; // STOP splash completion redirect
+        }
+      }
+
+      // 2. Check Biometric Lock
+      final session = SupabaseService.client.auth.currentSession;
+      final biometricEnabled = ref.read(biometricLockProvider);
+      if (session != null && biometricEnabled) {
+        final success = await _authenticateWithBiometrics();
+        if (!success) {
+          setState(() {
+            _isLocked = true;
+          });
+          return; // STOP splash completion redirect, lock overlay shows
+        }
+      }
+
       await Future.delayed(const Duration(milliseconds: 1600));
       if (!mounted) return;
       ref.read(splashCompletedProvider.notifier).state = true;
@@ -100,6 +307,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_isLocked) {
+      return _buildLockScreenOverlay();
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

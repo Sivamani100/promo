@@ -33,7 +33,22 @@ class ReportService {
       data['details'] = InputSanitizer.sanitizeText(details.trim(), maxLength: 500);
     }
 
-    await _client.from('user_reports').insert(data);
+    // Prepare matching object for legacy reports table
+    final legacyReportData = <String, dynamic>{
+      'reporter_id': reporterId,
+      'reason': reason,
+    };
+    if (reportedId != null) legacyReportData['reported_user_id'] = reportedId;
+    if (reportedCardId != null) legacyReportData['card_id'] = reportedCardId;
+    if (details != null && details.trim().isNotEmpty) {
+      legacyReportData['description'] = InputSanitizer.sanitizeText(details.trim(), maxLength: 500);
+    }
+
+    // Insert into both tables in parallel
+    await Future.wait([
+      _client.from('user_reports').insert(data),
+      _client.from('reports').insert(legacyReportData),
+    ]);
 
     // Check if the reported user has crossed the auto-suspension threshold
     if (reportedId != null) {

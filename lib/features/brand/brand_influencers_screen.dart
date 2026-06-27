@@ -12,6 +12,8 @@ import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../core/services/block_service.dart';
+import '../../core/network/connectivity_service.dart';
 
 class BrandInfluencersScreen extends ConsumerStatefulWidget {
   const BrandInfluencersScreen({super.key});
@@ -21,6 +23,7 @@ class BrandInfluencersScreen extends ConsumerStatefulWidget {
 
 class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen> {
   List<Map<String, dynamic>> _influencers = [];
+  Set<String> _blockedUserIds = {};
   bool _loading = true;
   String? _nicheFilter;
   final _searchCtrl = TextEditingController();
@@ -32,10 +35,15 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
   }
 
   Future<void> _load() async {
-    final data = await ProfileService().getInfluencers(limit: 100);
+    final user = ref.read(authProvider).user;
+    final results = await Future.wait([
+      ProfileService().getInfluencers(limit: 100),
+      if (user != null) BlockService().getAllBlockedUserIds(user.id) else Future.value(<String>{}),
+    ]);
     if (mounted) {
       setState(() {
-        _influencers = data;
+        _influencers = results[0] as List<Map<String, dynamic>>;
+        _blockedUserIds = results[1] as Set<String>;
         _loading = false;
       });
     }
@@ -43,6 +51,11 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
 
   List<Map<String, dynamic>> get _filtered {
     var list = _influencers;
+
+    if (_blockedUserIds.isNotEmpty) {
+      list = list.where((i) => !_blockedUserIds.contains(i['id'])).toList();
+    }
+
     if (_nicheFilter != null) {
       list = list.where((i) {
         final niches = (i['niche'] as List<dynamic>?)?.cast<String>() ?? [];
@@ -257,6 +270,13 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[BRAND DISCOVER] Back online, reloading creators...');
+        _load();
+      }
+    });
+
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
     final isDark = AppColors.isDarkMode;
 

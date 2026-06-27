@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/app_providers.dart';
@@ -305,11 +306,16 @@ class PushNotificationManager {
     debugPrint('[PUSH] Initializing PushNotificationManager');
     await _logDiagnostic('push.initialize_start', {'time': DateTime.now().toIso8601String()});
 
-    // 1. Request notification permissions
-    try {
-      await _requestPermissions();
-    } catch (e) {
-      await _logDiagnostic('push.permissions_step_error', {'error': e.toString()});
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('push_notifications_enabled') ?? false;
+
+    // 1. Request notification permissions only if enabled
+    if (enabled) {
+      try {
+        await _requestPermissions();
+      } catch (e) {
+        await _logDiagnostic('push.permissions_step_error', {'error': e.toString()});
+      }
     }
 
     // 2. Setup Flutter Local Notifications for foreground overlays
@@ -320,11 +326,13 @@ class PushNotificationManager {
       await _logDiagnostic('push.local_notifications_error', {'error': e.toString()});
     }
 
-    // 3. Sync and register token in Supabase
-    try {
-      await updateTokenInDatabase();
-    } catch (e) {
-      await _logDiagnostic('push.sync_step_error', {'error': e.toString()});
+    // 3. Sync and register token in Supabase only if enabled
+    if (enabled) {
+      try {
+        await updateTokenInDatabase();
+      } catch (e) {
+        await _logDiagnostic('push.sync_step_error', {'error': e.toString()});
+      }
     }
 
     // 4. Set up message streams
@@ -616,6 +624,13 @@ class PushNotificationManager {
 
 
   Future<void> updateTokenInDatabase() async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('push_notifications_enabled') ?? false;
+    if (!enabled) {
+      await _logDiagnostic('push.sync_ignored', {'reason': 'permission_disabled'});
+      return;
+    }
+
     final authState = _ref.read(authProvider);
     final user = authState.user;
     if (user == null) {
@@ -775,6 +790,49 @@ class PushNotificationManager {
       }
     } catch (e) {
       debugPrint('[PUSH FOREGROUND ACTION ERROR] Failed to execute action: $e');
+    }
+  }
+
+  Future<void> showRationaleDialogIfNeeded(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasAsked = prefs.getBool('push_notifications_asked') ?? false;
+    if (hasAsked) return;
+
+    if (!context.mounted) return;
+
+    final bool? allowed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Allow Notifications'),
+          content: const Text(
+            'Allow Promo to send notifications for new \n'
+            'messages, application updates and collaboration \n'
+            'alerts?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Not Now'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Allow'),
+            ),
+          ],
+        );
+      },
+    );
+
+    await prefs.setBool('push_notifications_asked', true);
+    if (allowed == true) {
+      await prefs.setBool('push_notifications_enabled', true);
+      _initialized = false;
+      await initialize();
+    } else {
+      await prefs.setBool('push_notifications_enabled', false);
     }
   }
 }

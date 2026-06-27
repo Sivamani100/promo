@@ -108,7 +108,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   void _emailSupport() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@promo.app',
+      path: 'support@promo.arkio.in',
       queryParameters: {
         'subject': 'Support Request - Promo App',
       },
@@ -284,7 +284,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
               ),
               const SizedBox(height: 12),
               AppCard(
-                onTap: () => _launchCommunityUrl('https://instagram.com/promo.app'),
+                onTap: () => _launchCommunityUrl('https://instagram.com/promo.arkio.in'),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [

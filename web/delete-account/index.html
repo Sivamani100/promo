@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account | Promo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --surface-color: #0F0F11;
+            --border-color: #242428;
+            --text-primary: #FBFBEF;
+            --text-secondary: #9E9E9E;
+            --accent-color: #A855F7;
+            --error-color: #EF4444;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 560px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 24px;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .warning-card {
+            background-color: rgba(239, 68, 68, 0.08);
+            border: 1px dashed var(--error-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 36px;
+            text-align: left;
+        }
+
+        .warning-card h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--error-color);
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .warning-card p {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #000000;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            margin-top: 16px;
+        }
+
+        .btn-secondary:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .footer {
+            margin-top: 48px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Promo<span>.</span></div>
+        <h1>Account Deletion Request</h1>
+        <p>If you wish to permanently delete your Promo account, you can do so directly in-app via <strong>Settings &gt; Delete Account</strong>. Alternatively, you can submit an online request below.</p>
+        
+        <div class="warning-card">
+            <h2>Warning: Permanent Action</h2>
+            <p>Deleting your account permanently erases your profile, campaign cards, messages, applications, agreements, and all associated media from our databases. This action is irreversible.</p>
+        </div>
+
+        <a href="mailto:support@promo.arkio.in?subject=Account Deletion Request&body=Please delete my account associated with this email address. I understand that this permanently erases my profile and all associated data." class="btn">Submit Deletion Request via Email</a>
+        <a href="https://promo.arkio.in" class="btn btn-secondary">Go to Homepage</a>
+
+        <div class="footer">
+            &copy; 2026 Promo. All rights reserved. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms">Terms of Service</a>.
+        </div>
+    </div>
+</body>
+</html>

@@ -19,6 +19,7 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../core/cache/app_cache.dart';
+import '../../core/network/connectivity_service.dart';
 
 class ChatsListScreen extends ConsumerStatefulWidget {
   final String role;
@@ -869,6 +870,14 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       }
     });
 
+    ref.listen<bool>(isOnlineProvider, (previous, next) {
+      if (next == true && previous == false) {
+        debugPrint('[CHATS_LIST] Back online, reloading...');
+        _load();
+        _subscribeToMessages();
+      }
+    });
+
     final profile = ref.watch(authProvider).profile;
     final Map<String, dynamic> deletedRooms = Map<String, dynamic>.from(profile?['preferences']?['deleted_rooms'] ?? {});
 
@@ -1054,8 +1063,8 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                             if (i == 0) {
                               return const AppEmptyState(
                                 icon: Iconsax.message,
-                                title: 'No conversations yet',
-                                subtitle: 'Your chats with collaborators will appear here',
+                                title: "No conversations yet.",
+                                subtitle: "",
                               );
                             } else {
                               return _buildFooter();

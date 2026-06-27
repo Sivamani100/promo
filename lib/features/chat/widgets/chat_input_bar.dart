@@ -11,11 +11,14 @@ class ChatInputBar extends StatefulWidget {
   final Future<void> Function() onSend;
   final VoidCallback onAttach;
 
+  final bool isBlocked;
+
   const ChatInputBar({
     super.key,
     required this.controller,
     required this.onSend,
     required this.onAttach,
+    this.isBlocked = false,
   });
 
   @override
@@ -100,6 +103,27 @@ class _ChatInputBarState extends State<ChatInputBar> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isBlocked) {
+      return Container(
+        color: AppColors.surface,
+        width: double.infinity,
+        alignment: Alignment.center,
+        padding: EdgeInsets.fromLTRB(
+          DesignTokens.space12,
+          DesignTokens.space16,
+          DesignTokens.space12,
+          MediaQuery.of(context).padding.bottom + DesignTokens.space16,
+        ),
+        child: Text(
+          'This conversation is disabled.',
+          style: AppTextStyles.body.copyWith(
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasText = widget.controller.text.trim().isNotEmpty;
     

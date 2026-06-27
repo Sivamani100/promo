@@ -135,6 +135,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
     final nicheTags = (c['niche_tags'] as List?)?.cast<String>() ?? [];
     final platformReqs = (c['platform_requirements'] as List?)?.cast<String>() ?? [];
     final deliverables = (c['deliverables'] as List?)?.cast<String>() ?? [];
+    final languages = (c['languages'] as List?)?.cast<String>() ?? [];
     
     // Qualification check
     final profile = ref.watch(authProvider).profile;
@@ -467,6 +468,40 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                         ],
                       ),
                     )).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                if (languages.isNotEmpty) ...[
+                  Text('REQUIRED LANGUAGES', style: AppTextStyles.overline),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: languages.map((lang) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: AppColors.accent.withValues(alpha: 0.15)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Iconsax.translate, size: 14, color: AppColors.accent),
+                            const SizedBox(width: 6),
+                            Text(
+                              lang,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 24),
                 ],

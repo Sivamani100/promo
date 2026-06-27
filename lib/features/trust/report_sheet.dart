@@ -112,9 +112,9 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: AppColors.success,
-            content: Text(
-              'Thank you. We have received your report and will review the ${widget.contentTypeName.toLowerCase()} shortly.',
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            content: const Text(
+              "Thank you. We'll review this report.",
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
         );

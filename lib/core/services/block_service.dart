@@ -81,4 +81,25 @@ class BlockService {
     // In production, this would be handled via RLS filters on the database side.
     return {};
   }
+
+  /// Get the set of all user IDs where either user blocked the other (bidirectional).
+  Future<Set<String>> getAllBlockedUserIds(String userId) async {
+    try {
+      final data = await _client
+          .from('user_blocks')
+          .select('blocker_id, blocked_id')
+          .or('blocker_id.eq.$userId,blocked_id.eq.$userId')
+          .timeout(const Duration(seconds: 10));
+      final set = <String>{};
+      for (final row in List<Map<String, dynamic>>.from(data)) {
+        set.add(row['blocker_id'] as String);
+        set.add(row['blocked_id'] as String);
+      }
+      set.remove(userId);
+      return set;
+    } catch (e) {
+      print('[BLOCK] Error getting all blocked user IDs: $e');
+      return {};
+    }
+  }
 }

@@ -240,6 +240,7 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
     final nicheTags = (c['niche_tags'] as List<dynamic>?)?.cast<String>() ?? [];
     final platforms = (c['platform_requirements'] as List<dynamic>?)?.cast<String>() ?? [];
     final deliverables = (c['deliverables'] as List<dynamic>?)?.cast<String>() ?? [];
+    final languages = (c['languages'] as List<dynamic>?)?.cast<String>() ?? [];
     final isDark = AppColors.isDarkMode;
 
     return Scaffold(
@@ -616,6 +617,39 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
             Text('PLATFORMS', style: AppTextStyles.overline),
             const SizedBox(height: 8),
             Wrap(spacing: 6, runSpacing: 6, children: platforms.map((p) => AppChip(label: p)).toList()),
+            const SizedBox(height: 16),
+          ],
+          if (languages.isNotEmpty) ...[
+            Text('REQUIRED LANGUAGES', style: AppTextStyles.overline),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: languages.map((lang) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Iconsax.translate, size: 14, color: AppColors.accent),
+                      const SizedBox(width: 6),
+                      Text(
+                        lang,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ],
           
           const Divider(height: 40),

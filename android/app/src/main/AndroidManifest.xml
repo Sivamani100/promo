@@ -49,12 +49,15 @@
                 <data android:scheme="io.supabase.promo" />
                 <data android:scheme="promo" />
             </intent-filter>
-            <!-- V3.0: Universal Links / App Links for https://promo.app -->
+            <!-- V3.0: Universal Links / App Links for https://promo.arkio.in -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="promo.app" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="promo.arkio.in" />
+                <data android:host="lokoxgwymvvnxhmavuyv.supabase.co" />
             </intent-filter>
         </activity>
         <meta-data

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/app_providers.dart';
 import '../router/app_router.dart';
+import '../services/supabase_service.dart';
 
 /// Pending deep link destination — stored when a deep link arrives
 /// but user is not yet authenticated.
@@ -45,6 +46,23 @@ class DeepLinkService {
   /// Parse the incoming URI and navigate accordingly.
   static void _handleLink(Uri uri, WidgetRef ref) {
     debugPrint('[DEEPLINK] Received: $uri');
+    
+    // Check for password recovery deep link
+    final uriStr = uri.toString().toLowerCase();
+    if (uriStr.contains('recovery') || uri.fragment.contains('type=recovery') || uri.queryParameters['type'] == 'recovery') {
+      debugPrint('[DEEPLINK] Detected password recovery link, passing to Supabase Auth');
+      try {
+        SupabaseService.client.auth.getSessionFromUrl(uri).then((_) {
+          debugPrint('[DEEPLINK] Supabase session established from recovery link');
+        }).catchError((err) {
+          debugPrint('[DEEPLINK ERROR] Failed to process recovery session: $err');
+        });
+      } catch (e) {
+        debugPrint('[DEEPLINK ERROR] Exception while handling recovery link: $e');
+      }
+      return;
+    }
+
     final segments = uri.pathSegments;
     if (segments.isEmpty) return;
 

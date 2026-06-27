@@ -6,6 +6,14 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 class AppErrorHandler {
   // Maps internal errors to user-friendly messages
   static String toUserMessage(dynamic error) {
+    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('500') || errStr.contains('status: 500') || errStr.contains('internal server error')) {
+      return 'Server error. Please try again in a moment.';
+    }
+    if (errStr.contains('422') || errStr.contains('status: 422')) {
+      return 'Something went wrong. Please try again.';
+    }
+
     if (error is AuthException) {
       final msg = error.message.toLowerCase();
       if (msg.contains('invalid_credentials') || msg.contains('invalid login credentials')) {
@@ -17,13 +25,18 @@ class AppErrorHandler {
       if (msg.contains('user_not_found') || msg.contains('user not found')) {
         return 'No account found with that email.';
       }
+      if (msg.contains('invalid_grant')) {
+        return 'Session expired. Please sign in again.';
+      }
+      if (msg.contains('jwt expired')) {
+        return "You've been signed out. Please log in again.";
+      }
       // Precise checks for actual session / refresh token expiration
       if (msg.contains('session_not_found') || 
           msg.contains('refresh_token_not_found') || 
           msg.contains('invalid refresh token') ||
           msg.contains('refresh token is invalid') ||
-          msg.contains('session expired') ||
-          msg.contains('jwt expired')) {
+          msg.contains('session expired')) {
         return 'Session expired. Please sign in again.';
       }
       
@@ -45,7 +58,8 @@ class AppErrorHandler {
       // NEVER expose SQL/DB internals to users
       // Map common Postgres error codes
       final code = error.code;
-      if (code == '23505') {
+      final msg = error.message.toLowerCase();
+      if (code == '23505' || msg.contains('duplicate key value') || msg.contains('duplicate key')) {
         return 'This already exists.';
       }
       if (code == '42501') {
@@ -58,7 +72,9 @@ class AppErrorHandler {
       return 'File upload failed. Please try again.';
     }
     
-    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('timeout') || errStr.contains('connection timed out') || errStr.contains('deadline')) {
+      return 'Connection timed out. Please try again.';
+    }
     if (errStr.contains('socketexception') || errStr.contains('network') || errStr.contains('failed host lookup')) {
       return 'No internet connection. Please check your network.';
     }

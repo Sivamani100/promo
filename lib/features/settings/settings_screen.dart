@@ -7,6 +7,8 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../shared/widgets/app_snackbar.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -75,6 +77,22 @@ class SettingsScreen extends ConsumerWidget {
                       : 'Light Mode',
               onTap: () => _showThemeSelectionSheet(context, ref),
             ),
+            _SettingsItem(
+              icon: Iconsax.finger_scan,
+              label: 'Biometric Authentication',
+              subtitle: 'Fingerprint or Face ID unlock',
+              trailing: Switch(
+                value: ref.watch(biometricLockProvider),
+                activeColor: AppColors.purple,
+                onChanged: (val) {
+                  ref.read(biometricLockProvider.notifier).setEnabled(val);
+                },
+              ),
+              onTap: () {
+                final current = ref.read(biometricLockProvider);
+                ref.read(biometricLockProvider.notifier).setEnabled(!current);
+              },
+            ),
           ]),
           const SizedBox(height: 20),
           _SettingsSection(title: 'Support', items: [
@@ -135,9 +153,58 @@ class SettingsScreen extends ConsumerWidget {
                 }
               },
             ),
+            _SettingsItem(
+              icon: Iconsax.trash,
+              label: 'Delete Account',
+              isDestructive: true,
+              onTap: () async {
+                final confirmed = await showPremiumConfirmDialog(
+                  context: context,
+                  title: 'Delete Account',
+                  message: 'Are you sure? This will permanently delete your profile, cards, applications, messages, portfolio, and all associated data. This cannot be undone.',
+                  confirmLabel: 'Delete',
+                  isDestructive: true,
+                  icon: Iconsax.trash,
+                );
+                if (confirmed == true) {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => const Center(
+                      child: CircularProgressIndicator(color: AppColors.error),
+                    ),
+                  );
+                  try {
+                    await ref.read(authProvider.notifier).deleteAccount();
+                    if (context.mounted) {
+                      Navigator.pop(context); // Close loading spinner
+                      AppSnackbar.show(context, 'Your account has been permanently deleted.');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      AppSnackbar.error(context, 'Failed to delete account: $e');
+                    }
+                  }
+                }
+              },
+            ),
           ]),
           const SizedBox(height: 32),
-          Center(child: Text('Brand v1.0.0', style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted))),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final versionStr = snapshot.hasData
+                  ? 'Promo v${snapshot.data!.version} (Build ${snapshot.data!.buildNumber})'
+                  : 'Promo v1.0.0 (Build 1)';
+              return Center(
+                child: Text(
+                  versionStr,
+                  style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -168,7 +235,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _buildOfficerDetail('Name', 'Ms. Priya Sharma'),
               _buildOfficerDetail('Designation', 'Grievance & Compliance Officer'),
-              _buildOfficerDetail('Email', 'compliance@promo.app'),
+              _buildOfficerDetail('Email', 'compliance@promo.arkio.in'),
               _buildOfficerDetail('Address', 'Brand Mobile App Pvt. Ltd., 4th Floor, Tech Hub, Bangalore, India'),
             ],
           ),

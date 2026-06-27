@@ -424,7 +424,34 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsB
                     )
                   else
                     const SizedBox(),
-                  Text('Step ${widget.currentStep} of 5', style: AppTextStyles.captionSm),
+                  Row(
+                    children: [
+                      Text('Step ${widget.currentStep} of 5', style: AppTextStyles.captionSm),
+                      if (widget.currentStep == 3 || widget.currentStep == 4) ...[
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            context.go('/onboarding/${widget.currentStep + 1}');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.purple.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.purple.withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              'Skip',
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: AppColors.purple,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -884,16 +911,28 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            AppSnackbar.warning(context, 'Location permissions are denied.');
+        if (mounted) {
+          final proceed = await showPremiumConfirmDialog(
+            context: context,
+            title: 'Location Permission',
+            message: 'Promo uses your location to show nearby brands and creators on the map. Only your city is shown publicly — never your exact coordinates.',
+            confirmLabel: 'Allow',
+            cancelLabel: 'Not Now',
+            icon: Iconsax.location,
+          );
+          if (proceed == true) {
+            permission = await Geolocator.requestPermission();
           }
-          setState(() {
-            _isLoadingLocation = false;
-          });
-          return;
         }
+      }
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          AppSnackbar.warning(context, 'Location permissions are denied.');
+        }
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
       }
       
       if (permission == LocationPermission.deniedForever) {
