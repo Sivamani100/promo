@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/auth_service.dart';
 import '../services/supabase_service.dart';
 import '../services/chat_service.dart';
@@ -397,6 +398,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await prefs.remove('onboarding_complete_$userId');
       } catch (e) {
         print('[AUTH] Error clearing cache on signOut: $e');
+      }
+
+      // Delete push token from DB while still authenticated
+      if (!kIsWeb) {
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            print('[AUTH] Deleting FCM Token on sign-out: $fcmToken');
+            await SupabaseService.client
+                .from('user_push_tokens')
+                .delete()
+                .eq('fcm_token', fcmToken);
+          }
+        } catch (e) {
+          print('[AUTH] Error deleting FCM token on sign-out: $e');
+        }
       }
     }
     try {

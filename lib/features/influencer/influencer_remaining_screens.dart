@@ -21,6 +21,8 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../shared/widgets/premium_image_cropper.dart';
+import 'dart:typed_data';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -1630,12 +1632,21 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       if (image == null) return;
 
       if (!mounted) return;
+      final croppedBytes = await Navigator.push<Uint8List>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PremiumImageCropper(imageFile: image),
+        ),
+      );
+      if (croppedBytes == null) return;
+
+      if (!mounted) return;
       setState(() {
         _uploadingAvatar = true;
       });
       AppSnackbar.info(context, 'Uploading photo...');
 
-      final bytes = await image.readAsBytes();
+      final bytes = croppedBytes;
       final user = ref.read(authProvider).user;
       if (user == null) return;
 

@@ -240,53 +240,21 @@ class ChatService {
   }
 
   Future<Map<String, dynamic>> getOrCreate1to1Room({required String brandId, required String influencerId, String? cardId}) async {
-    if (cardId != null) {
-      // 1. If cardId is specified, check if a room exists for this specific card first
-      final existingWithCard = await _client
-          .from('rooms')
-          .select()
-          .eq('brand_id', brandId)
-          .eq('influencer_id', influencerId)
-          .eq('card_id', cardId)
-          .order('created_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-          
-      if (existingWithCard != null) {
-        return existingWithCard;
-      }
-    } else {
-      // 2. If cardId is not specified, check if a general room exists (card_id IS NULL)
-      final existingGeneral = await _client
-          .from('rooms')
-          .select()
-          .eq('brand_id', brandId)
-          .eq('influencer_id', influencerId)
-          .isFilter('card_id', null)
-          .order('created_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-          
-      if (existingGeneral != null) {
-        return existingGeneral;
-      }
-
-      // Fallback: Check if ANY room exists between this brand and influencer
-      final existingAny = await _client
-          .from('rooms')
-          .select()
-          .eq('brand_id', brandId)
-          .eq('influencer_id', influencerId)
-          .order('created_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-          
-      if (existingAny != null) {
-        return existingAny;
-      }
+    // 1. Check if ANY 1-to-1 room exists between this brand and influencer
+    final existingRoom = await _client
+        .from('rooms')
+        .select()
+        .eq('brand_id', brandId)
+        .eq('influencer_id', influencerId)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+        
+    if (existingRoom != null) {
+      return existingRoom;
     }
 
-    // If none exists, find any accepted application to auto-link
+    // 2. If none exists, find any accepted application to auto-link
     String? linkedAppId;
     String? linkedCardId = cardId;
 
@@ -337,22 +305,6 @@ class ChatService {
       }
     } catch (e) {
       print('Error finding application to link: $e');
-    }
-
-    // Check if a room already exists for this application_id to avoid duplicate key violation
-    if (linkedAppId != null) {
-      try {
-        final existingAppRoom = await _client
-            .from('rooms')
-            .select()
-            .eq('application_id', linkedAppId)
-            .maybeSingle();
-        if (existingAppRoom != null) {
-          return existingAppRoom;
-        }
-      } catch (e) {
-        print('Error checking existing application room: $e');
-      }
     }
 
     final data = await _client.from('rooms').insert({

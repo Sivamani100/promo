@@ -234,6 +234,66 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     }
   }
 
+  void _showWriteReviewSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bctx) {
+        return _WriteReviewSheet(
+          brandId: widget.brandId,
+          onSuccess: () {
+            _loadAll(); // Reload reviews and ratings
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildStatPill(IconData icon, String value, String label) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF141416) : const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 16, color: AppColors.accent),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -256,6 +316,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final preferences = b['preferences'] as Map<String, dynamic>? ?? {};
     final website = b['website_url'] ?? preferences['website'] ?? '';
+    final double avgRating = _reviews.isEmpty ? 0.0 : (_reviews.map((r) => (r['rating'] as num?)?.toDouble() ?? 0.0).fold(0.0, (a, b) => a + b) / _reviews.length);
 
     return Scaffold(
       body: Column(
@@ -454,13 +515,31 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
                 // Brand details row (Location & Industry Tags)
                 Row(
                   children: [
-                    Icon(Iconsax.location, size: 14, color: AppColors.textMuted),
+                    Icon(Iconsax.location, size: 13, color: AppColors.textMuted),
                     const SizedBox(width: 4),
-                    Text(location, style: AppTextStyles.captionSm),
+                    Text(location, style: AppTextStyles.captionSm.copyWith(fontSize: 11.5)),
                     const SizedBox(width: 16),
-                    Icon(Iconsax.tag, size: 14, color: AppColors.textMuted),
+                    Icon(Iconsax.tag, size: 13, color: AppColors.textMuted),
                     const SizedBox(width: 4),
-                    Text(industry, style: AppTextStyles.captionSm),
+                    Text(industry, style: AppTextStyles.captionSm.copyWith(fontSize: 11.5)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Stats row (matching Creator profile look)
+                Row(
+                  children: [
+                    _buildStatPill(Iconsax.briefcase, '${_campaigns.length}', 'Campaigns'),
+                    const SizedBox(width: 10),
+                    _buildStatPill(Iconsax.award, '$_collaborationsCount', 'Collabs'),
+                    const SizedBox(width: 10),
+                    _buildStatPill(
+                      Iconsax.star,
+                      _reviews.isEmpty
+                          ? '—'
+                          : (avgRating.toStringAsFixed(1)),
+                      'Rating',
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -532,12 +611,20 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
             color: isDark ? const Color(0xFF0F0F16) : Colors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: AppColors.accent,
+              labelColor: isDark ? Colors.white : Colors.black,
               unselectedLabelColor: AppColors.textMuted,
-              indicatorColor: AppColors.accent,
+              indicatorColor: isDark ? Colors.white : Colors.black,
               indicatorSize: TabBarIndicatorSize.tab,
-              labelStyle: AppTextStyles.label,
-              unselectedLabelStyle: AppTextStyles.labelSm,
+              indicatorWeight: 3.0,
+              dividerColor: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+              labelStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
               tabs: const [
                 Tab(text: 'About'),
                 Tab(text: 'Campaigns'),
@@ -728,11 +815,56 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
   }
 
   Widget _buildReviewsTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isInfluencer = ref.read(authProvider).role == 'influencer';
+
+    Widget? writeReviewButton;
+    if (isInfluencer) {
+      writeReviewButton = Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: GestureDetector(
+          onTap: _showWriteReviewSheet,
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white : const Color(0xFF0F0F11),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Iconsax.edit,
+                  size: 18,
+                  color: isDark ? Colors.black : Colors.white,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Write a Review',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.black : Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_reviews.isEmpty) {
-      return const AppEmptyState(
-        icon: Iconsax.star,
-        title: 'No Reviews Yet',
-        subtitle: 'Creators haven\'t left any reviews for this brand yet.',
+      return ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          if (writeReviewButton != null) writeReviewButton,
+          const AppEmptyState(
+            icon: Iconsax.star,
+            title: 'No Reviews Yet',
+            subtitle: 'Creators haven\'t left any reviews for this brand yet. Be the first to write one!',
+          ),
+        ],
       );
     }
 
@@ -741,6 +873,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
+        if (writeReviewButton != null) writeReviewButton,
         // Summary Card
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -958,5 +1091,246 @@ class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _SliverTabHeaderDelegate oldDelegate) {
     return tabBar != oldDelegate.tabBar || isDark != oldDelegate.isDark;
+  }
+}
+
+class _WriteReviewSheet extends ConsumerStatefulWidget {
+  final String brandId;
+  final VoidCallback onSuccess;
+
+  const _WriteReviewSheet({
+    required this.brandId,
+    required this.onSuccess,
+  });
+
+  @override
+  ConsumerState<_WriteReviewSheet> createState() => _WriteReviewSheetState();
+}
+
+class _WriteReviewSheetState extends ConsumerState<_WriteReviewSheet> {
+  int _rating = 5;
+  final _commentCtrl = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+
+    final comment = _commentCtrl.text.trim();
+    if (comment.isEmpty) {
+      AppSnackbar.show(context, 'Please write a comment for your review.');
+      return;
+    }
+
+    setState(() => _submitting = true);
+
+    try {
+      // 1. Get/create 1-to-1 chat room to satisfy PostgreSQL RLS participant constraint
+      final room = await ChatService().getOrCreate1to1Room(
+        brandId: widget.brandId,
+        influencerId: user.id,
+      );
+      final roomId = room['id'] as String;
+
+      // 2. Submit review to reviews table
+      await AnalyticsService().submitReview(
+        reviewerId: user.id,
+        reviewedId: widget.brandId,
+        rating: _rating,
+        comment: comment,
+        roomId: roomId,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close sheet
+        widget.onSuccess(); // Trigger UI reload
+        AppSnackbar.show(context, 'Review submitted successfully!');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to submit review: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Grab Handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Write a Review',
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Rating stars selection
+          Text(
+            'Rating',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: List.generate(5, (index) {
+              final starVal = index + 1;
+              final isSelected = starVal <= _rating;
+              return GestureDetector(
+                onTap: _submitting ? null : () => setState(() => _rating = starVal),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(
+                    isSelected ? Iconsax.star1 : Iconsax.star,
+                    color: const Color(0xFFF59E0B),
+                    size: 32,
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 20),
+
+          // Comment
+          Text(
+            'Review Comment',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentCtrl,
+            maxLines: 4,
+            enabled: !_submitting,
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Describe your experience collaborating with this brand...',
+              hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
+              fillColor: isDark ? const Color(0xFF1A1A1E) : const Color(0xFFF3F4F6),
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isDark ? Colors.white : const Color(0xFF0F0F11),
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(12),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _submitting ? null : () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textMuted,
+                    side: BorderSide(color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: _submitting ? null : _submit,
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _submitting
+                          ? AppColors.textMuted
+                          : (isDark ? Colors.white : const Color(0xFF0F0F11)),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Center(
+                      child: _submitting
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: isDark ? Colors.black : Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Submit',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.black : Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

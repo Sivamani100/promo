@@ -815,6 +815,44 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
+  Future<void> _deleteChat() async {
+    final confirmed = await showPremiumConfirmDialog(
+      context: context,
+      title: 'Delete Chat',
+      message: 'Are you sure you want to delete this chat? This will remove it from your list, but it will reappear if you receive a new message.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+      icon: Iconsax.trash,
+    );
+
+    if (confirmed == true) {
+      final authState = ref.read(authProvider);
+      final profile = authState.profile;
+      if (profile != null) {
+        final prefs = Map<String, dynamic>.from(profile['preferences'] as Map<String, dynamic>? ?? {});
+        final clearedRooms = Map<String, dynamic>.from(prefs['cleared_rooms'] as Map<String, dynamic>? ?? {});
+        final deletedRooms = Map<String, dynamic>.from(prefs['deleted_rooms'] as Map<String, dynamic>? ?? {});
+        
+        final nowStr = DateTime.now().toUtc().add(const Duration(seconds: 2)).toIso8601String();
+        clearedRooms[widget.roomId] = nowStr;
+        deletedRooms[widget.roomId] = nowStr;
+        
+        prefs['cleared_rooms'] = clearedRooms;
+        prefs['deleted_rooms'] = deletedRooms;
+
+        try {
+          await ref.read(authProvider.notifier).updatePreferences(prefs);
+          if (mounted) {
+            Navigator.pop(context); // Close the chat screen and return to list!
+            AppSnackbar.show(context, 'Chat deleted successfully');
+          }
+        } catch (e) {
+          print('Error deleting chat: $e');
+        }
+      }
+    }
+  }
+
   Future<void> _clearChatHistory() async {
     final confirmed = await showPremiumConfirmDialog(
       context: context,
@@ -1194,6 +1232,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 _showSharedMediaGallery();
               } else if (val == 'clear') {
                 _clearChatHistory();
+              } else if (val == 'delete') {
+                _deleteChat();
               }
             },
             itemBuilder: (ctx) => [
@@ -1201,6 +1241,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               const PopupMenuItem(value: 'media', child: Text('Shared Media')),
               const PopupMenuItem(value: 'starred', child: Text('Starred Messages')),
               const PopupMenuItem(value: 'clear', child: Text('Clear Chat')),
+              const PopupMenuItem(value: 'delete', child: Text('Delete Chat')),
             ],
           ),
         ],

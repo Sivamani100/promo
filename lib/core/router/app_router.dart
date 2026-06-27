@@ -507,7 +507,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/brand/campaigns', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const BrandCampaignsScreen())),
           GoRoute(path: '/brand/chats', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const ChatsListScreen(role: 'brand'))),
           GoRoute(path: '/brand/analytics', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const BrandAnalyticsScreen())),
-          GoRoute(path: '/brand/profile', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const BrandProfileScreen())),
+          GoRoute(
+            path: '/brand/profile',
+            pageBuilder: (context, state) {
+              final editParam = state.uri.queryParameters['edit'] == 'true';
+              return AppTransitions.fade(
+                key: state.pageKey,
+                child: BrandProfileScreen(startInEditMode: editParam),
+              );
+            },
+          ),
         ],
       ),
 

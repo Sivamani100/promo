@@ -20,6 +20,11 @@ import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../shared/widgets/premium_image_cropper.dart';
+import 'dart:typed_data';
+import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 
 // Brand Saved Lists
 class BrandSavedListsScreen extends ConsumerStatefulWidget {
@@ -770,7 +775,8 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
 
 // Brand Profile
 class BrandProfileScreen extends ConsumerStatefulWidget {
-  const BrandProfileScreen({super.key});
+  final bool startInEditMode;
+  const BrandProfileScreen({super.key, this.startInEditMode = false});
   @override
   ConsumerState<BrandProfileScreen> createState() => _BrandProfileScreenState();
 }
@@ -780,25 +786,151 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   final _companyCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
   final _websiteCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _villageCtrl = TextEditingController();
+  final _mandalCtrl = TextEditingController();
+  final _districtCtrl = TextEditingController();
+  final _stateCtrl = TextEditingController();
   bool _saving = false;
   bool _isEditing = false;
   String? _avatarUrl;
   bool _uploadingAvatar = false;
+  bool _isLoadingLocation = false;
+  double? _latitude;
+  double? _longitude;
   List<Map<String, dynamic>> _cards = [];
   int _campaignsCount = 0;
   int _applicantsCount = 0;
   int _roomsCount = 0;
   bool _loadingData = true;
 
+  List<String> _splitLocation(String loc) {
+    if (loc.isEmpty) return ['', '', '', ''];
+    final parts = loc.split(',').map((e) => e.trim()).toList();
+    while (parts.length < 4) {
+      parts.add('');
+    }
+    return parts.sublist(0, 4);
+  }
+
+  void _updateLocationString() {
+    _locationCtrl.text = '${_villageCtrl.text.trim()}, ${_mandalCtrl.text.trim()}, ${_districtCtrl.text.trim()}, ${_stateCtrl.text.trim()}';
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isLoadingLocation = true;
+    });
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          AppSnackbar.warning(context, 'Location services are disabled. Please enable them.');
+        }
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            AppSnackbar.warning(context, 'Location permissions denied. Enter location manually below.');
+          }
+          setState(() {
+            _isLoadingLocation = false;
+          });
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          AppSnackbar.warning(context, 'Location permissions permanently denied. Enable in settings.');
+        }
+        setState(() {
+          _isLoadingLocation = false;
+        });
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.latitude}&lon=${position.longitude}&zoom=18&addressdetails=1',
+      );
+      final response = await http.get(url, headers: {
+        'User-Agent': 'BrandMobileApp/1.0',
+      });
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final address = data['address'] as Map<String, dynamic>? ?? {};
+        
+        final village = address['suburb'] ?? address['village'] ?? address['neighbourhood'] ?? address['road'] ?? address['residential'] ?? address['hamlet'] ?? '';
+        final mandal = address['subdistrict'] ?? address['town'] ?? address['city_district'] ?? address['county'] ?? '';
+        final district = address['district'] ?? address['state_district'] ?? address['city'] ?? '';
+        final stateName = address['state'] ?? '';
+
+        if (mounted) {
+          setState(() {
+            _villageCtrl.text = village.toString();
+            _mandalCtrl.text = mandal.toString();
+            _districtCtrl.text = district.toString();
+            _stateCtrl.text = stateName.toString();
+            _latitude = position.latitude;
+            _longitude = position.longitude;
+            _updateLocationString();
+          });
+
+          AppSnackbar.show(context, 'Location updated successfully!');
+        }
+      } else {
+        throw 'Failed to reverse geocode location';
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Error getting location: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _isEditing = widget.startInEditMode;
+    if (widget.startInEditMode) {
+      Future.microtask(() {
+        if (mounted) {
+          ref.read(hideBottomNavProvider.notifier).state = true;
+        }
+      });
+    }
     final p = ref.read(authProvider).profile;
     if (p != null) {
       _nameCtrl.text = p['display_name'] ?? '';
       _companyCtrl.text = p['company_name'] ?? '';
       _bioCtrl.text = p['bio'] ?? '';
       _websiteCtrl.text = p['website_url'] ?? '';
+      _locationCtrl.text = p['location'] ?? '';
+      final parts = _splitLocation(p['location'] ?? '');
+      _villageCtrl.text = parts[0];
+      _mandalCtrl.text = parts[1];
+      _districtCtrl.text = parts[2];
+      _stateCtrl.text = parts[3];
       _avatarUrl = p['avatar_url'];
     }
     _loadDashboardData();
@@ -841,12 +973,21 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       if (image == null) return;
 
       if (!mounted) return;
+      final croppedBytes = await Navigator.push<Uint8List>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PremiumImageCropper(imageFile: image),
+        ),
+      );
+      if (croppedBytes == null) return;
+
+      if (!mounted) return;
       setState(() {
         _uploadingAvatar = true;
       });
       AppSnackbar.info(context, 'Uploading photo...');
 
-      final bytes = await image.readAsBytes();
+      final bytes = croppedBytes;
       final user = ref.read(authProvider).user;
       if (user == null) return;
 
@@ -888,6 +1029,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         'company_name': _companyCtrl.text.trim(),
         'bio': _bioCtrl.text.trim(),
         'website_url': _websiteCtrl.text.trim(),
+        'location': _locationCtrl.text.trim(),
         'avatar_url': _avatarUrl,
       });
       ref.read(authProvider.notifier).refreshProfile();
@@ -914,6 +1056,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     _companyCtrl.dispose();
     _bioCtrl.dispose();
     _websiteCtrl.dispose();
+    _locationCtrl.dispose();
+    _villageCtrl.dispose();
+    _mandalCtrl.dispose();
+    _districtCtrl.dispose();
+    _stateCtrl.dispose();
     ref.read(hideBottomNavProvider.notifier).state = false;
     super.dispose();
   }
@@ -966,6 +1113,12 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         _companyCtrl.text = next.profile!['company_name'] ?? '';
         _bioCtrl.text = next.profile!['bio'] ?? '';
         _websiteCtrl.text = next.profile!['website_url'] ?? '';
+        _locationCtrl.text = next.profile!['location'] ?? '';
+        final parts = _splitLocation(next.profile!['location'] ?? '');
+        _villageCtrl.text = parts[0];
+        _mandalCtrl.text = parts[1];
+        _districtCtrl.text = parts[2];
+        _stateCtrl.text = parts[3];
         _avatarUrl = next.profile!['avatar_url'];
       }
     });
@@ -1124,6 +1277,23 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                         AppTextField(label: 'Bio', controller: _bioCtrl, maxLines: 4),
                         const SizedBox(height: 16),
                         AppTextField(label: 'Website', controller: _websiteCtrl, keyboardType: TextInputType.url),
+                        const SizedBox(height: 16),
+                        AppTextField(label: 'Village / Street', controller: _villageCtrl, onChanged: (_) => _updateLocationString()),
+                        const SizedBox(height: 16),
+                        AppTextField(label: 'Mandal / Town', controller: _mandalCtrl, onChanged: (_) => _updateLocationString()),
+                        const SizedBox(height: 16),
+                        AppTextField(label: 'District', controller: _districtCtrl, onChanged: (_) => _updateLocationString()),
+                        const SizedBox(height: 16),
+                        AppTextField(label: 'State', controller: _stateCtrl, onChanged: (_) => _updateLocationString()),
+                        const SizedBox(height: 16),
+                        _isLoadingLocation
+                            ? const Center(child: CircularProgressIndicator())
+                            : AppButton(
+                                label: 'Use Current Location',
+                                icon: Iconsax.location,
+                                isPrimary: false,
+                                onTap: _getCurrentLocation,
+                              ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -1231,6 +1401,26 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                                 color: AppColors.accent,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 11,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(Iconsax.location, color: AppColors.textMuted, size: 12),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                (profile?['location'] as String?)?.isNotEmpty == true
+                                                    ? profile!['location']
+                                                    : 'No Location set',
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: AppTextStyles.captionSm.copyWith(
+                                                  color: AppColors.textMuted,
+                                                  fontSize: 11.5,
+                                                ),
                                               ),
                                             ),
                                           ],

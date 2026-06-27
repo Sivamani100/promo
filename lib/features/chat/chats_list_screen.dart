@@ -782,6 +782,40 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                   }
                 },
               ),
+              ListTile(
+                leading: const Icon(Iconsax.close_circle, color: Colors.redAccent),
+                title: const Text('Delete Chat', style: TextStyle(color: Colors.redAccent)),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  final confirm = await showPremiumConfirmDialog(
+                    context: context,
+                    title: 'Delete Chat',
+                    message: 'Are you sure you want to delete this chat? This will remove it from your list, but it will reappear if you receive a new message.',
+                    confirmLabel: 'Delete',
+                    isDestructive: true,
+                    icon: Iconsax.trash,
+                  );
+                  if (confirm == true) {
+                    final Map<String, dynamic> deletedRooms = Map<String, dynamic>.from(prefs['deleted_rooms'] ?? {});
+                    // Use a timestamp 2 seconds in the future to avoid race conditions 
+                    // where the last message timestamp is very close to the delete time
+                    final nowStr = DateTime.now().toUtc().add(const Duration(seconds: 2)).toIso8601String();
+                    clearedRooms[roomId] = nowStr;
+                    deletedRooms[roomId] = nowStr;
+                    
+                    prefs['cleared_rooms'] = clearedRooms;
+                    prefs['deleted_rooms'] = deletedRooms;
+
+                    // Immediately remove from local state for instant UI feedback
+                    setState(() {
+                      _rooms.removeWhere((r) => r['id'] == roomId);
+                    });
+
+                    await authNotifier.updatePreferences(prefs);
+                    _load(ignoreCache: true);
+                  }
+                },
+              ),
             ],
           ),
         );
@@ -835,6 +869,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       }
     });
 
+    final profile = ref.watch(authProvider).profile;
+    final Map<String, dynamic> deletedRooms = Map<String, dynamic>.from(profile?['preferences']?['deleted_rooms'] ?? {});
+
     final basePath = widget.role == 'brand' ? '/brand' : '/influencer';
     final searchQuery = _searchCtrl.text.toLowerCase().trim();
     final pinnedRoomIds = ref.watch(pinnedRoomsProvider);
@@ -844,6 +881,25 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
 
     final filteredRooms = _rooms.where((room) {
       final roomId = room['id'] as String;
+
+      // Deleted rooms check: hide the chat room if deleted and no new messages since deletion
+      if (deletedRooms.containsKey(roomId)) {
+        final deleteTimeStr = deletedRooms[roomId] as String?;
+        if (deleteTimeStr != null) {
+          final deleteTime = DateTime.parse(deleteTimeStr);
+          final lastMsg = _lastMessages[roomId];
+          final lastMsgTimeStr = lastMsg?['created_at'] as String?;
+          if (lastMsgTimeStr != null) {
+            final lastMsgTime = DateTime.parse(lastMsgTimeStr);
+            if (!lastMsgTime.isAfter(deleteTime)) {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+      }
+
       final otherUser = widget.role == 'brand'
           ? room['influencer'] as Map<String, dynamic>?
           : room['brand'] as Map<String, dynamic>?;

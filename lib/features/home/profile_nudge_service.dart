@@ -46,7 +46,7 @@ class ProfileNudgeService {
           id: 'avatar',
           title: 'Add a brand logo',
           description: 'Mascots or logos build trust with creators.',
-          actionRoute: '/onboarding/3',
+          actionRoute: '/brand/profile?edit=true',
           icon: Iconsax.camera,
         );
       }
@@ -57,7 +57,7 @@ class ProfileNudgeService {
           id: 'bio',
           title: 'Write a brand description',
           description: 'Briefly describe your company\'s mission.',
-          actionRoute: '/onboarding/2',
+          actionRoute: '/brand/profile?edit=true',
           icon: Iconsax.document_text,
         );
       }
@@ -68,7 +68,7 @@ class ProfileNudgeService {
           id: 'website',
           title: 'Add your website',
           description: 'Link creators directly to your store or home page.',
-          actionRoute: '/onboarding/2',
+          actionRoute: '/brand/profile?edit=true',
           icon: Iconsax.global,
         );
       }
@@ -80,7 +80,7 @@ class ProfileNudgeService {
           id: 'budget',
           title: 'Set campaign targets',
           description: 'Provide target budgets and audience details.',
-          actionRoute: '/onboarding/4',
+          actionRoute: '/brand/profile?edit=true',
           icon: Iconsax.briefcase,
         );
       }
@@ -92,7 +92,7 @@ class ProfileNudgeService {
           id: 'avatar',
           title: 'Add a profile photo',
           description: 'Profiles with photos get 3x more interest from brands.',
-          actionRoute: '/onboarding/3',
+          actionRoute: '/influencer/profile?edit=true',
           icon: Iconsax.camera,
         );
       }
@@ -103,7 +103,7 @@ class ProfileNudgeService {
           id: 'bio',
           title: 'Write a short bio',
           description: 'Tell brands about your content style and audience.',
-          actionRoute: '/onboarding/2',
+          actionRoute: '/influencer/profile?edit=true',
           icon: Iconsax.document_text,
         );
       }
@@ -114,7 +114,7 @@ class ProfileNudgeService {
           id: 'niches',
           title: 'Select your niches',
           description: 'Niches help brands discover you in search.',
-          actionRoute: '/onboarding/3',
+          actionRoute: '/influencer/profile?edit=true',
           icon: Iconsax.category,
         );
       }
@@ -125,7 +125,7 @@ class ProfileNudgeService {
           id: 'location',
           title: 'Set your location',
           description: 'Let brands know where you are located.',
-          actionRoute: '/onboarding/4',
+          actionRoute: '/influencer/profile?edit=true',
           icon: Iconsax.location,
         );
       }
@@ -136,7 +136,7 @@ class ProfileNudgeService {
           id: 'platforms',
           title: 'Connect social accounts',
           description: 'Connect at least one platform to show your reach.',
-          actionRoute: '/onboarding/4',
+          actionRoute: '/influencer/profile?edit=true',
           icon: Iconsax.link,
         );
       }

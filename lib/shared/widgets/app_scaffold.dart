@@ -114,7 +114,27 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
       },
       child: Scaffold(
         extendBody: true,
-        body: widget.child,
+        body: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (hideBottomNav) return;
+            if (details.primaryVelocity == null) return;
+
+            if (details.primaryVelocity! < -300) {
+              // Swipe left -> Next tab
+              if (_currentIndex < items.length - 1) {
+                final nextIndex = _currentIndex + 1;
+                context.go(items[nextIndex].path);
+              }
+            } else if (details.primaryVelocity! > 300) {
+              // Swipe right -> Previous tab
+              if (_currentIndex > 0) {
+                final prevIndex = _currentIndex - 1;
+                context.go(items[prevIndex].path);
+              }
+            }
+          },
+          child: widget.child,
+        ),
         bottomNavigationBar: hideBottomNav ? null : Container(
           color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),

@@ -546,18 +546,18 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
             color: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
             child: TabBar(
               controller: _tabController,
-              labelColor: AppColors.textPrimary,
+              labelColor: isDark ? Colors.white : Colors.black,
               unselectedLabelColor: AppColors.textMuted,
-              indicatorColor: AppColors.accent,
-              indicatorSize: TabBarIndicatorSize.label,
-              indicatorWeight: 2.5,
-              dividerColor: Colors.transparent,
+              indicatorColor: isDark ? Colors.white : Colors.black,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorWeight: 3.0,
+              dividerColor: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
               labelStyle: GoogleFonts.inter(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
               unselectedLabelStyle: GoogleFonts.inter(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               tabs: const [

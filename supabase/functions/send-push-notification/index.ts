@@ -126,6 +126,7 @@ serve(async (req) => {
           reference_id: refId,
           title: title,
           body: content,
+          recipient_id: record.user_id,
         },
         android: {
           priority: "HIGH",

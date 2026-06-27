@@ -217,26 +217,29 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
       attempts++;
     }
 
-    final currentUser = client.auth.currentUser;
-    if (currentUser == null) {
-      debugPrint('[PUSH BACKGROUND ACTION ERROR] No authenticated user found after waiting.');
-      return;
-    }
-
     final Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(response.payload!));
     final roomId = data['reference_id'] as String?;
+    final recipientId = data['recipient_id'] as String?;
     final String? title = data['title'] ?? data['body'];
     final String? body = data['body'];
     final int notifId = response.id ?? (title?.hashCode ?? 0) ^ (body?.hashCode ?? 0);
 
+    final currentUser = client.auth.currentUser;
+    // Fallback to recipientId (recipient of notification) if currentSession is not loaded
+    final senderId = currentUser?.id ?? recipientId;
+    if (senderId == null) {
+      debugPrint('[PUSH BACKGROUND ACTION ERROR] No sender ID available (currentUser and recipientId are both null).');
+      return;
+    }
+
     if (roomId != null) {
       if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
-        debugPrint('[PUSH BACKGROUND REPLY] Sending reply to room $roomId: ${response.input}');
+        debugPrint('[PUSH BACKGROUND REPLY] Sending reply to room $roomId from sender $senderId: ${response.input}');
 
         // Send message using Supabase directly
         await client.from('messages').insert({
           'room_id': roomId,
-          'sender_id': currentUser.id,
+          'sender_id': senderId,
           'content': response.input!,
         });
 
@@ -249,12 +252,12 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
       } else if (response.actionId == 'action_mark_read') {
         debugPrint('[PUSH BACKGROUND MARK READ] Marking messages read in room $roomId');
 
-        // Update all messages in the room not sent by currentUser to is_read = true
+        // Update all messages in the room not sent by the recipient/current user to is_read = true
         await client
             .from('messages')
             .update({'is_read': true})
             .eq('room_id', roomId)
-            .neq('sender_id', currentUser.id)
+            .neq('sender_id', senderId)
             .eq('is_read', false);
 
         debugPrint('[PUSH BACKGROUND MARK READ SUCCESS] Messages marked read.');
@@ -634,12 +637,22 @@ class PushNotificationManager {
         'token_length': token.length,
       });
 
-      // Register or update token in database
-      await SupabaseService.client.from('user_push_tokens').upsert({
+      // First delete any existing registration for this token (regardless of user) to avoid RLS conflicts on update
+      try {
+        await SupabaseService.client
+            .from('user_push_tokens')
+            .delete()
+            .eq('fcm_token', token);
+      } catch (e) {
+        debugPrint('[PUSH WARNING] Failed to delete existing token before sync: $e');
+      }
+
+      // Register token in database
+      await SupabaseService.client.from('user_push_tokens').insert({
         'user_id': user.id,
         'fcm_token': token,
         'updated_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'fcm_token');
+      });
 
       await _logDiagnostic('push.token_success', {
         'user_id': user.id,
@@ -654,6 +667,8 @@ class PushNotificationManager {
   }
 
   Future<void> removeTokenFromDatabase() async {
+    _initialized = false;
+    _initializing = false;
     try {
       final token = await _fcm.getToken();
       if (token == null) return;

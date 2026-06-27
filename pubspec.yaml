@@ -46,6 +46,7 @@ dependencies:
   in_app_review: 2.0.10
   flutter_markdown: 0.7.6
   flutter_cache_manager: ^3.3.2
+  image: ^4.8.0
 
 dev_dependencies:
   flutter_test:
