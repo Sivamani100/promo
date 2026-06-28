@@ -1,0 +1,32 @@
+# Ignore native platform folders
+android/
+ios/
+windows/
+macos/
+linux/
+
+# Ignore native Flutter build caches and platform builds
+build/app/
+build/ios/
+build/windows/
+build/macos/
+build/linux/
+build/host/
+build/unit_test_assets/
+build/flutter_assets/
+# Do NOT ignore build/web/ as Vercel needs it
+
+# Ignore development files and tools
+.dart_tool/
+.git/
+.github/
+.flutter-plugins
+.flutter-plugins-dependencies
+README.md
+Untitled-1.txt
+hs_err_pid*.log
+
+# Ignore web source and modules
+node_modules/
+**/node_modules/
+promo_landingpage/
