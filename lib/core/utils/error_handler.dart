@@ -25,6 +25,18 @@ class AppErrorHandler {
       if (msg.contains('user_not_found') || msg.contains('user not found')) {
         return 'No account found with that email.';
       }
+      
+      // Google ID token validation failures or OAuth errors should return a friendly error message, NOT "Session expired"
+      if (msg.contains('id_token') || 
+          msg.contains('id token') || 
+          msg.contains('oauth') || 
+          msg.contains('google') ||
+          msg.contains('token signature') ||
+          msg.contains('invalid token') ||
+          msg.contains('invalid id token')) {
+        return 'Google authentication failed. Please try again.';
+      }
+
       if (msg.contains('invalid_grant')) {
         return 'Session expired. Please sign in again.';
       }
@@ -38,17 +50,6 @@ class AppErrorHandler {
           msg.contains('refresh token is invalid') ||
           msg.contains('session expired')) {
         return 'Session expired. Please sign in again.';
-      }
-      
-      // Google ID token validation failures or OAuth errors should return a friendly error message, NOT "Session expired"
-      if (msg.contains('id_token') || 
-          msg.contains('id token') || 
-          msg.contains('oauth') || 
-          msg.contains('google') ||
-          msg.contains('token signature') ||
-          msg.contains('invalid token') ||
-          msg.contains('invalid id token')) {
-        return 'Google authentication failed. Please try again.';
       }
       
       return error.message; // AuthExceptions are usually user-facing already, but we guard them
