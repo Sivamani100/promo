@@ -59,7 +59,7 @@ node_modules/
 promo_landingpage/
 
 # Ignore source, tests, supabase and mobile assets not needed by Vercel
-lib/
-assets/
-supabase/
-test/
+/lib/
+/assets/
+/supabase/
+/test/
