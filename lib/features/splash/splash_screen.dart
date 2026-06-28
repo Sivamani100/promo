@@ -104,6 +104,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         }
                       },
                     ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      label: 'Update Later',
+                      isPrimary: false,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _continueAfterUpdateCheck();
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -241,6 +250,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _startAnimation();
   }
 
+  Future<void> _continueAfterUpdateCheck() async {
+    try {
+      // 2. Check Biometric Lock
+      final session = SupabaseService.client.auth.currentSession;
+      final biometricEnabled = ref.read(biometricLockProvider);
+      if (session != null && biometricEnabled) {
+        final success = await _authenticateWithBiometrics();
+        if (!success) {
+          setState(() {
+            _isLocked = true;
+          });
+          return; // STOP splash completion redirect, lock overlay shows
+        }
+      }
+
+      await Future.delayed(const Duration(milliseconds: 1600));
+      if (!mounted) return;
+      ref.read(splashCompletedProvider.notifier).state = true;
+    } catch (e) {
+      debugPrint('Error in splash screen check: $e');
+      if (mounted) {
+        ref.read(splashCompletedProvider.notifier).state = true;
+      }
+    }
+  }
+
   Future<void> _startAnimation() async {
     try {
       await Future.delayed(const Duration(milliseconds: 200));
@@ -273,22 +308,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         }
       }
 
-      // 2. Check Biometric Lock
-      final session = SupabaseService.client.auth.currentSession;
-      final biometricEnabled = ref.read(biometricLockProvider);
-      if (session != null && biometricEnabled) {
-        final success = await _authenticateWithBiometrics();
-        if (!success) {
-          setState(() {
-            _isLocked = true;
-          });
-          return; // STOP splash completion redirect, lock overlay shows
-        }
-      }
-
-      await Future.delayed(const Duration(milliseconds: 1600));
-      if (!mounted) return;
-      ref.read(splashCompletedProvider.notifier).state = true;
+      await _continueAfterUpdateCheck();
     } catch (e) {
       debugPrint('Error in splash screen animation: $e');
       if (mounted) {

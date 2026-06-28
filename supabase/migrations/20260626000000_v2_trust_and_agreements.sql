@@ -261,7 +261,7 @@ INSERT INTO public.platform_config (key, value, description) VALUES
   ('auto_suspend_report_threshold', '5', 'Pending reports before auto-suspension'),
   ('featured_categories', '["Fashion","Tech","Food","Travel","Beauty","Fitness","Gaming","Lifestyle"]', 'Categories shown in featured section'),
   ('maintenance_mode', 'false', 'If true, show maintenance screen to all users'),
-  ('min_app_version', '"1.0.0"', 'Minimum supported app version'),
+  ('min_app_version', '"1.0.1"', 'Minimum supported app version'),
   ('max_file_upload_mb', '10', 'Maximum file upload size in MB')
 ON CONFLICT (key) DO NOTHING;
 

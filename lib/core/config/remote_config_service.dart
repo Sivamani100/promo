@@ -75,7 +75,7 @@ class RemoteConfigService {
       // Strip surrounding quotes if stored as JSON string
       return val.replaceAll('"', '');
     }
-    return '1.0.0';
+    return '1.0.1';
   }
 
   /// Get the maximum number of cards a brand can create per day.

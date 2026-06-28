@@ -196,7 +196,7 @@ class SettingsScreen extends ConsumerWidget {
             builder: (context, snapshot) {
               final versionStr = snapshot.hasData
                   ? 'Promo v${snapshot.data!.version} (Build ${snapshot.data!.buildNumber})'
-                  : 'Promo v1.0.0 (Build 1)';
+                  : 'Promo v1.0.1 (Build 2)';
               return Center(
                 child: Text(
                   versionStr,
