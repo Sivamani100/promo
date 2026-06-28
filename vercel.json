@@ -1,12 +1,40 @@
 {
   "rewrites": [
     {
-      "source": "/landingpage/how-it-works",
-      "destination": "/landingpage/how-it-works/index.html"
+      "source": "/landingpage/about",
+      "destination": "/landingpage/about.html"
     },
     {
-      "source": "/landingpage/about",
-      "destination": "/landingpage/about/index.html"
+      "source": "/landingpage/how-it-works",
+      "destination": "/landingpage/how-it-works.html"
+    },
+    {
+      "source": "/landingpage/privacy",
+      "destination": "/landingpage/privacy.html"
+    },
+    {
+      "source": "/landingpage/terms",
+      "destination": "/landingpage/terms.html"
+    },
+    {
+      "source": "/landingpage/blog",
+      "destination": "/landingpage/blog.html"
+    },
+    {
+      "source": "/landingpage/blog/best-influencer-marketing-strategies",
+      "destination": "/landingpage/blog/best-influencer-marketing-strategies.html"
+    },
+    {
+      "source": "/landingpage/blog/how-to-find-niche-creators",
+      "destination": "/landingpage/blog/how-to-find-niche-creators.html"
+    },
+    {
+      "source": "/landingpage/blog/roi-micro-influencers",
+      "destination": "/landingpage/blog/roi-micro-influencers.html"
+    },
+    {
+      "source": "/landingpage/blog/campaign-safety-guidelines",
+      "destination": "/landingpage/blog/campaign-safety-guidelines.html"
     },
     {
       "source": "/landingpage",
