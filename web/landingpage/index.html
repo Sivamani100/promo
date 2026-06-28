@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promo — Premium Influencer Marketplace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            primary: '#FB432C',
+                            secondary: '#131519',
+                            accent: '#FFEEE9',
+                        },
+                        primary: '#FB432C',
+                        'brand-primary': '#FB432C',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Inter', 'sans-serif'],
+                        satoshi: ['Satoshi', 'Inter', 'sans-serif'],
+                        'instrument-serif': ['Instrument Serif', 'Georgia', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        .gradient-brand {
+            background-image: linear-gradient(315deg, #FB432C 0%, #FF591E 100%);
+        }
+        @keyframes marquee-vertical {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        .animate-marquee-vertical {
+            animation: marquee-vertical 25s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-white text-black font-sans antialiased selection:bg-black selection:text-white overflow-x-hidden">
+    <!-- Ambient background glow -->
+    <div aria-hidden="true" class="z-[2] absolute inset-0 pointer-events-none opacity-50 hidden lg:block contain-strict">
+        <div class="w-[35rem] h-[80rem] -translate-y-[350px] absolute left-0 top-0 -rotate-45 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,hsla(12,90%,58%,.07)_0,hsla(0,0%,55%,.02)_50%,hsla(0,0%,45%,0)_80%)]"></div>
+        <div class="h-[80rem] absolute left-0 top-0 w-56 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(12,90%,58%,.05)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)] [translate:5%_-50%]"></div>
+        <div class="h-[80rem] -translate-y-[350px] absolute left-0 top-0 w-56 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]"></div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="fixed z-50 w-full px-4 sm:px-6 top-[30px]">
+        <nav id="navbar" class="mx-auto max-w-6xl px-6 rounded-full border border-gray-200 bg-white/50 backdrop-blur-md transition-all duration-300 lg:px-14 shadow-sm flex items-center justify-between py-3 lg:py-4">
+            <a href="/landingpage" aria-label="Promo home" class="flex items-center text-2xl font-black tracking-tighter">
+                Promo<span class="text-brand-primary">.</span>
+            </a>
+            
+            <ul class="hidden lg:flex gap-8 text-sm">
+                <li><a href="/landingpage/how-it-works" class="text-gray-500 hover:text-black block duration-150 font-medium text-[11px] uppercase tracking-[0.15em]">How It Works</a></li>
+                <li><a href="/landingpage/about" class="text-gray-500 hover:text-black block duration-150 font-medium text-[11px] uppercase tracking-[0.15em]">About Us</a></li>
+                <li><a href="#faq" class="text-gray-500 hover:text-black block duration-150 font-medium text-[11px] uppercase tracking-[0.15em]">FAQs</a></li>
+                <li><a href="#contact" class="text-gray-500 hover:text-black block duration-150 font-medium text-[11px] uppercase tracking-[0.15em]">Contact</a></li>
+            </ul>
+
+            <div class="flex items-center gap-4">
+                <a href="/" class="h-10 rounded-full px-8 text-sm bg-brand-primary hover:bg-black text-white font-medium shadow-xl shadow-brand-primary/20 transition-all duration-300 flex items-center justify-center active:scale-95">
+                    Open Web App
+                </a>
+                <button id="menuOpenBtn" class="lg:hidden text-black focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile menu overlay -->
+    <div id="mobileMenu" class="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl p-8 origin-top overflow-hidden flex flex-col justify-between transition-all duration-300 opacity-0 pointer-events-none">
+        <div>
+            <div class="flex items-center justify-between pb-8 border-b border-gray-100">
+                <a href="/landingpage" class="text-2xl font-black tracking-tighter">Promo<span class="text-brand-primary">.</span></a>
+                <button id="menuCloseBtn" class="text-black"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <ul class="flex flex-col gap-6 pt-12">
+                <li><a href="/landingpage/how-it-works" class="text-[20px] font-bold text-black hover:text-brand-primary transition-colors flex items-center justify-between group">How It Works <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i></a></li>
+                <li><a href="/landingpage/about" class="text-[20px] font-bold text-black hover:text-brand-primary transition-colors flex items-center justify-between group">About Us <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i></a></li>
+                <li><a href="#faq" class="text-[20px] font-bold text-black hover:text-brand-primary transition-colors flex items-center justify-between group">FAQs <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i></a></li>
+                <li><a href="#contact" class="text-[20px] font-bold text-black hover:text-brand-primary transition-colors flex items-center justify-between group">Contact <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i></a></li>
+            </ul>
+        </div>
+        <div class="pt-6 border-t border-gray-100 flex flex-col gap-4">
+            <a href="/" class="h-14 rounded-2xl w-full bg-brand-primary hover:bg-black text-white font-bold text-lg shadow-xl shadow-brand-primary/20 transition-all duration-300 flex items-center justify-center">
+                Open Web App
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Hero -->
+    <main class="overflow-hidden">
+        <section class="relative pt-[160px] md:pt-[180px]">
+            <div class="absolute inset-0 -z-10 w-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,white_75%)]"></div>
+            <div class="mx-auto max-w-7xl px-6 text-center">
+                <!-- Badge -->
+                <div class="mx-auto flex w-fit items-center gap-4 rounded-full border border-gray-200 bg-gray-50 p-1 pl-6 shadow-md shadow-black/5 transition-all duration-300 group hover:bg-white">
+                    <span class="text-sm font-normal text-gray-700">100% Free Influencer Marketplace</span>
+                    <span class="block h-4 w-0.5 border-l border-gray-300 bg-white"></span>
+                    <div class="bg-white group-hover:bg-gray-50 w-6 h-6 overflow-hidden rounded-full duration-500 flex items-center justify-center">
+                        <i data-lucide="arrow-right" class="w-3 h-3 text-gray-600 group-hover:translate-x-1 duration-300"></i>
+                    </div>
+                </div>
+
+                <!-- Headline -->
+                <h1 class="mt-8 max-w-4xl mx-auto text-balance text-6xl font-bold tracking-tight text-black md:text-7xl lg:mt-10 xl:text-[5rem] leading-[1.05]">
+                    Premium Collaborations,{' '}
+                    <span class="text-transparent bg-clip-text gradient-brand">
+                        Made Simple.
+                    </span>
+                </h1>
+
+                <!-- Sub-headline -->
+                <p class="mx-auto mt-6 max-w-3xl text-balance text-lg text-gray-500 font-medium leading-relaxed">
+                    Post your campaign cards, set targeting requirements (niches, location, languages), match with elite creators, and track your metrics in real-time. No clutter, pure performance.
+                </p>
+
+                <!-- CTA buttons -->
+                <div class="mt-10 flex flex-col items-center justify-center gap-3 md:flex-row">
+                    <div class="bg-orange-50 rounded-full border border-brand-primary/10 p-0.5">
+                        <a href="/" class="h-10 rounded-full px-8 text-sm font-medium bg-brand-primary hover:bg-black text-white shadow-xl shadow-brand-primary/20 transition-all duration-300 flex items-center justify-center active:scale-95">
+                            Open Web App
+                        </a>
+                    </div>
+                    <a href="/landingpage/how-it-works" class="h-10 rounded-full px-8 bg-black hover:bg-brand-primary text-white font-medium text-sm transition-all duration-300 shadow-xl shadow-black/20 flex items-center justify-center active:scale-95">
+                        <span>See How It Works</span>
+                        <i data-lucide="chevron-right" class="ml-1 w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <!-- Trust badges -->
+                <div class="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4 text-brand-primary"></i>
+                        <span>Zero Listing Fees</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-brand-primary"></i>
+                        <span>Instant Matchmaker</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="globe" class="w-4 h-4 text-brand-primary"></i>
+                        <span>Global Creator Network</span>
+                    </div>
+                </div>
+
+                <!-- Mockup wrapper -->
+                <div class="relative mt-10 overflow-hidden px-2 sm:mt-10 md:mt-12 w-full flex justify-center">
+                    <div class="ring-gray-200 bg-white relative mx-auto max-w-7xl overflow-hidden rounded-2xl border border-gray-200 p-3 shadow-2xl shadow-black/10 ring-1 w-full">
+                        <div class="aspect-[4/3] sm:aspect-[15/8] relative rounded-xl overflow-hidden bg-[#F8FAFC] border border-gray-100 flex flex-col w-full shadow-inner">
+                            <!-- Fake browser chrome -->
+                            <div class="h-10 bg-white border-b border-gray-100 flex items-center gap-3 px-4">
+                                <div class="flex gap-1.5">
+                                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                                </div>
+                                <div class="flex-1 h-6 bg-gray-100 rounded-md mx-8 flex items-center px-3 gap-2">
+                                    <i data-lucide="shield" class="w-3 h-3 text-brand-primary"></i>
+                                    <span class="text-[10px] text-gray-400 font-mono">promo.arkio.in/brand/dashboard</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Inside browser mock content -->
+                            <div class="flex-1 overflow-hidden bg-[#0b0c0f] text-white p-6 flex flex-col gap-4 font-sans text-left">
+                                <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                                    <span class="text-lg font-bold">Promo<span class="text-brand-primary">.</span></span>
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <div class="w-6 h-6 rounded-full bg-brand-primary flex items-center justify-center font-bold">S</div>
+                                        <span>Siva's Brand</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-4 gap-4">
+                                    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                                        <div class="text-[9px] text-zinc-500 uppercase font-semibold">Active Cards</div>
+                                        <div class="text-lg font-bold">4</div>
+                                    </div>
+                                    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                                        <div class="text-[9px] text-zinc-500 uppercase font-semibold">Total Reach</div>
+                                        <div class="text-lg font-bold">1.2M</div>
+                                    </div>
+                                    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                                        <div class="text-[9px] text-zinc-500 uppercase font-semibold">Matches</div>
+                                        <div class="text-lg font-bold">18</div>
+                                    </div>
+                                    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+                                        <div class="text-[9px] text-zinc-500 uppercase font-semibold">Budget Spent</div>
+                                        <div class="text-lg font-bold">₹1,20,000</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-5 gap-4 flex-1 overflow-hidden">
+                                    <div class="col-span-3 bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col gap-2">
+                                        <div class="text-xs font-bold text-brand-primary uppercase tracking-wider pb-1 border-b border-zinc-800">Your Campaign Cards</div>
+                                        <div class="flex justify-between items-center bg-black/40 border border-zinc-800 p-2.5 rounded">
+                                            <div>
+                                                <h4 class="text-xs font-bold">Summer Collection Video Launch</h4>
+                                                <p class="text-[9px] text-zinc-500">Fashion &bull; English, Hindi &bull; Instagram Reel &bull; Budget: ₹45,000</p>
+                                            </div>
+                                            <span class="text-[8px] bg-green-500/10 border border-green-500/20 text-green-500 px-2 py-0.5 rounded uppercase font-extrabold">Active</span>
+                                        </div>
+                                        <div class="flex justify-between items-center bg-black/40 border border-zinc-800 p-2.5 rounded">
+                                            <div>
+                                                <h4 class="text-xs font-bold">Gaming App Review & Shoutout</h4>
+                                                <p class="text-[9px] text-zinc-500">Gaming &bull; Hindi, Tamil &bull; YouTube Video &bull; Budget: ₹60,000</p>
+                                            </div>
+                                            <span class="text-[8px] bg-green-500/10 border border-green-500/20 text-green-500 px-2 py-0.5 rounded uppercase font-extrabold">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-span-2 bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col gap-2">
+                                        <div class="text-xs font-bold text-brand-primary uppercase tracking-wider pb-1 border-b border-zinc-800">Top Matches</div>
+                                        <div class="flex items-center gap-2 bg-black/20 p-2 border border-zinc-800/40 rounded">
+                                            <div class="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center font-bold text-xs">P</div>
+                                            <div>
+                                                <h5 class="text-xs font-bold">Priya Sharma</h5>
+                                                <p class="text-[9px] text-zinc-500">Fashion &bull; 150k &bull; 4.9⭐</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 bg-black/20 p-2 border border-zinc-800/40 rounded">
+                                            <div class="w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center font-bold text-xs">R</div>
+                                            <div>
+                                                <h5 class="text-xs font-bold">Rahul Verma</h5>
+                                                <p class="text-[9px] text-zinc-500">Tech &bull; 90k &bull; 4.8⭐</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="w-full bg-white pt-[100px] pb-0 relative overflow-hidden">
+            <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#000 1.5px, transparent 0); background-size: 40px 40px;"></div>
+            <div class="max-w-[1280px] mx-auto px-6 relative z-10">
+                <div class="mx-auto mb-20 max-w-2xl text-center">
+                    <div class="inline-flex items-center gap-2.5 px-4 h-8 rounded-full bg-black/5 border border-black/5 mb-8 mx-auto">
+                        <div class="w-2 h-2 rounded-full bg-black animate-pulse"></div>
+                        <span class="text-[10px] font-bold text-black uppercase tracking-[0.2em] leading-none">Simple Process</span>
+                    </div>
+                    <h2 class="text-[40px] md:text-[54px] font-extrabold tracking-tighter text-black leading-none mb-6">
+                        Scale Campaigns in 3 Easy Steps
+                    </h2>
+                    <p class="text-lg font-medium text-gray-500 leading-relaxed italic max-w-2xl mx-auto">
+                        Stop worrying about long DM threads or messy negotiations. Match with verified influencers and coordinate campaigns instantly.
+                    </p>
+                </div>
+
+                <div class="relative mx-auto mb-12 w-full max-w-4xl hidden md:block">
+                    <div aria-hidden="true" class="absolute left-[16.6667%] top-1/2 h-[1px] w-[66.6667%] -translate-y-1/2 bg-gray-100"></div>
+                    <div class="relative grid grid-cols-3">
+                        <div class="flex h-10 w-10 items-center justify-center justify-self-center rounded-full bg-white border border-gray-100 font-bold text-black text-sm shadow-sm ring-8 ring-white transition-all duration-300 hover:border-brand-primary hover:text-brand-primary hover:scale-110">01</div>
+                        <div class="flex h-10 w-10 items-center justify-center justify-self-center rounded-full bg-white border border-gray-100 font-bold text-black text-sm shadow-sm ring-8 ring-white transition-all duration-300 hover:border-brand-primary hover:text-brand-primary hover:scale-110">02</div>
+                        <div class="flex h-10 w-10 items-center justify-center justify-self-center rounded-full bg-white border border-gray-100 font-bold text-black text-sm shadow-sm ring-8 ring-white transition-all duration-300 hover:border-brand-primary hover:text-brand-primary hover:scale-110">03</div>
+                    </div>
+                </div>
+
+                <div class="mx-auto grid max-w-5xl grid-cols-1 gap-10 md:grid-cols-3">
+                    <!-- Step 1 -->
+                    <div class="relative rounded-2xl border bg-white p-6 md:p-8 text-black transition-all duration-500 ease-in-out group hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-primary/5 hover:border-brand-primary/30 text-left">
+                        <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white shadow-lg shadow-black/20 group-hover:bg-brand-primary group-hover:scale-110 transition-all duration-500">
+                            <i data-lucide="layers" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="mb-3 text-lg md:text-xl font-bold tracking-tight">Post Campaign Cards</h3>
+                        <p class="mb-8 text-xs md:text-sm font-medium text-gray-500 leading-relaxed">Fill in campaign details, budget terms, target platforms, niches, and required languages for the creators.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Language Filters</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Niche Tag Vetting</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Free Card Listing</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="relative rounded-2xl border bg-white p-6 md:p-8 text-black transition-all duration-500 ease-in-out group hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-primary/5 hover:border-brand-primary/30 text-left">
+                        <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white shadow-lg shadow-black/20 group-hover:bg-brand-primary group-hover:scale-110 transition-all duration-500">
+                            <i data-lucide="users" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="mb-3 text-lg md:text-xl font-bold tracking-tight">Review & Match</h3>
+                        <p class="mb-8 text-xs md:text-sm font-medium text-gray-500 leading-relaxed">Our smart platform verifies counts and matches creators instantly. Vetting influencers is quick and straightforward.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Verified Follower Count</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Smart Match Calculations</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">One-tap Vetting</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="relative rounded-2xl border bg-white p-6 md:p-8 text-black transition-all duration-500 ease-in-out group hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-primary/5 hover:border-brand-primary/30 text-left">
+                        <div class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white shadow-lg shadow-black/20 group-hover:bg-brand-primary group-hover:scale-110 transition-all duration-500">
+                            <i data-lucide="shield-check" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="mb-3 text-lg md:text-xl font-bold tracking-tight">Collaborate Safely</h3>
+                        <p class="mb-8 text-xs md:text-sm font-medium text-gray-500 leading-relaxed">Discuss briefs in real-time chat, upload creative assets, approve milestone progress, and secure campaign payout terms.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Real-time In-app Chat</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Milestone Progress Control</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black/5">
+                                    <div class="h-1.5 w-1.5 rounded-full bg-black"></div>
+                                </div>
+                                <span class="text-[13px] font-bold text-gray-600 uppercase tracking-tight">Encrypted Files Grid</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="pt-[100px] pb-0 bg-white border-t border-gray-100">
+            <div class="mx-auto w-full max-w-[1280px] space-y-16 px-6">
+                <div class="mx-auto max-w-3xl text-center">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 border border-black/5 mb-6 mx-auto">
+                        <div class="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></div>
+                        <span class="text-[10px] font-black text-black uppercase tracking-[0.2em]">Service Features</span>
+                    </div>
+                    <h2 class="text-[40px] md:text-[54px] font-bold tracking-tighter text-black leading-none mb-6">
+                        Supercharge Your Brand Image.
+                    </h2>
+                    <p class="text-lg font-medium text-gray-500 leading-relaxed italic max-w-2xl mx-auto">
+                        Everything you need to list your campaigns and manage collaborations efficiently.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 divide-x divide-y divide-gray-100 border border-gray-100 sm:grid-cols-2 md:grid-cols-3 rounded-3xl overflow-hidden shadow-2xl shadow-black/[0.02] text-left">
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="users" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Attract Top Creators</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Reach hundreds of local, verified content creators looking for campaigns matching their niche handles.</p>
+                    </div>
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="trash-2" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Zero DM Spam Mess</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Keep all negotiations, chat messages, and content agreements inside one secure, structured dashboard.</p>
+                    </div>
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="translate" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Language Targeting</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Filter campaign matches by specific language capabilities (English, Hindi, Tamil, Telugu) for authentic local outreach.</p>
+                    </div>
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="shield" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Data Privacy Enforced</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Database is secured by strict Row-Level Security. Accounts and associated data can be deleted instantly.</p>
+                    </div>
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Modern Interface</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Modernize your business presence with beautiful profiles, portfolios, and responsive cards.</p>
+                    </div>
+                    <div class="bg-white p-10 flex flex-col gap-4 hover:bg-gray-50 transition-colors duration-300">
+                        <i data-lucide="activity" class="w-6 h-6 text-brand-primary"></i>
+                        <h3 class="text-lg font-bold tracking-tight">Real-time Performance</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed">Instant notifications keep both campaign creators and matching applicants synced through all milestone updates.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQs Section -->
+        <section id="faq" class="pt-20 pb-0 bg-white border-t border-[#E2E8F0]">
+            <div class="max-w-[1280px] mx-auto px-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                    <div class="lg:col-span-5 space-y-8 text-left">
+                        <div class="space-y-4">
+                            <div class="inline-flex items-center gap-2.5 px-4 h-8 bg-brand-primary/5 border border-brand-primary/10 rounded-full mb-8">
+                                <div class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></div>
+                                <span class="text-[10px] font-bold text-black uppercase tracking-[0.2em] leading-none">Common Questions</span>
+                            </div>
+                            <h2 class="text-[40px] md:text-[54px] font-extrabold tracking-tighter text-black leading-none mb-6">Frequently Asked Questions</h2>
+                            <p class="text-lg font-medium text-gray-500 leading-relaxed italic max-w-2xl mx-auto">Got a question about our influencer marketplace? Here are quick answers to the most common queries.</p>
+                        </div>
+                        <a href="/" class="h-12 px-8 bg-black text-white hover:bg-brand-primary font-medium text-sm rounded-full transition-all duration-300 shadow-xl shadow-black/20 flex items-center justify-center w-fit">Open Web App</a>
+                    </div>
+                    
+                    <div class="lg:col-span-7">
+                        <div class="divide-y divide-[#E2E8F0] border-t border-[#E2E8F0] text-left">
+                            <div class="border-b border-[#E2E8F0] py-6 last:border-0 border-t-0 faq-item">
+                                <button class="w-full flex items-center justify-between text-left group faq-question">
+                                    <span class="text-lg font-bold text-black/60 group-hover:text-black transition-colors duration-300">How much does it cost to use Promo?</span>
+                                    <div class="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center bg-white group-hover:bg-[#F8FAFC] transition-all duration-300 shadow-sm faq-icon-box">
+                                        <i data-lucide="x" class="w-4 h-4 text-[#94A3B8] rotate-45 transition-transform"></i>
+                                    </div>
+                                </button>
+                                <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+                                    <p class="pt-4 text-[#64748B] leading-relaxed max-w-2xl font-medium italic">Listing campaigns and matching with creators is 100% free. There are no registration fees or monthly charges.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-b border-[#E2E8F0] py-6 last:border-0 border-t-0 faq-item">
+                                <button class="w-full flex items-center justify-between text-left group faq-question">
+                                    <span class="text-lg font-bold text-black/60 group-hover:text-black transition-colors duration-300">Do influencers need to submit verification documents?</span>
+                                    <div class="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center bg-white group-hover:bg-[#F8FAFC] transition-all duration-300 shadow-sm faq-icon-box">
+                                        <i data-lucide="x" class="w-4 h-4 text-[#94A3B8] rotate-45 transition-transform"></i>
+                                    </div>
+                                </button>
+                                <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+                                    <p class="pt-4 text-[#64748B] leading-relaxed max-w-2xl font-medium italic">Yes. Influencers submit verification data to obtain a badge, ensuring only verified creators with actual organic reach apply to campaigns.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-b border-[#E2E8F0] py-6 last:border-0 border-t-0 faq-item">
+                                <button class="w-full flex items-center justify-between text-left group faq-question">
+                                    <span class="text-lg font-bold text-black/60 group-hover:text-black transition-colors duration-300">How does the language selection help my campaigns?</span>
+                                    <div class="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center bg-white group-hover:bg-[#F8FAFC] transition-all duration-300 shadow-sm faq-icon-box">
+                                        <i data-lucide="x" class="w-4 h-4 text-[#94A3B8] rotate-45 transition-transform"></i>
+                                    </div>
+                                </button>
+                                <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+                                    <p class="pt-4 text-[#64748B] leading-relaxed max-w-2xl font-medium italic">When creating a Campaign Card, brands can specify required languages (e.g. Hindi, Telugu, Tamil). Influencers instantly see these requirements, ensuring authentic localized reach.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="border-b border-[#E2E8F0] py-6 last:border-0 border-t-0 faq-item">
+                                <button class="w-full flex items-center justify-between text-left group faq-question">
+                                    <span class="text-lg font-bold text-black/60 group-hover:text-black transition-colors duration-300">Is my brand and chat data safe?</span>
+                                    <div class="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center bg-white group-hover:bg-[#F8FAFC] transition-all duration-300 shadow-sm faq-icon-box">
+                                        <i data-lucide="x" class="w-4 h-4 text-[#94A3B8] rotate-45 transition-transform"></i>
+                                    </div>
+                                </button>
+                                <div class="faq-answer max-h-0 overflow-hidden transition-all duration-300">
+                                    <p class="pt-4 text-[#64748B] leading-relaxed max-w-2xl font-medium italic">Absolutely. We use Supabase secure infrastructure with strict Row-Level Security. Data is only accessible to campaign participants, and is permanently deleted on account removal.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA with text marquee -->
+        <section class="min-h-[70vh] bg-white text-black flex items-center justify-center px-6 pt-[100px] pb-0 overflow-hidden relative border-t border-gray-100">
+            <div class="absolute inset-0 opacity-[0.03] pointer-events-none select-none" style="background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 40px 40px;"></div>
+            <div class="w-full max-w-7xl relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+                    <div class="space-y-10 max-w-xl text-left">
+                        <div class="space-y-4">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-black/5 border border-black/5 rounded-full mb-4">
+                                <div class="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></div>
+                                <span class="text-[10px] font-black text-black uppercase tracking-[0.3em]">Collaborate & Grow</span>
+                            </div>
+                            <h2 class="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-black uppercase leading-[0.9]">
+                                Ready to launch <br /> your campaign?
+                            </h2>
+                        </div>
+                        <p class="text-lg md:text-xl text-gray-500 font-medium max-w-xl italic leading-relaxed">
+                            Join hundreds of premium brands and verified influencers who are scaling campaigns with Promo. It's completely free to start.
+                        </p>
+                        <div class="flex flex-wrap gap-4 pt-4 px-1">
+                            <a href="/" class="h-12 px-8 bg-brand-primary text-white rounded-full font-medium text-sm transition-all duration-300 shadow-xl shadow-brand-primary/20 hover:bg-black hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
+                                Open Web App
+                            </a>
+                            <a href="/landingpage/how-it-works" class="h-12 px-8 bg-black text-white rounded-full font-medium text-sm transition-all duration-300 shadow-xl shadow-black/20 hover:bg-brand-primary hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
+                                See How It Works
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="relative h-[400px] lg:h-[500px] flex items-center justify-center overflow-hidden">
+                        <div class="relative w-full h-full">
+                            <div class="group flex flex-col overflow-hidden h-full">
+                                <div class="flex shrink-0 flex-col animate-marquee-vertical">
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Grow Your Brand</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Zero Spam DMs</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Instant Matching</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Language Filters</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Elite Creator Hub</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Escrow Milestones</div>
+                                </div>
+                                <div class="flex shrink-0 flex-col animate-marquee-vertical" aria-hidden="true">
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Grow Your Brand</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Zero Spam DMs</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Instant Matching</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Language Filters</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Elite Creator Hub</div>
+                                    <div class="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tighter py-8 marquee-item italic text-black/90 text-center lg:text-right">Escrow Milestones</div>
+                                </div>
+                            </div>
+                            <div class="pointer-events-none absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-white via-white/50 to-transparent z-10"></div>
+                            <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/50 to-transparent z-10"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="pt-[100px] pb-24 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="rounded-3xl border border-gray-200 bg-white p-8 md:p-12 shadow-2xl shadow-black/[0.02] grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start text-left">
+                    <div class="space-y-8">
+                        <div class="space-y-4">
+                            <h2 class="text-3xl md:text-4xl font-extrabold tracking-tighter text-black uppercase leading-none">Connect with Our Team</h2>
+                            <p class="text-base text-gray-500 font-medium max-w-md">Have any questions or feedback about using Promo? Get in touch and we'll get back to you shortly.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                            <div class="border border-gray-100 rounded-2xl p-6 bg-gray-50 space-y-2">
+                                <i data-lucide="mail" class="w-5 h-5 text-brand-primary"></i>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Support Email</span>
+                                <span class="text-xs font-bold text-black block truncate">mallipurapusiva@gmail.com</span>
+                            </div>
+                            <div class="border border-gray-100 rounded-2xl p-6 bg-gray-50 space-y-2">
+                                <i data-lucide="phone" class="w-5 h-5 text-brand-primary"></i>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Support Hotline</span>
+                                <span class="text-xs font-bold text-black block">+91 9849497911</span>
+                            </div>
+                            <div class="border border-gray-100 rounded-2xl p-6 bg-gray-50 space-y-2 md:col-span-2">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-brand-primary"></i>
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Headquarters</span>
+                                <span class="text-xs font-bold text-black block">Bangalore, Karnataka, India</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="contactForm" class="w-full space-y-5">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black text-black uppercase tracking-widest pl-1">Brand Name / Name</label>
+                            <input id="nameInput" required type="text" placeholder="Enter your name" class="h-12 bg-white border border-gray-200 focus:border-black transition-all rounded-lg px-4 outline-none text-sm" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black text-black uppercase tracking-widest pl-1">Email</label>
+                            <input id="emailInput" required type="email" placeholder="you@email.com" class="h-12 bg-white border border-gray-200 focus:border-black transition-all rounded-lg px-4 outline-none text-sm" />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black text-black uppercase tracking-widest pl-1">Message</label>
+                            <textarea id="messageInput" required rows="4" placeholder="How can we help you?" class="bg-white border border-gray-200 focus:border-black transition-all rounded-lg p-4 outline-none text-sm resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="h-12 w-full bg-black text-white hover:bg-brand-primary font-bold text-sm rounded-full transition-all duration-300 flex items-center justify-center">
+                            Submit Inquiry
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-24 bg-black border-t border-zinc-900 relative z-10 text-white text-left">
+        <div class="absolute inset-0 opacity-[0.1] pointer-events-none" style="background-image: radial-gradient(circle at 100% 100%, #FB432C 0%, transparent 40%)"></div>
+        <div class="max-w-[1280px] mx-auto px-6">
+            <!-- Top Newsletter -->
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-12 pb-16 mb-16 border-b border-zinc-900">
+                <div class="space-y-5 max-w-lg">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/5 rounded-full">
+                        <div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                        <span class="text-sm font-semibold text-white tracking-tight leading-none">For Brand Campaigns</span>
+                    </div>
+                    <h3 class="text-3xl font-bold text-white tracking-tighter uppercase leading-[1.1]">Join the Promo <br /> Network today.</h3>
+                </div>
+                <div class="w-full max-w-md space-y-6">
+                    <form id="newsletterForm" class="flex flex-col sm:flex-row p-1.5 bg-zinc-950 border border-zinc-800 rounded-[2rem] sm:rounded-full focus-within:border-white/20 focus-within:ring-4 focus-within:ring-white/[0.02] transition-all gap-2 sm:gap-0">
+                        <input id="newsEmailInput" type="email" required placeholder="Enter your email" class="flex-1 bg-transparent border-none outline-none px-6 py-4 sm:py-0 text-sm font-medium text-white tracking-tight placeholder:text-zinc-700" />
+                        <button type="submit" class="h-12 sm:h-10 px-8 bg-brand-primary text-white rounded-full font-bold text-sm transition-all duration-300 shadow-xl shadow-brand-primary/20 hover:bg-white hover:text-black hover:scale-[1.02] whitespace-nowrap">
+                            Get Started
+                        </button>
+                    </form>
+                    <p class="text-sm font-normal text-zinc-400 tracking-tight text-center sm:text-left px-6">
+                        Join hundreds of elite brands & influencers. Free setup. Grow safely.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Bottom legal -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 pt-10 border-t border-zinc-900">
+                <div class="space-y-4">
+                    <div class="text-2xl font-black tracking-tighter">Promo<span class="text-brand-primary">.</span></div>
+                    <p class="text-sm text-zinc-500">© 2026 Promo Labs. Empowering Brands & Creators.</p>
+                </div>
+                <ul class="flex gap-8 text-sm text-zinc-400">
+                    <li><a href="/landingpage/how-it-works" class="hover:text-white transition-colors">How It Works</a></li>
+                    <li><a href="/landingpage/about" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="/privacy-policy" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="/delete-account" class="hover:text-white transition-colors">Account Deletion</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Sticky Navbar logic
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+                navbar.classList.add('bg-white/80');
+                navbar.classList.remove('bg-white/50');
+            } else {
+                navbar.classList.remove('scrolled');
+                navbar.classList.add('bg-white/50');
+                navbar.classList.remove('bg-white/80');
+            }
+        });
+
+        // Mobile Menu Drawer logic
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuOpenBtn = document.getElementById('menuOpenBtn');
+        const menuCloseBtn = document.getElementById('menuCloseBtn');
+
+        menuOpenBtn.addEventListener('click', () => {
+            mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
+            mobileMenu.classList.add('opacity-100', 'pointer-events-auto');
+        });
+
+        menuCloseBtn.addEventListener('click', () => {
+            mobileMenu.classList.add('opacity-0', 'pointer-events-none');
+            mobileMenu.classList.remove('opacity-100', 'pointer-events-auto');
+        });
+
+        // FAQ Accordions logic
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const btn = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+            const icon = item.querySelector('.faq-icon-box i');
+            const heading = item.querySelector('span');
+
+            btn.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                
+                // Close all other items
+                faqItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                    otherItem.querySelector('.faq-icon-box i').classList.add('rotate-45');
+                    otherItem.querySelector('.faq-icon-box').classList.remove('bg-brand-primary', 'border-brand-primary');
+                    otherItem.querySelector('span').classList.remove('text-black');
+                    otherItem.querySelector('span').classList.add('text-black/60');
+                });
+
+                if (!isActive) {
+                    item.classList.add('active');
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                    icon.classList.remove('rotate-45');
+                    item.querySelector('.faq-icon-box').classList.add('bg-brand-primary', 'border-brand-primary');
+                    heading.classList.add('text-black');
+                    heading.classList.remove('text-black/60');
+                }
+            });
+        });
+
+        // Contact Form Submission Handler
+        const contactForm = document.getElementById('contactForm');
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert("Promo Marketplace: Inquiry sent successfully! We will contact you shortly.");
+            contactForm.reset();
+        });
+
+        // Newsletter Form Submission Handler
+        const newsletterForm = document.getElementById('newsletterForm');
+        newsletterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert("Promo Marketplace: Thank you for registering! You are now in our network.");
+            newsletterForm.reset();
+        });
+    </script>
+</body>
+</html>

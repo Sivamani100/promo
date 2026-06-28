@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/landingpage/how-it-works",
+      "destination": "/landingpage/how-it-works/index.html"
+    },
+    {
+      "source": "/landingpage/about",
+      "destination": "/landingpage/about/index.html"
+    },
+    {
+      "source": "/landingpage",
+      "destination": "/landingpage/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

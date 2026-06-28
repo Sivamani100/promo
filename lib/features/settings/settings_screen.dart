@@ -235,7 +235,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _buildOfficerDetail('Name', 'Ms. Priya Sharma'),
               _buildOfficerDetail('Designation', 'Grievance & Compliance Officer'),
-              _buildOfficerDetail('Email', 'compliance@promo.arkio.in'),
+              _buildOfficerDetail('Email', 'mallipurapusiva@gmail.com'),
               _buildOfficerDetail('Address', 'Brand Mobile App Pvt. Ltd., 4th Floor, Tech Hub, Bangalore, India'),
             ],
           ),
