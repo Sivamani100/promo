@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "build/web",
   "rewrites": [
     {
       "source": "/landingpage/about",
@@ -41,7 +42,7 @@
       "destination": "/landingpage/index.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!.*\\.[a-z0-9]+$).*)",
       "destination": "/index.html"
     }
   ],

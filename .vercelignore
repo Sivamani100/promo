@@ -5,7 +5,7 @@ windows/
 macos/
 linux/
 
-# Ignore native Flutter build caches and platform builds
+# Ignore specific native Flutter build caches and platform builds (keeping build/web)
 build/app/
 build/ios/
 build/windows/
@@ -14,7 +14,34 @@ build/linux/
 build/host/
 build/unit_test_assets/
 build/flutter_assets/
-# Do NOT ignore build/web/ as Vercel needs it
+build/app_links/
+build/connectivity_plus/
+build/emoji_picker_flutter/
+build/file_picker/
+build/firebase_core/
+build/firebase_messaging/
+build/flutter_local_notifications/
+build/flutter_plugin_android_lifecycle/
+build/flutter_secure_storage/
+build/geolocator_android/
+build/google_sign_in_android/
+build/image_picker_android/
+build/in_app_review/
+build/jni/
+build/jni_flutter/
+build/local_auth_android/
+build/native_assets/
+build/package_info_plus/
+build/reports/
+build/sentry_flutter/
+build/share_plus/
+build/shared_preferences_android/
+build/sqflite_android/
+build/test_cache/
+build/url_launcher_android/
+build/*.dill
+build/.cxx/
+build/2b7a328c8ac11ce62efb0360183b935d/
 
 # Ignore development files and tools
 .dart_tool/
@@ -30,3 +57,9 @@ hs_err_pid*.log
 node_modules/
 **/node_modules/
 promo_landingpage/
+
+# Ignore source, tests, supabase and mobile assets not needed by Vercel
+lib/
+assets/
+supabase/
+test/
