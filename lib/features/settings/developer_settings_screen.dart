@@ -14,10 +14,9 @@ class DeveloperSettingsScreen extends ConsumerWidget {
   Future<void> _launchUrl(BuildContext context, String urlString) async {
     final url = Uri.parse(urlString);
     try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $urlString';
+      final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        AppSnackbar.show(context, 'Could not open link: $urlString');
       }
     } catch (e) {
       if (context.mounted) {

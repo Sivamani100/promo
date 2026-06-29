@@ -276,64 +276,95 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
 
-    showPremiumDialog(
+    showModalBottomSheet(
       context: context,
-      title: 'New 1-to-1 Chat',
-      icon: Iconsax.message_add,
-      content: FutureBuilder<List<Map<String, dynamic>>>(
-        future: SupabaseService.client
-            .from('profiles')
-            .select('id, display_name, role, avatar_url')
-            .neq('id', user.id)
-            .then((res) => List<Map<String, dynamic>>.from(res)),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-          final profiles = snapshot.data ?? [];
-          if (profiles.isEmpty) {
-            return const Text('No profiles available to chat with.');
-          }
-
-          return SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: profiles.length,
-              itemBuilder: (ctx, idx) {
-                final profile = profiles[idx];
-                final display = profile['display_name'] ?? 'User';
-                final role = profile['role'] ?? 'User';
-                return ListTile(
-                  leading: AppAvatar(
-                    url: profile['avatar_url'],
-                    fallbackText: display,
-                    size: 36,
-                  ),
-                  title: Text(display, style: AppTextStyles.body),
-                  subtitle: Text(role.toUpperCase(), style: AppTextStyles.captionSm),
-                  onTap: () async {
-                    Navigator.pop(ctx);
-                    _startOneToOneChat(profile['id'] as String);
-                  },
-                );
-              },
-            ),
-          );
-        },
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actionsBuilder: (dialogCtx) => [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogCtx),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.message_add, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'New 1-to-1 Chat',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 350),
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: SupabaseService.client
+                        .from('profiles')
+                        .select('id, display_name, role, avatar_url')
+                        .neq('id', user.id)
+                        .then((res) => List<Map<String, dynamic>>.from(res)),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 100,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      final profiles = snapshot.data ?? [];
+                      if (profiles.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Text('No profiles available to chat with.'),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: profiles.length,
+                        itemBuilder: (ctx, idx) {
+                          final profile = profiles[idx];
+                          final display = profile['display_name'] ?? 'User';
+                          final role = profile['role'] ?? 'User';
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: AppAvatar(
+                              url: profile['avatar_url'],
+                              fallbackText: display,
+                              size: 36,
+                            ),
+                            title: Text(display, style: AppTextStyles.body),
+                            subtitle: Text(role.toUpperCase(), style: AppTextStyles.captionSm),
+                            onTap: () async {
+                              Navigator.pop(sheetCtx);
+                              _startOneToOneChat(profile['id'] as String);
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(sheetCtx),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -386,33 +417,61 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       }
 
       if (mounted) {
-        final selectedCamp = await showPremiumDialog<Map<String, dynamic>>(
+        final selectedCamp = await showModalBottomSheet<Map<String, dynamic>>(
           context: context,
-          title: 'Select Campaign',
-          icon: Iconsax.briefcase,
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: campaigns.length,
-              itemBuilder: (ctx, idx) {
-                final camp = campaigns[idx];
-                return ListTile(
-                  title: Text(camp['title'] ?? '', style: AppTextStyles.body),
-                  onTap: () => Navigator.pop(ctx, camp),
-                );
-              },
-            ),
+          useRootNavigator: true,
+          backgroundColor: AppColors.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          actionsBuilder: (dialogCtx) => [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: AppColors.textSecondary),
+          builder: (sheetCtx) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Iconsax.briefcase, color: AppColors.accent, size: 24),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Select Campaign',
+                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 250),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: campaigns.length,
+                        itemBuilder: (ctx, idx) {
+                          final camp = campaigns[idx];
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(camp['title'] ?? '', style: AppTextStyles.body),
+                            onTap: () => Navigator.pop(sheetCtx, camp),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
               ),
-            ),
-          ],
+            );
+          },
         );
 
         if (selectedCamp == null) return;
@@ -435,21 +494,26 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
 
     if (!mounted) return;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setWizardState) {
-            return Dialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 500),
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                child: Column(
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            top: 24,
+            left: 24,
+            right: 24,
+          ),
+          child: SafeArea(
+            child: StatefulBuilder(
+              builder: (dialogCtx, setWizardState) {
+                return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -462,7 +526,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Iconsax.close_circle),
-                          onPressed: () => Navigator.pop(ctx),
+                          onPressed: () => Navigator.pop(sheetCtx),
                         ),
                       ],
                     ),
@@ -470,43 +534,17 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                     TextField(
                       controller: nameCtrl,
                       onChanged: (_) => setWizardState(() {}),
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Group Name',
                         hintText: 'e.g., Summer Campaign 2026',
-                        labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                        floatingLabelStyle: TextStyle(color: AppColors.accent),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: AppColors.borderSubtle),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: AppColors.accent, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surface2,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: descCtrl,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Description (Optional)',
                         hintText: 'Group details and info...',
-                        labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
-                        floatingLabelStyle: TextStyle(color: AppColors.accent),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: AppColors.borderSubtle),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: AppColors.accent, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surface2,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -516,7 +554,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      height: MediaQuery.of(context).size.height * 0.35,
+                      height: MediaQuery.of(sheetCtx).size.height * 0.3,
                       decoration: BoxDecoration(
                         border: Border.all(color: AppColors.borderSubtle),
                         borderRadius: BorderRadius.circular(16),
@@ -576,48 +614,40 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                   },
                                 ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetCtx),
+                            child: const Text('Cancel'),
                           ),
-                          child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                         const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: nameCtrl.text.trim().isEmpty
-                              ? null
-                              : () async {
-                                  Navigator.pop(ctx);
-                                  _createGroupWithInvites(
-                                    title: nameCtrl.text.trim(),
-                                    description: descCtrl.text.trim(),
-                                    cardId: selectedCampaignId,
-                                    inviteUserIds: selectedUserIds.toList(),
-                                  );
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            elevation: 0,
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: nameCtrl.text.trim().isEmpty
+                                ? null
+                                : () {
+                                    Navigator.pop(sheetCtx);
+                                    _createGroupWithInvites(
+                                      title: nameCtrl.text.trim(),
+                                      description: descCtrl.text.trim(),
+                                      cardId: selectedCampaignId,
+                                      inviteUserIds: selectedUserIds.toList(),
+                                    );
+                                  },
+                            child: const Text('Create'),
                           ),
-                          child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
                   ],
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );

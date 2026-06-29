@@ -761,75 +761,108 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
     final links = (_application!['portfolio_links'] as List?)?.cast<String>() ?? [];
     final status = _application!['status'] ?? 'pending';
 
-    showPremiumDialog(
+    showModalBottomSheet(
       context: context,
-      title: 'My Application Details',
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('STATUS', style: AppTextStyles.overline),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: status == 'accepted' 
-                  ? AppColors.success.withOpacity(0.1) 
-                  : status == 'rejected' 
-                      ? AppColors.error.withOpacity(0.1) 
-                      : AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              status.toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-                color: status == 'accepted' 
-                    ? AppColors.success 
-                    : status == 'rejected' 
-                        ? AppColors.error 
-                        : AppColors.success,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Iconsax.briefcase, color: AppColors.accent, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        'My Application Details',
+                        style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text('STATUS', style: AppTextStyles.overline),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: status == 'accepted' 
+                          ? AppColors.success.withValues(alpha: 0.1) 
+                          : status == 'rejected' 
+                              ? AppColors.error.withValues(alpha: 0.1) 
+                              : AppColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      status.toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        color: status == 'accepted' 
+                            ? AppColors.success 
+                            : status == 'rejected' 
+                                ? AppColors.error 
+                                : AppColors.success,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('PITCH MESSAGE', style: AppTextStyles.overline),
+                  const SizedBox(height: 6),
+                  Text(
+                    pitch,
+                    style: AppTextStyles.body.copyWith(height: 1.4),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('PROPOSED RATE', style: AppTextStyles.overline),
+                  const SizedBox(height: 6),
+                  Text(
+                    rate,
+                    style: AppTextStyles.label.copyWith(fontSize: 16),
+                  ),
+                  if (links.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text('ATTACHED PORTFOLIO LINKS', style: AppTextStyles.overline),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: links.map((link) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface2,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Text(
+                          link,
+                          style: AppTextStyles.captionSm.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      )).toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Text('PITCH MESSAGE', style: AppTextStyles.overline),
-          const SizedBox(height: 6),
-          Text(
-            pitch,
-            style: AppTextStyles.body.copyWith(height: 1.4),
-          ),
-          const SizedBox(height: 16),
-          Text('PROPOSED RATE', style: AppTextStyles.overline),
-          const SizedBox(height: 6),
-          Text(
-            rate,
-            style: AppTextStyles.label,
-          ),
-          if (links.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text('ATTACHED PORTFOLIO LINKS', style: AppTextStyles.overline),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: links.map((link) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.surface2,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  link,
-                  style: AppTextStyles.captionSm.copyWith(fontWeight: FontWeight.w600),
-                ),
-              )).toList(),
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 

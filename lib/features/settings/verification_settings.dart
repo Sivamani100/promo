@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/data_services.dart';
 
 class VerificationSettingsScreen extends ConsumerStatefulWidget {
   const VerificationSettingsScreen({super.key});
@@ -22,6 +25,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
   String _docType = 'Passport';
   bool _submitting = false;
   String? _uploadedDocName;
+  String? _uploadedDocUrl;
 
   @override
   void initState() {
@@ -41,7 +45,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
 
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_uploadedDocName == null) {
+    if (_uploadedDocName == null || _uploadedDocUrl == null) {
       AppSnackbar.show(context, 'Please upload a verification document.');
       return;
     }
@@ -58,6 +62,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
       'full_name': _nameCtrl.text.trim(),
       'doc_type': _docType,
       'doc_name': _uploadedDocName,
+      'doc_url': _uploadedDocUrl,
       'submitted_at': DateTime.now().toUtc().toIso8601String(),
     };
 
@@ -65,7 +70,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
       await SupabaseService.client.from('verification_requests').insert({
         'user_id': user.id,
         'role': profile['role'],
-        'submitted_links': [_uploadedDocName],
+        'submitted_links': [_uploadedDocUrl],
         'notes': 'Official Name: ${_nameCtrl.text.trim()}, Doc Type: $_docType',
         'status': 'pending',
       });
@@ -82,10 +87,69 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
     }
   }
 
-  void _simulateUpload() {
-    setState(() {
-      _uploadedDocName = 'verify_document_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    });
+  Future<void> _pickAndUploadDocument() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) {
+        AppSnackbar.show(context, 'Failed to read file bytes.');
+        return;
+      }
+
+      setState(() => _submitting = true);
+
+      // Determine content type
+      String contentType = 'application/octet-stream';
+      final ext = (file.extension ?? 'jpg').toLowerCase();
+      if (['jpg', 'jpeg', 'png'].contains(ext)) {
+        contentType = ext == 'png' ? 'image/png' : 'image/jpeg';
+      } else if (ext == 'pdf') {
+        contentType = 'application/pdf';
+      }
+
+      final uploadedUrl = await StorageService().uploadFile(
+        'verification',
+        file.name,
+        bytes,
+        contentType,
+      );
+
+      setState(() {
+        _uploadedDocName = file.name;
+        _uploadedDocUrl = uploadedUrl;
+      });
+      
+      if (mounted) {
+        AppSnackbar.show(context, 'Document uploaded successfully!');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to upload document: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final url = Uri.parse(urlString);
+    try {
+      final launched = await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        AppSnackbar.show(context, 'Could not open link: $urlString');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to open link: $e');
+      }
+    }
   }
 
   @override
@@ -190,6 +254,26 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
           _buildInfoRow('Document Type', req['doc_type'] ?? 'N/A'),
           const SizedBox(height: 8),
           _buildInfoRow('Submitted At', _formatDate(req['submitted_at'])),
+          if (req['doc_url'] != null) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Document File', style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w500)),
+                GestureDetector(
+                  onTap: () => _launchUrl(req['doc_url']),
+                  child: Text(
+                    req['doc_name'] ?? 'View Document',
+                    style: AppTextStyles.labelSm.copyWith(
+                      color: AppColors.purple,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -236,7 +320,7 @@ class _VerificationSettingsScreenState extends ConsumerState<VerificationSetting
                   Text('Upload Verification Document', style: AppTextStyles.overline),
                   const SizedBox(height: 8),
                   InkWell(
-                    onTap: _simulateUpload,
+                    onTap: _submitting ? null : _pickAndUploadDocument,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),

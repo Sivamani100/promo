@@ -26,21 +26,15 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     setState(() => _saving = true);
 
     try {
+      final currentPrefs = Map<String, dynamic>.from(profile['preferences'] ?? {});
       if (isPreferencesColumn) {
-        final currentPrefs = Map<String, dynamic>.from(profile['preferences'] ?? {});
         currentPrefs[key] = value;
-        await SupabaseService.client.from('profiles').update({
-          'preferences': currentPrefs,
-        }).eq('id', user.id);
       } else {
-        final currentPrefs = Map<String, dynamic>.from(profile['notification_prefs'] ?? {});
-        currentPrefs[key] = value;
-        await SupabaseService.client.from('profiles').update({
-          'notification_prefs': currentPrefs,
-        }).eq('id', user.id);
+        final notifPrefs = Map<String, dynamic>.from(currentPrefs['notification_prefs'] ?? {});
+        notifPrefs[key] = value;
+        currentPrefs['notification_prefs'] = notifPrefs;
       }
-
-      await ref.read(authProvider.notifier).refreshProfile();
+      await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
     } catch (e) {
       if (mounted) {
         AppSnackbar.show(context, 'Failed to update preferences: $e');
@@ -54,8 +48,8 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
   Widget build(BuildContext context) {
     final profile = ref.watch(authProvider).profile;
     final role = ref.watch(authProvider).role;
-    final prefs = profile?['notification_prefs'] as Map<String, dynamic>? ?? {};
     final userPrefs = profile?['preferences'] as Map<String, dynamic>? ?? {};
+    final prefs = userPrefs['notification_prefs'] as Map<String, dynamic>? ?? {};
 
     final emailNotif = prefs['email_notifications'] ?? true;
     final chatNotif = prefs['chat_messages'] ?? true;

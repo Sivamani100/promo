@@ -389,37 +389,75 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
 
     final draft = await DraftRecoveryService.getDraft(userId);
     if (draft != null && mounted) {
-      showDialog(
+      showModalBottomSheet(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Unsaved Draft Found'),
-          content: Text(
-            'You have an unsaved draft from ${draft.timeAgo}. Would you like to resume editing?'
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                await DraftRecoveryService.clearDraft(userId);
-              },
-              child: const Text('Start Fresh', style: TextStyle(color: Colors.red)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _loadDraftData(draft.formData);
-                setState(() {
-                  _currentStep = draft.currentStep;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.purple,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Resume'),
-            ),
-          ],
+        useRootNavigator: true,
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
+        builder: (sheetCtx) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Iconsax.document_text, color: AppColors.accent, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Unsaved Draft Found',
+                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'You have an unsaved draft from ${draft.timeAgo}. Would you like to resume editing?',
+                    style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            side: BorderSide(color: AppColors.error),
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(sheetCtx);
+                            await DraftRecoveryService.clearDraft(userId);
+                          },
+                          child: const Text('Start Fresh'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(sheetCtx);
+                            _loadDraftData(draft.formData);
+                            setState(() {
+                              _currentStep = draft.currentStep;
+                            });
+                          },
+                          child: const Text('Resume'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
   }

@@ -640,72 +640,103 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final rooms = await _chatService.getRooms(user.id, role);
     if (!mounted) return;
 
-    showPremiumDialog(
+    showModalBottomSheet(
       context: context,
-      title: 'Forward Message',
-      icon: Iconsax.send_2,
-      content: rooms.isEmpty
-          ? const Text('No chats to forward to.')
-          : SizedBox(
-              width: double.maxFinite,
-              height: 300,
-              child: ListView.builder(
-                itemCount: rooms.length,
-                itemBuilder: (context, idx) {
-                  final room = rooms[idx];
-                  final isGroup = room['influencer_id'] == null;
-                  final title = isGroup
-                      ? (room['card']?['title'] ?? 'Group')
-                      : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.send_2, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Forward Message',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                rooms.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Text('No chats to forward to.'),
+                      )
+                    : ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: rooms.length,
+                          itemBuilder: (context, idx) {
+                            final room = rooms[idx];
+                            final isGroup = room['influencer_id'] == null;
+                            final title = isGroup
+                                ? (room['card']?['title'] ?? 'Group')
+                                : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
 
-                  return ListTile(
-                    leading: isGroup
-                        ? Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: AppColors.accent.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
-                          )
-                        : AppAvatar(
-                            url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
-                            fallbackText: title,
-                            size: 36,
-                          ),
-                    title: Text(title, style: AppTextStyles.body),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      try {
-                        await _chatService.forwardMessage(
-                          targetRoomId: room['id'] as String,
-                          senderId: user.id,
-                          content: msg['content'] ?? '',
-                          attachmentUrl: msg['attachment_url'] as String?,
-                          attachmentType: msg['attachment_type'] as String?,
-                          forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
-                        );
-                        if (mounted) {
-                          AppSnackbar.show(context, 'Message forwarded to $title');
-                        }
-                      } catch (e) {
-                        print('Error forwarding message: $e');
-                      }
-                    },
-                  );
-                },
-              ),
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: isGroup
+                                  ? Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accent.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
+                                    )
+                                  : AppAvatar(
+                                      url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
+                                      fallbackText: title,
+                                      size: 36,
+                                    ),
+                              title: Text(title, style: AppTextStyles.body),
+                              onTap: () async {
+                                Navigator.pop(sheetCtx);
+                                try {
+                                  await _chatService.forwardMessage(
+                                    targetRoomId: room['id'] as String,
+                                    senderId: user.id,
+                                    content: msg['content'] ?? '',
+                                    attachmentUrl: msg['attachment_url'] as String?,
+                                    attachmentType: msg['attachment_type'] as String?,
+                                    forwardedFrom: ref.read(authProvider).profile?['display_name'] ?? 'User',
+                                  );
+                                  if (mounted) {
+                                    AppSnackbar.show(context, 'Message forwarded to $title');
+                                  }
+                                } catch (e) {
+                                  print('Error forwarding message: $e');
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(sheetCtx),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -2122,52 +2153,80 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showSeenByDialog(Map<String, dynamic> msg) {
     final seenByList = List<String>.from(msg['payload']?['seen_by'] ?? []);
 
-    showPremiumDialog(
+    showModalBottomSheet(
       context: context,
-      title: 'Seen By',
-      icon: Iconsax.eye,
-      content: seenByList.isEmpty
-          ? const SizedBox(
-              height: 100,
-              child: Center(child: Text('No one has read this message yet.')),
-            )
-          : SizedBox(
-              width: double.maxFinite,
-              height: 250,
-              child: ListView.builder(
-                itemCount: seenByList.length,
-                itemBuilder: (context, idx) {
-                  final uid = seenByList[idx];
-                  final member = _groupMembers.firstWhere(
-                    (m) => m['user_id'] == uid,
-                    orElse: () => <String, dynamic>{},
-                  );
-                  
-                  final profile = member['profiles'] as Map<String, dynamic>? ?? {};
-                  final name = profile['display_name'] ?? 'User';
-                  final roleText = member['role'] ?? 'member';
-
-                  return ListTile(
-                    leading: AppAvatar(
-                      url: profile['avatar_url'],
-                      fallbackText: name,
-                      size: 32,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.eye, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Seen By',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
                     ),
-                    title: Text(name, style: AppTextStyles.body),
-                    subtitle: Text(roleText.toUpperCase(), style: AppTextStyles.captionSm),
-                  );
-                },
-              ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                seenByList.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: Text('No one has read this message yet.')),
+                      )
+                    : ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 250),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: seenByList.length,
+                          itemBuilder: (context, idx) {
+                            final uid = seenByList[idx];
+                            final member = _groupMembers.firstWhere(
+                              (m) => m['user_id'] == uid,
+                              orElse: () => <String, dynamic>{},
+                            );
+                            
+                            final profile = member['profiles'] as Map<String, dynamic>? ?? {};
+                            final name = profile['display_name'] ?? 'User';
+                            final roleText = member['role'] ?? 'member';
+
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: AppAvatar(
+                                url: profile['avatar_url'],
+                                fallbackText: name,
+                                size: 32,
+                              ),
+                              title: Text(name, style: AppTextStyles.body),
+                              subtitle: Text(roleText.toUpperCase(), style: AppTextStyles.captionSm),
+                            );
+                          },
+                        ),
+                      ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(sheetCtx),
+                    child: const Text('Close'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Close',
-            style: TextStyle(color: AppColors.textSecondary),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -2780,45 +2839,70 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showMuteDurationDialog(String targetUserId, StateSetter setSheetState) {
-    showPremiumDialog(
+    showModalBottomSheet(
       context: context,
-      title: 'Mute Duration',
-      icon: Iconsax.volume_mute,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            title: const Text('Mute for 1 Hour'),
-            onTap: () {
-              Navigator.pop(context);
-              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 1)), setSheetState);
-            },
-          ),
-          ListTile(
-            title: const Text('Mute for 24 Hours'),
-            onTap: () {
-              Navigator.pop(context);
-              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 24)), setSheetState);
-            },
-          ),
-          ListTile(
-            title: const Text('Mute for 7 Days'),
-            onTap: () {
-              Navigator.pop(context);
-              _muteMemberAction(targetUserId, DateTime.now().add(const Duration(days: 7)), setSheetState);
-            },
-          ),
-        ],
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.volume_mute, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Mute Duration',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Mute for 1 Hour'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 1)), setSheetState);
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Mute for 24 Hours'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    _muteMemberAction(targetUserId, DateTime.now().add(const Duration(hours: 24)), setSheetState);
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Mute for 7 Days'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    _muteMemberAction(targetUserId, DateTime.now().add(const Duration(days: 7)), setSheetState);
+                  },
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(sheetCtx),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -3141,35 +3225,70 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _addMilestone() async {
     final ctrl = TextEditingController();
-    final title = await showPremiumDialog<String>(
+    final title = await showModalBottomSheet<String>(
       context: context,
-      title: 'Add Milestone',
-      icon: Iconsax.add_circle,
-      content: TextField(
-        controller: ctrl,
-        autofocus: true,
-        style: AppTextStyles.body,
-        decoration: const InputDecoration(hintText: 'Milestone title'),
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actionsBuilder: (dialogCtx) => [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogCtx),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: AppColors.textSecondary),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            top: 24,
+            left: 24,
+            right: 24,
           ),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(dialogCtx, ctrl.text),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: AppColors.accentOnDark,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-            elevation: 0,
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.add_circle, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Add Milestone',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Milestone Title',
+                    hintText: 'e.g. Draft Content for review',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(sheetCtx, ctrl.text),
+                        child: const Text('Add'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
-          child: const Text('Add'),
-        ),
-      ],
+        );
+      },
     );
     if (title != null && title.isNotEmpty) {
       await _chatService.createMilestone({'room_id': widget.roomId, 'title': title, 'status': 'pending'});

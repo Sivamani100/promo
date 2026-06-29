@@ -121,55 +121,73 @@ class _BrandSavedListsScreenState extends ConsumerState<BrandSavedListsScreen> {
 
   Future<String?> _showCreateDialog() async {
     final ctrl = TextEditingController();
-    return showPremiumDialog<String>(
+    return showModalBottomSheet<String>(
       context: context,
-      title: 'New List',
-      icon: Iconsax.folder_add,
-      content: TextField(
-        controller: ctrl,
-        autofocus: true,
-        style: AppTextStyles.body,
-        decoration: InputDecoration(
-          hintText: 'List name',
-          hintStyle: AppTextStyles.caption,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        ),
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: AppColors.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            top: 24,
+            left: 24,
+            right: 24,
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.folder_add, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'New List',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
                 ),
-                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  final text = ctrl.text.trim();
-                  if (text.isNotEmpty) Navigator.pop(context, text);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: AppColors.accentOnDark,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  elevation: 0,
+                const SizedBox(height: 20),
+                TextField(
+                  controller: ctrl,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'List Name',
+                    hintText: 'e.g. Dream Creators',
+                  ),
                 ),
-                child: const Text('Create', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final text = ctrl.text.trim();
+                          if (text.isNotEmpty) Navigator.pop(sheetCtx, text);
+                        },
+                        child: const Text('Create'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-          ],
-        ),
-      ],
+          ),
+        );
+      },
     );
   }
 }

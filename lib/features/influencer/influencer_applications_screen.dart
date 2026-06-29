@@ -81,7 +81,7 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
       onTap: () => setState(() => _filter = filterKey),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected 
               ? activeColor 
@@ -100,17 +100,17 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
             Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected 
                     ? activeTextColor 
                     : AppColors.textSecondary,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: isSelected 
                     ? activeTextColor.withValues(alpha: 0.15) 
@@ -120,7 +120,7 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
               child: Text(
                 '$count',
                 style: GoogleFonts.inter(
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: FontWeight.w800,
                   color: isSelected ? activeTextColor : AppColors.textMuted,
                 ),
@@ -427,108 +427,121 @@ class _MilestoneTrackerWidgetState extends ConsumerState<_MilestoneTrackerWidget
     final ctrl = TextEditingController();
     DateTime? selectedDate;
 
-    final result = await showPremiumDialog<Map<String, dynamic>>(
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
-      title: 'Add Deliverable',
-      icon: Iconsax.calendar_add,
-      content: StatefulBuilder(
-        builder: (dialogCtx, setDialogState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: ctrl,
-                autofocus: true,
-                style: AppTextStyles.body,
-                decoration: InputDecoration(
-                  hintText: 'e.g. Draft Content for review',
-                  labelText: 'Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('DUE DATE', style: AppTextStyles.overline),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: dialogCtx,
-                    initialDate: DateTime.now().add(const Duration(days: 7)),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (date != null) {
-                    setDialogState(() {
-                      selectedDate = date;
-                    });
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        selectedDate == null
-                            ? 'Select date...'
-                            : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                        style: AppTextStyles.body.copyWith(
-                          color: selectedDate == null ? AppColors.textMuted : AppColors.textPrimary,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            top: 24,
+            left: 24,
+            right: 24,
+          ),
+          child: SafeArea(
+            child: StatefulBuilder(
+              builder: (dialogCtx, setDialogState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Iconsax.calendar_add, color: AppColors.accent, size: 24),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Add Deliverable',
+                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: ctrl,
+                      autofocus: true,
+                      style: AppTextStyles.body,
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. Draft Content for review',
+                        labelText: 'Title',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('DUE DATE', style: AppTextStyles.overline),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: dialogCtx,
+                          initialDate: DateTime.now().add(const Duration(days: 7)),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setDialogState(() {
+                            selectedDate = date;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              selectedDate == null
+                                  ? 'Select date...'
+                                  : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                              style: AppTextStyles.body.copyWith(
+                                color: selectedDate == null ? AppColors.textMuted : AppColors.textPrimary,
+                              ),
+                            ),
+                            const Icon(Icons.calendar_today_rounded, size: 16),
+                          ],
                         ),
                       ),
-                      const Icon(Icons.calendar_today_rounded, size: 16),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-      actionsBuilder: (dialogCtx) => [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(dialogCtx),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: AppColors.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                ),
-                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetCtx),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final t = ctrl.text.trim();
+                              if (t.isEmpty) return;
+                              Navigator.pop(sheetCtx, {
+                                'title': t,
+                                'due_date': selectedDate?.toIso8601String(),
+                              });
+                            },
+                            child: const Text('Add'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  final t = ctrl.text.trim();
-                  if (t.isEmpty) return;
-                  Navigator.pop(dialogCtx, {
-                    'title': t,
-                    'due_date': selectedDate?.toIso8601String(),
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: AppColors.accentOnDark,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  elevation: 0,
-                ),
-                child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        );
+      },
     );
 
     if (result != null) {
@@ -959,54 +972,53 @@ class _BentoApplicationCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
-                        showDialog(
+                        showModalBottomSheet(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
-                                width: 1.2,
-                              ),
-                            ),
-                            title: Row(
-                              children: [
-                                Icon(Iconsax.message_text5, color: AppColors.accent, size: 22),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Your Pitch',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            content: SingleChildScrollView(
-                              child: Text(
-                                app['pitch_message'],
-                                style: GoogleFonts.inter(
-                                  fontSize: 13.5,
-                                  height: 1.5,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: Text(
-                                  'Close',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          useRootNavigator: true,
+                          backgroundColor: AppColors.surface,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                           ),
+                          builder: (context) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                              child: SafeArea(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Iconsax.message_text5, color: AppColors.accent, size: 24),
+                                        const SizedBox(width: 12),
+                                        Text(
+                                          'Your Pitch',
+                                          style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      app['pitch_message'],
+                                      style: AppTextStyles.body.copyWith(
+                                        color: AppColors.textSecondary,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Close'),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                       child: Container(

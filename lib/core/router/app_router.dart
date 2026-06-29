@@ -295,7 +295,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const SettingsScreen(),
         routes: [
           GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
-          GoRoute(path: 'privacy', builder: (_, _) => const PrivacySettingsScreen()),
+          GoRoute(
+            path: 'privacy',
+            builder: (_, _) => const PrivacySettingsScreen(),
+            routes: [
+              GoRoute(
+                path: 'blocked-users',
+                builder: (_, _) => const BlockedUsersScreen(),
+              ),
+            ],
+          ),
           GoRoute(path: 'security', builder: (_, _) => const SecuritySettingsScreen()),
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
@@ -362,7 +371,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const SettingsScreen(),
         routes: [
           GoRoute(path: 'notifications', builder: (_, _) => const NotificationSettingsScreen()),
-          GoRoute(path: 'privacy', builder: (_, _) => const PrivacySettingsScreen()),
+          GoRoute(
+            path: 'privacy',
+            builder: (_, _) => const PrivacySettingsScreen(),
+            routes: [
+              GoRoute(
+                path: 'blocked-users',
+                builder: (_, _) => const BlockedUsersScreen(),
+              ),
+            ],
+          ),
           GoRoute(path: 'security', builder: (_, _) => const SecuritySettingsScreen()),
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'platforms', builder: (_, _) => const PlatformSettingsScreen()),

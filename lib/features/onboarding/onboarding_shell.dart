@@ -1037,83 +1037,93 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     final handleFocus = FocusNode();
     final followersFocus = FocusNode();
 
-    final result = await showPremiumDialog<Map<String, dynamic>>(
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
-      title: 'Connect $platform',
-      icon: Iconsax.link,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: handleCtrl,
-            focusNode: handleFocus,
-            autofocus: true,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(followersFocus),
-            style: AppTextStyles.body,
-            decoration: InputDecoration(
-              labelText: 'Username / Handle',
-              hintText: 'e.g. @username',
-              hintStyle: AppTextStyles.caption,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: followersCtrl,
-            focusNode: followersFocus,
-            style: AppTextStyles.body,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) {
-              final h = handleCtrl.text.trim();
-              final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
-              Navigator.pop(context, {'handle': h, 'followers': f});
-            },
-            decoration: InputDecoration(
-              labelText: 'Followers Count',
-              hintText: 'e.g. 5000',
-              hintStyle: AppTextStyles.caption,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-        ],
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: AppColors.border),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+            top: 24,
+            left: 24,
+            right: 24,
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.link, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Connect $platform',
+                      style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
                 ),
-                child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  final h = handleCtrl.text.trim();
-                  final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
-                  Navigator.pop(context, {'handle': h, 'followers': f});
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: AppColors.accentOnDark,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-                  elevation: 0,
+                const SizedBox(height: 20),
+                TextField(
+                  controller: handleCtrl,
+                  focusNode: handleFocus,
+                  autofocus: true,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => FocusScope.of(sheetCtx).requestFocus(followersFocus),
+                  decoration: const InputDecoration(
+                    labelText: 'Username / Handle',
+                    hintText: 'e.g. @username',
+                  ),
                 ),
-                child: const Text('Connect', style: TextStyle(fontWeight: FontWeight.bold)),
-              ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: followersCtrl,
+                  focusNode: followersFocus,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) {
+                    final h = handleCtrl.text.trim();
+                    final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
+                    Navigator.pop(sheetCtx, {'handle': h, 'followers': f});
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Followers Count',
+                    hintText: 'e.g. 5000',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(sheetCtx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final h = handleCtrl.text.trim();
+                          final f = int.tryParse(followersCtrl.text.trim()) ?? 0;
+                          Navigator.pop(sheetCtx, {'handle': h, 'followers': f});
+                        },
+                        child: const Text('Connect'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-          ],
-        ),
-      ],
+          ),
+        );
+      },
     );
 
     handleCtrl.dispose();

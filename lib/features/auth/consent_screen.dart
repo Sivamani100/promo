@@ -22,6 +22,20 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
   bool _marketingGranted = false;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(authProvider).profile;
+    final preferences = profile?['preferences'] as Map<String, dynamic>? ?? {};
+    final consents = preferences['consents'] as Map<String, dynamic>?;
+    if (consents != null) {
+      _essentialGranted = consents['essential']?['granted'] ?? true;
+      _locationGranted = consents['location']?['granted'] ?? true;
+      _analyticsGranted = consents['analytics']?['granted'] ?? true;
+      _marketingGranted = consents['marketing']?['granted'] ?? false;
+    }
+  }
+
   Future<void> _handleSave() async {
     setState(() => _isLoading = true);
 

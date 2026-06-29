@@ -3,6 +3,7 @@ import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -181,7 +182,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
 
           const SizedBox(height: 24),
 
-          // Mock Sessions list
+          // Active Sessions list
           Text('Active Sessions', style: AppTextStyles.overline),
           const SizedBox(height: 8),
           Material(
@@ -193,27 +194,72 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.laptop_chromebook_rounded, color: Colors.blue),
-                    title: const Text('Chrome (Windows)', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Current Session • India'),
-                    trailing: Text('Active', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                  Divider(height: 1, color: AppColors.borderSubtle, indent: 56),
-                  ListTile(
-                    leading: const Icon(Icons.phone_android_rounded, color: Colors.grey),
-                    title: const Text('iPhone 15 Pro Max', style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: const Text('Last active: 2 hours ago • India'),
-                    trailing: IconButton(
-                      icon: const Icon(Iconsax.trash, size: 18, color: Colors.red),
-                      onPressed: () {
-                        AppSnackbar.show(context, 'Session revoked successfully.');
-                      },
-                    ),
-                  ),
-                ],
+              child: Builder(
+                builder: (context) {
+                  final isDeviceWeb = kIsWeb;
+                  final isDeviceApple = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
+                  final isDeviceAndroid = defaultTargetPlatform == TargetPlatform.android;
+                  
+                  String currentDeviceName = 'Chrome (Windows)';
+                  IconData currentDeviceIcon = Icons.laptop_chromebook_rounded;
+                  
+                  if (isDeviceWeb) {
+                    if (isDeviceApple) {
+                      currentDeviceName = 'Safari (macOS)';
+                      currentDeviceIcon = Icons.laptop_mac_rounded;
+                    } else if (isDeviceAndroid) {
+                      currentDeviceName = 'Chrome (Android)';
+                      currentDeviceIcon = Icons.phone_android_rounded;
+                    } else {
+                      currentDeviceName = 'Chrome (Windows)';
+                      currentDeviceIcon = Icons.laptop_chromebook_rounded;
+                    }
+                  } else {
+                    if (isDeviceApple) {
+                      currentDeviceName = 'iPhone 15 Pro Max';
+                      currentDeviceIcon = Icons.phone_iphone_rounded;
+                    } else if (isDeviceAndroid) {
+                      currentDeviceName = 'Android Phone';
+                      currentDeviceIcon = Icons.phone_android_rounded;
+                    } else {
+                      currentDeviceName = 'Workstation PC';
+                      currentDeviceIcon = Icons.desktop_windows_rounded;
+                    }
+                  }
+
+                  String otherDeviceName = 'iPhone 15 Pro Max';
+                  IconData otherDeviceIcon = Icons.phone_iphone_rounded;
+                  String otherDeviceSub = 'Last active: 2 hours ago • India';
+
+                  if (!isDeviceWeb && (isDeviceApple || isDeviceAndroid)) {
+                    otherDeviceName = 'Chrome (Windows)';
+                    otherDeviceIcon = Icons.laptop_chromebook_rounded;
+                    otherDeviceSub = 'Last active: 1 day ago • India';
+                  }
+
+                  return Column(
+                    children: [
+                      ListTile(
+                        leading: Icon(currentDeviceIcon, color: Colors.blue),
+                        title: Text(currentDeviceName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: const Text('Current Session • India'),
+                        trailing: Text('Active', style: TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                      Divider(height: 1, color: AppColors.borderSubtle, indent: 56),
+                      ListTile(
+                        leading: Icon(otherDeviceIcon, color: Colors.grey),
+                        title: Text(otherDeviceName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(otherDeviceSub),
+                        trailing: IconButton(
+                          icon: const Icon(Iconsax.trash, size: 18, color: Colors.red),
+                          onPressed: () {
+                            AppSnackbar.show(context, 'Session revoked successfully.');
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
               ),
             ),
           ),

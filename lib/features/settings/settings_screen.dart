@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:local_auth/local_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
@@ -12,6 +13,32 @@ import '../../shared/widgets/app_snackbar.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  Future<bool> _authenticate(BuildContext context) async {
+    final auth = LocalAuthentication();
+    try {
+      final canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final canAuthenticate = canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+      if (!canAuthenticate) {
+        if (context.mounted) {
+          AppSnackbar.show(context, 'Biometrics are not set up or not supported on this device.');
+        }
+        return false;
+      }
+      return await auth.authenticate(
+        localizedReason: 'Confirm biometric identity to change this setting',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackbar.show(context, 'Biometric verification failed: $e');
+      }
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -84,13 +111,19 @@ class SettingsScreen extends ConsumerWidget {
               trailing: Switch(
                 value: ref.watch(biometricLockProvider),
                 activeColor: AppColors.purple,
-                onChanged: (val) {
-                  ref.read(biometricLockProvider.notifier).setEnabled(val);
+                onChanged: (val) async {
+                  final success = await _authenticate(context);
+                  if (success) {
+                    ref.read(biometricLockProvider.notifier).setEnabled(val);
+                  }
                 },
               ),
-              onTap: () {
+              onTap: () async {
                 final current = ref.read(biometricLockProvider);
-                ref.read(biometricLockProvider.notifier).setEnabled(!current);
+                final success = await _authenticate(context);
+                if (success) {
+                  ref.read(biometricLockProvider.notifier).setEnabled(!current);
+                }
               },
             ),
           ]),
@@ -211,43 +244,55 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showGrievanceOfficerDialog(BuildContext context) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            side: BorderSide(color: AppColors.border),
-          ),
-          title: Text(
-            'Grievance Officer (DPDP Compliance)',
-            style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Under the India Digital Personal Data Protection (DPDP) Act 2023, you can contact our designated Grievance Officer regarding data privacy queries, corrections, or erasure requests:',
-                style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, height: 1.45),
-              ),
-              const SizedBox(height: 16),
-              _buildOfficerDetail('Name', 'Ms. Priya Sharma'),
-              _buildOfficerDetail('Designation', 'Grievance & Compliance Officer'),
-              _buildOfficerDetail('Email', 'mallipurapusiva@gmail.com'),
-              _buildOfficerDetail('Address', 'Brand Mobile App Pvt. Ltd., 4th Floor, Tech Hub, Bangalore, India'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Close',
-                style: TextStyle(color: AppColors.purple),
-              ),
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Iconsax.shield_security, color: AppColors.accent, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Grievance Officer (DPDP)',
+                        style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Under the India Digital Personal Data Protection (DPDP) Act 2023, you can contact our designated Grievance Officer regarding data privacy queries, corrections, or erasure requests:',
+                  style: AppTextStyles.bodySm.copyWith(color: AppColors.textSecondary, height: 1.45),
+                ),
+                const SizedBox(height: 16),
+                _buildOfficerDetail('Name', 'Ms. Priya Sharma'),
+                _buildOfficerDetail('Designation', 'Grievance & Compliance Officer'),
+                _buildOfficerDetail('Email', 'mallipurapusiva@gmail.com'),
+                _buildOfficerDetail('Address', 'Brand Mobile App Pvt. Ltd., 4th Floor, Tech Hub, Bangalore, India'),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(sheetCtx),
+                    child: const Text('Close'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -282,6 +327,7 @@ class SettingsScreen extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),

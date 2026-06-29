@@ -33,16 +33,25 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
     _loadCurrentHandles();
   }
 
+  String _cleanPrefix(String? raw, String prefix) {
+    if (raw == null) return '';
+    final trimmed = raw.trim();
+    if (trimmed.startsWith(prefix)) {
+      return trimmed.substring(prefix.length).trim();
+    }
+    return trimmed;
+  }
+
   void _loadCurrentHandles() {
     final profile = ref.read(authProvider).profile;
     final prefs = profile?['preferences'] as Map<String, dynamic>? ?? {};
     final handles = prefs['platform_handles'] as Map<String, dynamic>? ?? {};
     final followers = prefs['platform_followers'] as Map<String, dynamic>? ?? {};
 
-    _instagramCtrl.text = handles['Instagram'] ?? handles['instagram'] ?? '';
-    _tiktokCtrl.text = handles['TikTok'] ?? handles['tiktok'] ?? '';
-    _youtubeCtrl.text = handles['YouTube'] ?? handles['youtube'] ?? '';
-    _twitterCtrl.text = handles['Twitter'] ?? handles['twitter'] ?? '';
+    _instagramCtrl.text = _cleanPrefix(handles['Instagram'] ?? handles['instagram'], '@');
+    _tiktokCtrl.text = _cleanPrefix(handles['TikTok'] ?? handles['tiktok'], '@');
+    _youtubeCtrl.text = _cleanPrefix(handles['YouTube'] ?? handles['youtube'], 'c/');
+    _twitterCtrl.text = _cleanPrefix(handles['Twitter'] ?? handles['twitter'], '@');
 
     _instagramFollowersCtrl.text = (followers['Instagram'] ?? followers['instagram'] ?? '').toString();
     _tiktokFollowersCtrl.text = (followers['TikTok'] ?? followers['tiktok'] ?? '').toString();
@@ -76,10 +85,10 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
     }
 
     final currentPrefs = Map<String, dynamic>.from(profile['preferences'] ?? {});
-    final instagramHandle = _instagramCtrl.text.trim();
-    final tiktokHandle = _tiktokCtrl.text.trim();
-    final youtubeHandle = _youtubeCtrl.text.trim();
-    final twitterHandle = _twitterCtrl.text.trim();
+    final instagramHandle = _cleanPrefix(_instagramCtrl.text, '@');
+    final tiktokHandle = _cleanPrefix(_tiktokCtrl.text, '@');
+    final youtubeHandle = _cleanPrefix(_youtubeCtrl.text, 'c/');
+    final twitterHandle = _cleanPrefix(_twitterCtrl.text, '@');
 
     final handles = {
       'Instagram': instagramHandle,
@@ -135,86 +144,75 @@ class _PlatformSettingsScreenState extends ConsumerState<PlatformSettingsScreen>
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
             Text('Connected Accounts', style: AppTextStyles.overline),
-            const SizedBox(height: 8),
-            Material(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  children: [
-                    _buildHandleField(
-                      controller: _instagramCtrl,
-                      label: 'Instagram Handle',
-                      assetPath: 'assets/Social media icons/Instagram logo.png',
-                      prefix: '@',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFollowersField(
-                      controller: _instagramFollowersCtrl,
-                      label: 'Instagram Followers',
-                      icon: Iconsax.people,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildHandleField(
-                      controller: _tiktokCtrl,
-                      label: 'TikTok Handle',
-                      assetPath: 'assets/Social media icons/Tiktok logo.png',
-                      prefix: '@',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFollowersField(
-                      controller: _tiktokFollowersCtrl,
-                      label: 'TikTok Followers',
-                      icon: Iconsax.people,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildHandleField(
-                      controller: _youtubeCtrl,
-                      label: 'YouTube Channel / Handle',
-                      assetPath: 'assets/Social media icons/youtube logo.png',
-                      prefix: 'c/',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFollowersField(
-                      controller: _youtubeFollowersCtrl,
-                      label: 'YouTube Followers',
-                      icon: Iconsax.people,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildHandleField(
-                      controller: _twitterCtrl,
-                      label: 'Twitter / X Handle',
-                      assetPath: 'assets/Social media icons/x logo.png',
-                      prefix: '@',
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFollowersField(
-                      controller: _twitterFollowersCtrl,
-                      label: 'Twitter / X Followers',
-                      icon: Iconsax.people,
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _saving ? null : _saveHandles,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: AppColors.accentOnDark,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: _saving
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text('Save Connections'),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 16),
+            _buildHandleField(
+              controller: _instagramCtrl,
+              label: 'Instagram Handle',
+              assetPath: 'assets/Social media icons/Instagram logo.png',
+              prefix: '@',
+            ),
+            const SizedBox(height: 12),
+            _buildFollowersField(
+              controller: _instagramFollowersCtrl,
+              label: 'Instagram Followers',
+              icon: Iconsax.people,
+            ),
+            const SizedBox(height: 20),
+            _buildHandleField(
+              controller: _tiktokCtrl,
+              label: 'TikTok Handle',
+              assetPath: 'assets/Social media icons/Tiktok logo.png',
+              prefix: '@',
+            ),
+            const SizedBox(height: 12),
+            _buildFollowersField(
+              controller: _tiktokFollowersCtrl,
+              label: 'TikTok Followers',
+              icon: Iconsax.people,
+            ),
+            const SizedBox(height: 20),
+            _buildHandleField(
+              controller: _youtubeCtrl,
+              label: 'YouTube Channel / Handle',
+              assetPath: 'assets/Social media icons/youtube logo.png',
+              prefix: 'c/',
+            ),
+            const SizedBox(height: 12),
+            _buildFollowersField(
+              controller: _youtubeFollowersCtrl,
+              label: 'YouTube Followers',
+              icon: Iconsax.people,
+            ),
+            const SizedBox(height: 20),
+            _buildHandleField(
+              controller: _twitterCtrl,
+              label: 'Twitter / X Handle',
+              assetPath: 'assets/Social media icons/x logo.png',
+              prefix: '@',
+            ),
+            const SizedBox(height: 12),
+            _buildFollowersField(
+              controller: _twitterFollowersCtrl,
+              label: 'Twitter / X Followers',
+              icon: Iconsax.people,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saving ? null : _saveHandles,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: AppColors.accentOnDark,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
+                child: _saving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text('Save Connections'),
               ),
             ),
           ],
