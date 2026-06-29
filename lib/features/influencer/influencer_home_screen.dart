@@ -17,6 +17,7 @@ import '../../core/services/data_services.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/media/image_cache_config.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -221,9 +222,7 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
     final profile = ref.watch(authProvider).profile;
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
-    if (_loading) {
-      return const InfluencerHomeSkeleton();
-    }
+
 
     return Scaffold(
       backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
@@ -304,12 +303,13 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
+      body: _loading
+          ? const InfluencerHomeBodySkeleton()
+          : AppRefreshIndicator(
+              onRefresh: () async {
           HapticFeedback.lightImpact();
           await _load();
         },
-        color: AppColors.accent,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.pageMarginHorizontal,

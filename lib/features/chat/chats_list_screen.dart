@@ -18,6 +18,7 @@ import '../../core/services/realtime_subscription_manager.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 import '../../core/cache/app_cache.dart';
 import '../../core/network/connectivity_service.dart';
 
@@ -1052,19 +1053,52 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-                itemCount: 6,
-                separatorBuilder: (context, __) => Divider(
-                  height: 1,
-                  thickness: 0.8,
-                  color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
-                ),
-                itemBuilder: (_, __) => const ChatTileSkeleton(),
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal),
+              child: Column(
+                children: [
+                  _buildSearchField(),
+                  Container(
+                    height: 38,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: SkeletonShimmer(
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: List.generate(4, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Container(
+                              width: index == 0 ? 55 : (index == 1 ? 85 : (index == 2 ? 115 : 85)),
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
+                      ),
+                      itemCount: 6,
+                      separatorBuilder: (context, __) => Divider(
+                        height: 1,
+                        thickness: 0.8,
+                        color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                      ),
+                      itemBuilder: (_, __) => const ChatTileSkeleton(),
+                    ),
+                  ),
+                ],
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal),

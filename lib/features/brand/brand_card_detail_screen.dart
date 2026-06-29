@@ -229,9 +229,68 @@ class _BrandCardDetailScreenState extends State<BrandCardDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
+      final isDark = AppColors.isDarkMode;
       return Scaffold(
-        appBar: AppBar(),
-        body: const SkeletonShimmer(child: CardDetailSkeleton()),
+        backgroundColor: isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(56 + AppSpacing.pageMarginVertical),
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.pageMarginHorizontal,
+              right: AppSpacing.pageMarginHorizontal,
+              top: AppSpacing.pageMarginVertical,
+            ),
+            child: AppBar(
+              leading: IconButton(
+                padding: EdgeInsets.zero,
+                alignment: Alignment.centerLeft,
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                onPressed: () => context.pop(),
+              ),
+              leadingWidth: 30,
+              centerTitle: false,
+              titleSpacing: 0,
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SkeletonShimmer(
+                    child: Container(
+                      width: 160,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '.',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                SkeletonShimmer(
+                  child: Container(
+                    width: 80,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.more_vert, color: AppColors.textMuted),
+              ],
+            ),
+          ),
+        ),
+        body: const CardDetailSkeleton(),
       );
     }
     if (_card == null) return Scaffold(appBar: AppBar(), body: const AppEmptyState(icon: Iconsax.info_circle, title: 'Card not found'));

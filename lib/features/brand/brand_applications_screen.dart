@@ -70,13 +70,38 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
         title: const Text('Applications'),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-                itemCount: 4,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (_, __) => const ApplicationCardSkeleton(),
-              ),
+          ? Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 12),
+                  child: Row(
+                    children: ['all', 'pending', 'shortlisted', 'accepted', 'rejected'].map((f) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: AppChip(
+                        label: f[0].toUpperCase() + f.substring(1),
+                        selected: _filter == f,
+                        onTap: () => setState(() => _filter = f),
+                      ),
+                    )).toList(),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pageMarginHorizontal,
+                      0,
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                    ),
+                    itemCount: 4,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (_, index) {
+                      return ApplicationCardSkeleton(isPending: index % 2 == 0);
+                    },
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               onRefresh: _load,

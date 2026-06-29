@@ -216,6 +216,50 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> _autoAcceptGatesForSignIn(String userId) async {
+    try {
+      final nowStr = DateTime.now().toIso8601String();
+      final currentProfile = await _authService.fetchProfile(userId);
+      final currentPrefs = Map<String, dynamic>.from(currentProfile?['preferences'] ?? {});
+
+      bool updated = false;
+      if (currentPrefs['tos_version_accepted'] != '1.0') {
+        currentPrefs['tos_accepted_at'] = nowStr;
+        currentPrefs['tos_version_accepted'] = '1.0';
+        updated = true;
+      }
+      if (currentPrefs['consents'] == null) {
+        currentPrefs['consents'] = {
+          'essential': {'granted': true, 'timestamp': nowStr},
+          'location': {'granted': true, 'timestamp': nowStr},
+          'analytics': {'granted': true, 'timestamp': nowStr},
+          'marketing': {'granted': false, 'timestamp': nowStr},
+        };
+        updated = true;
+      }
+
+      final onboardingAlreadyComplete = currentProfile?['onboarding_complete'] == true;
+      final updates = <String, dynamic>{};
+      if (updated) {
+        updates['preferences'] = currentPrefs;
+      }
+      if (!onboardingAlreadyComplete) {
+        updates['onboarding_complete'] = true;
+      }
+
+      if (updates.isNotEmpty) {
+        await SupabaseService.client.from('profiles').update(updates).eq('id', userId);
+        print('[AUTH] Auto-completed sign-in onboarding gates on DB for user: $userId');
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('onboarding_complete_$userId', true);
+      await prefs.setBool('first_time_tour_shown_$userId', true);
+    } catch (e) {
+      print('[AUTH] Error auto-accepting onboarding gates for sign-in: $e');
+    }
+  }
+
   Future<void> _loadProfile(User user, {bool isRecoveryMode = false}) async {
     // If we don't have a profile in state, try reading cache first to avoid flashing loading
     if (state.profile == null) {
@@ -329,6 +373,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: accessToken,
       );
       if (response.user != null) {
+        await _autoAcceptGatesForSignIn(response.user!.id);
         await _loadProfile(response.user!);
         return state.role;
       }
@@ -350,6 +395,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _authService.signIn(email: email, password: password);
       print('[AUTH] signIn response user: ${response.user?.id}');
       if (response.user != null) {
+        await _autoAcceptGatesForSignIn(response.user!.id);
         await _loadProfile(response.user!);
         print('[AUTH] profile loaded, role: ${state.role}, error: ${state.error}');
         return state.role;

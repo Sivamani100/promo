@@ -248,13 +248,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           final cat = categories[index];
           final selected = _activeTab == cat;
           return ChoiceChip(
-            label: Text(
-              cat,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.bold : FontWeight.w600,
-                color: selected ? Colors.black : AppColors.textSecondary,
-              ),
+            label: Text(cat),
+            labelStyle: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+              color: selected ? AppColors.accentOnDark : AppColors.textSecondary,
             ),
             selected: selected,
             selectedColor: AppColors.accent,
@@ -579,13 +577,43 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-                itemCount: 6,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (_, __) => const NotificationTileSkeleton(),
-              ),
+          ? Column(
+              children: [
+                _buildFilterTabs(),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pageMarginHorizontal,
+                      0,
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                    ),
+                    children: [
+                      const SkeletonShimmer(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 8, bottom: 12),
+                          child: SkeletonText(width: 80, height: 11),
+                        ),
+                      ),
+                      const NotificationTileSkeleton(),
+                      const SizedBox(height: 12),
+                      const NotificationTileSkeleton(),
+                      const SizedBox(height: 16),
+                      const SkeletonShimmer(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: SkeletonText(width: 80, height: 11),
+                        ),
+                      ),
+                      const NotificationTileSkeleton(),
+                      const SizedBox(height: 12),
+                      const NotificationTileSkeleton(),
+                      const SizedBox(height: 12),
+                      const NotificationTileSkeleton(),
+                    ],
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               onRefresh: _load,

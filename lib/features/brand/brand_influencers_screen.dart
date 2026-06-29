@@ -367,16 +367,56 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.pageMarginHorizontal,
-                  vertical: AppSpacing.pageMarginVertical,
+          ? Column(
+              children: [
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.pageMarginHorizontal,
+                  ),
+                  child: _buildSearchBar(isDark),
                 ),
-                itemCount: 6,
-                separatorBuilder: (_, index) => const SizedBox(height: 12),
-                itemBuilder: (_, index) => const GenericListTileSkeleton(),
-              ),
+                const SizedBox(height: 12),
+                // Skeleton Niche Chips
+                Container(
+                  height: 38,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: SkeletonShimmer(
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageMarginHorizontal,
+                      ),
+                      children: List.generate(4, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Container(
+                            width: index == 0 ? 110 : (index == 1 ? 80 : (index == 2 ? 70 : 80)),
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.xs,
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                    ),
+                    itemCount: 5,
+                    separatorBuilder: (_, index) => const SizedBox(height: 12),
+                    itemBuilder: (_, index) => const BentoInfluencerCardSkeleton(),
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               onRefresh: () async {

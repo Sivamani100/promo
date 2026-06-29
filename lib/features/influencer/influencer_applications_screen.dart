@@ -238,18 +238,32 @@ class _InfluencerApplicationsScreenState extends ConsumerState<InfluencerApplica
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pageMarginHorizontal,
-                  AppSpacing.pageMarginVertical,
-                  AppSpacing.pageMarginHorizontal,
-                  AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+          ? Column(
+              children: [
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 12),
+                  child: Row(
+                    children: ['all', 'pending', 'accepted', 'rejected'].map((f) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildFilterChip(f),
+                    )).toList(),
+                  ),
                 ),
-                itemCount: 4,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (_, __) => const BentoApplicationCardSkeleton(),
-              ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pageMarginHorizontal,
+                      0,
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                    ),
+                    itemCount: 4,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (_, __) => const BentoApplicationCardSkeleton(),
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               onRefresh: _load,

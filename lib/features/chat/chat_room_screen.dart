@@ -1163,8 +1163,78 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(),
-        body: const SkeletonShimmer(child: ChatRoomSkeleton()),
+        appBar: AppBar(
+          titleSpacing: 0,
+          title: Row(
+            children: [
+              SkeletonShimmer(
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SkeletonShimmer(
+                      child: Container(
+                        width: 140,
+                        height: 13,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    SkeletonShimmer(
+                      child: Container(
+                        width: 50,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            SkeletonShimmer(
+              child: Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            SkeletonShimmer(
+              child: Container(
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: const ChatRoomSkeleton(),
       );
     }
 

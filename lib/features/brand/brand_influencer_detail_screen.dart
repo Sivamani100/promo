@@ -256,7 +256,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
             style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
           ),
         ),
-        body: const SkeletonShimmer(child: ProfileDetailSkeleton()),
+        body: const CreatorBrandDetailSkeleton(),
       );
     }
 

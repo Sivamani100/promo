@@ -1,21 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/design_tokens.dart';
 
-/// Custom pull-to-refresh indicator with Promo branding.
+/// Branded premium pull-to-refresh indicator (Instagram-style).
 ///
-/// Replaces Flutter's generic [RefreshIndicator] with a branded animation:
-/// - Drag: subtle "Release to refresh" text fades in
-/// - Release: brand-colored spinner
-/// - Complete: "Updated just now" text fades in, then auto-fades after 2s
-///
-/// ```dart
-/// AppRefreshIndicator(
-///   onRefresh: () => loadData(),
-///   child: ListView(...),
-/// )
-/// ```
+/// When pulled down, it creates a gap between the fixed AppBar and the list
+/// content where a smooth circular progress indicator spins.
 class AppRefreshIndicator extends StatefulWidget {
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -30,76 +20,118 @@ class AppRefreshIndicator extends StatefulWidget {
   State<AppRefreshIndicator> createState() => _AppRefreshIndicatorState();
 }
 
-class _AppRefreshIndicatorState extends State<AppRefreshIndicator> {
-  bool _showUpdatedBanner = false;
-  Timer? _bannerTimer;
+class _AppRefreshIndicatorState extends State<AppRefreshIndicator> with SingleTickerProviderStateMixin {
+  double _dragOffset = 0.0;
+  bool _isRefreshing = false;
+  
+  late AnimationController _animController;
+  double _animStartOffset = 0.0;
+  double _animEndOffset = 0.0;
 
-  Future<void> _handleRefresh() async {
-    await widget.onRefresh();
-    if (!mounted) return;
-    setState(() => _showUpdatedBanner = true);
-    _bannerTimer?.cancel();
-    _bannerTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _showUpdatedBanner = false);
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _animController.addListener(() {
+      setState(() {
+        _dragOffset = Tween<double>(begin: _animStartOffset, end: _animEndOffset)
+            .evaluate(_animController);
+      });
     });
   }
 
   @override
   void dispose() {
-    _bannerTimer?.cancel();
+    _animController.dispose();
     super.dispose();
+  }
+
+  void _animateTo(double target) {
+    _animStartOffset = _dragOffset;
+    _animEndOffset = target;
+    _animController.forward(from: 0.0);
+  }
+
+  Future<void> _startRefresh() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    _animateTo(60.0); // Keep open at 60px during refresh
+    
+    try {
+      await widget.onRefresh();
+    } catch (_) {}
+    
+    if (mounted) {
+      setState(() {
+        _isRefreshing = false;
+      });
+      _animateTo(0.0);
+    }
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (_isRefreshing || _animController.isAnimating) return false;
+
+    if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.pixels < 0) {
+        setState(() {
+          _dragOffset = -notification.metrics.pixels * 0.6;
+        });
+      }
+    } else if (notification is OverscrollNotification) {
+      if (notification.overscroll < 0) {
+        setState(() {
+          _dragOffset = (_dragOffset - notification.overscroll * 0.6).clamp(0.0, 120.0);
+        });
+      }
+    } else if (notification is ScrollEndNotification) {
+      if (_dragOffset > 55.0) {
+        _startRefresh();
+      } else if (_dragOffset > 0) {
+        _animateTo(0.0);
+      }
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        RefreshIndicator(
-          onRefresh: _handleRefresh,
-          color: AppColors.purple,
-          backgroundColor: AppColors.surface,
-          strokeWidth: 2.5,
-          displacement: 60,
-          child: widget.child,
-        ),
-        // "Updated just now" banner
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: AnimatedOpacity(
-            opacity: _showUpdatedBanner ? 1.0 : 0.0,
-            duration: DesignTokens.durationMD,
-            curve: DesignTokens.curveDefault,
-            child: AnimatedSlide(
-              offset: Offset(0, _showUpdatedBanner ? 0 : -1),
-              duration: DesignTokens.durationMD,
-              curve: DesignTokens.curveDefault,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: DesignTokens.space8,
-                  horizontal: DesignTokens.space16,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  boxShadow: DesignTokens.shadowSM,
-                ),
-                child: Center(
-                  child: Text(
-                    'Updated just now',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScrollNotification,
+      child: Stack(
+        children: [
+          // Gap/Reveal space spinner
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: _dragOffset,
+              alignment: Alignment.center,
+              child: _dragOffset > 15
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        value: _isRefreshing ? null : (_dragOffset / 55.0).clamp(0.0, 0.99),
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ),
-        ),
-      ],
+          // Shifted scroll body
+          Transform.translate(
+            offset: Offset(0, _dragOffset),
+            child: widget.child,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -18,6 +18,7 @@ import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../shared/widgets/premium_image_cropper.dart';
@@ -283,13 +284,16 @@ class _BrandCampaignsScreenState extends ConsumerState<BrandCampaignsScreen> {
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageMarginHorizontal, vertical: 16),
-                itemCount: 3,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (_, __) => const ApplicationCardSkeleton(),
+          ? ListView.separated(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical,
+                AppSpacing.pageMarginHorizontal,
+                AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
               ),
+              itemCount: 4,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, __) => const AcceptedDealCardSkeleton(),
             )
           : _applications.isEmpty
               ? const AppEmptyState(
@@ -562,7 +566,7 @@ class _BrandAnalyticsScreenState extends ConsumerState<BrandAnalyticsScreen> {
       ),
       body: _loading
           ? SkeletonShimmer(child: AnalyticsScreenSkeleton())
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
@@ -832,6 +836,20 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     return parts.sublist(0, 4);
   }
 
+  String? _normalizeIndustry(String? industry) {
+    if (industry == null) return null;
+    final ind = industry.trim();
+    if (ind == 'Fashion') return 'Fashion & Apparel';
+    if (ind == 'Beauty') return 'Beauty & Cosmetics';
+    if (ind == 'Tech') return 'Tech & Gadgets';
+    if (ind == 'Food') return 'Food & Beverage';
+    if (ind == 'Fitness') return 'Fitness & Health';
+    if (ind == 'Travel') return 'Travel & Tourism';
+    if (ind == 'Gaming') return 'Gaming & Esports';
+    if (ind == 'Lifestyle') return 'Lifestyle & Entertainment';
+    return ind;
+  }
+
   void _updateLocationString() {
     _locationCtrl.text = '${_villageCtrl.text.trim()}, ${_mandalCtrl.text.trim()}, ${_districtCtrl.text.trim()}, ${_stateCtrl.text.trim()}';
   }
@@ -963,7 +981,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       _districtCtrl.text = parts[2];
       _stateCtrl.text = parts[3];
       _avatarUrl = p['avatar_url'];
-      _selectedIndustry = p['industry'] as String?;
+      _selectedIndustry = _normalizeIndustry(p['industry'] as String?);
     }
     _loadDashboardData();
   }
@@ -1153,7 +1171,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         _districtCtrl.text = parts[2];
         _stateCtrl.text = parts[3];
         _avatarUrl = next.profile!['avatar_url'];
-        _selectedIndustry = next.profile!['industry'] as String?;
+        _selectedIndustry = _normalizeIndustry(next.profile!['industry'] as String?);
       }
     });
 
@@ -1243,13 +1261,12 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         ),
       ),
       body: _loadingData
-          ? SkeletonShimmer(child: ProfileDetailSkeleton())
-          : RefreshIndicator(
+          ? const ProfileDetailSkeleton()
+          : AppRefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();
                 await _loadDashboardData();
               },
-              color: AppColors.accent,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.pageMarginHorizontal,
@@ -1313,7 +1330,19 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                         AppTextField(label: 'Website', controller: _websiteCtrl, keyboardType: TextInputType.url),
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String>(
-                          value: _selectedIndustry,
+                          value: const [
+                            'Fashion & Apparel',
+                            'Beauty & Cosmetics',
+                            'Tech & Gadgets',
+                            'Food & Beverage',
+                            'Fitness & Health',
+                            'Travel & Tourism',
+                            'Gaming & Esports',
+                            'Lifestyle & Entertainment',
+                            'Other'
+                          ].contains(_selectedIndustry)
+                              ? _selectedIndustry
+                              : null,
                           style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
                           dropdownColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
                           decoration: InputDecoration(

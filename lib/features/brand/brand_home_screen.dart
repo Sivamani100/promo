@@ -17,6 +17,7 @@ import '../../core/services/profile_service.dart';
 import '../../core/services/chat_service.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 import '../../core/cache/app_cache.dart';
 import '../trust/account_status_screens.dart';
 import '../home/profile_nudge_service.dart';
@@ -189,9 +190,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
     final profile = ref.watch(authProvider).profile;
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
-    if (_loading) {
-      return const BrandHomeSkeleton();
-    }
+
 
     return Scaffold(
       backgroundColor: AppColors.isDarkMode ? const Color(0xFF000000) : const Color(0xFFFAF9F6),
@@ -276,12 +275,13 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
           ),
         ),
       ),
-      body: RefreshIndicator(
+      body: _loading
+          ? const BrandHomeBodySkeleton()
+          : AppRefreshIndicator(
         onRefresh: () async {
           HapticFeedback.lightImpact();
           await _loadData();
         },
-        color: AppColors.accent,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.pageMarginHorizontal,

@@ -14,6 +14,8 @@ import '../../core/services/card_service.dart';
 import '../../core/services/data_services.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/lifecycle/draft_recovery_service.dart';
+import '../../shared/widgets/screen_skeletons.dart';
+import '../../shared/widgets/app_skeleton.dart';
 
 const _categories = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
@@ -80,6 +82,7 @@ class BrandCardCreateScreen extends ConsumerStatefulWidget {
 class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
   int _currentStep = 0;
   bool _loading = false;
+  bool _loadingData = true;
 
   // Controllers
   final _titleCtrl = TextEditingController();
@@ -188,6 +191,11 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
         _checkForDraft();
       });
     }
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        setState(() => _loadingData = false);
+      }
+    });
   }
 
   @override
@@ -604,22 +612,24 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
               },
             ),
           ),
-          body: Column(
-            children: [
-              // Stepper indicator
-              _buildStepperHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    child: _buildCurrentStepView(),
-                  ),
+          body: _loadingData
+              ? SkeletonShimmer(child: CreateCampaignSkeleton())
+              : Column(
+                  children: [
+                    // Stepper indicator
+                    _buildStepperHeader(),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: _buildCurrentStepView(),
+                        ),
+                      ),
+                    ),
+                    _buildNavigationRow(),
+                  ],
                 ),
-              ),
-              _buildNavigationRow(),
-            ],
-          ),
         ),
       ),
     );

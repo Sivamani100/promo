@@ -256,7 +256,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       ),
       body: _loading
-          ? const SkeletonShimmer(child: SearchResultsSkeleton())
+          ? const SearchResultsSkeleton()
           : TabBarView(
               controller: _tabCtrl,
               children: [

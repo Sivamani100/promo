@@ -424,16 +424,48 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.pageMarginHorizontal,
-                  vertical: AppSpacing.pageMarginVertical,
+          ? Column(
+              children: [
+                // Skeleton Filter Chips
+                Container(
+                  height: 38,
+                  margin: const EdgeInsets.only(bottom: 8, top: 12),
+                  child: SkeletonShimmer(
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageMarginHorizontal,
+                      ),
+                      children: List.generate(4, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Container(
+                            width: index == 0 ? 80 : (index == 1 ? 100 : (index == 2 ? 100 : 90)),
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
                 ),
-                itemCount: 4,
-                separatorBuilder: (_, index) => const SizedBox(height: 16),
-                itemBuilder: (_, index) => const CampaignCardSkeleton(),
-              ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.xs,
+                      AppSpacing.pageMarginHorizontal,
+                      AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
+                    ),
+                    itemCount: 5,
+                    separatorBuilder: (_, index) => const SizedBox(height: 16),
+                    itemBuilder: (_, index) => const BentoBrandCardSkeleton(),
+                  ),
+                ),
+              ],
             )
           : RefreshIndicator(
               onRefresh: () async {

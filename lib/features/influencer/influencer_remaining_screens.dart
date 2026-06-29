@@ -2069,7 +2069,7 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
         ),
       ),
       body: _loadingData
-          ? const SkeletonShimmer(child: ProfileDetailSkeleton())
+          ? const ProfileDetailSkeleton()
           : RefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();

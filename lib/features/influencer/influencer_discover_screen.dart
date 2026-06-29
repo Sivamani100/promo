@@ -488,19 +488,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
         ),
       ),
       body: _loading
-          ? SkeletonShimmer(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.pageMarginHorizontal,
-                  AppSpacing.pageMarginVertical,
-                  AppSpacing.pageMarginHorizontal,
-                  AppSpacing.pageMarginVertical + AppSpacing.bottomScreenPadding,
-                ),
-                itemCount: 6,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (_, __) => const BentoListCardSkeleton(),
-              ),
-            )
+          ? const InfluencerDiscoverSkeleton()
           : RefreshIndicator(
                   onRefresh: _load,
                   child: Column(

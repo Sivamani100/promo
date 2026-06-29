@@ -342,7 +342,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Brand Profile')),
-        body: const SkeletonShimmer(child: ProfileDetailSkeleton()),
+        body: const CreatorBrandDetailSkeleton(),
       );
     }
 
