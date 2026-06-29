@@ -515,42 +515,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final userId = state.user?.id;
     if (userId == null) return;
 
-    // 1. Delete files from Storage (avatars & portfolio)
+    // 1. Mark account as deleted in database (soft deletion request)
     try {
-      final profile = state.profile;
-      final avatarUrl = profile?['avatar_url'] as String?;
-      if (avatarUrl != null) {
-        final uri = Uri.parse(avatarUrl);
-        final pathSegments = uri.pathSegments;
-        final pubIndex = pathSegments.indexOf('public');
-        if (pubIndex != -1 && pathSegments.length > pubIndex + 2) {
-          final bucket = pathSegments[pubIndex + 1];
-          final filePath = pathSegments.sublist(pubIndex + 2).join('/');
-          await SupabaseService.client.storage.from(bucket).remove([filePath]);
-        }
-      }
-
-      if (state.role == 'influencer') {
-        final portfolioData = await SupabaseService.client
-            .from('portfolio_items')
-            .select('media_url')
-            .eq('user_id', userId);
-        for (final item in portfolioData) {
-          final mediaUrl = item['media_url'] as String?;
-          if (mediaUrl != null) {
-            final uri = Uri.parse(mediaUrl);
-            final pathSegments = uri.pathSegments;
-            final pubIndex = pathSegments.indexOf('public');
-            if (pubIndex != -1 && pathSegments.length > pubIndex + 2) {
-              final bucket = pathSegments[pubIndex + 1];
-              final filePath = pathSegments.sublist(pubIndex + 2).join('/');
-              await SupabaseService.client.storage.from(bucket).remove([filePath]);
-            }
-          }
-        }
-      }
+      await SupabaseService.client
+          .from('profiles')
+          .update({'deleted_at': DateTime.now().toIso8601String()})
+          .eq('id', userId);
     } catch (e) {
-      print('[AUTH] Error deleting storage files during account deletion: $e');
+      print('[AUTH] Error during account soft deletion: $e');
     }
 
     // 2. Clear Shared Preferences local cache for user
@@ -566,10 +538,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('[AUTH] Error clearing preferences: $e');
     }
 
-    // 3. Call delete_user_account database function
-    await SupabaseService.client.rpc('delete_user_account', params: {'p_user_id': userId});
-
-    // 4. Sign out
+    // 3. Sign out
     try {
       await _authService.signOut();
     } catch (_) {}

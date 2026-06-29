@@ -381,7 +381,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       );
       if (mounted) {
         setState(() => _loading = false);
-        final basePath = widget.role == 'brand' ? '/brand' : '/influencer';
+        final basePath = widget.role == 'brand' ? '/brand' : (widget.role == 'admin' ? '/admin' : '/influencer');
         await context.push('$basePath/chats/${room['id']}');
         _load(ignoreCache: true);
       }
@@ -912,7 +912,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     final profile = ref.watch(authProvider).profile;
     final Map<String, dynamic> deletedRooms = Map<String, dynamic>.from(profile?['preferences']?['deleted_rooms'] ?? {});
 
-    final basePath = widget.role == 'brand' ? '/brand' : '/influencer';
+    final basePath = widget.role == 'brand' ? '/brand' : (widget.role == 'admin' ? '/admin' : '/influencer');
     final searchQuery = _searchCtrl.text.toLowerCase().trim();
     final pinnedRoomIds = ref.watch(pinnedRoomsProvider);
     final archivedRoomIds = ref.watch(archivedRoomsProvider);
@@ -1359,10 +1359,30 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                               overflow: TextOverflow.ellipsis,
                                                             ),
                                                           ),
-                                                          if (!isGroup && otherUser?['is_verified'] == true) ...[
-                                                            const SizedBox(width: 4),
-                                                            const VerificationBadge(size: 13),
-                                                          ],
+                                                           if (!isGroup && otherUser?['role'] == 'admin') ...[
+                                                             const SizedBox(width: 6),
+                                                             Container(
+                                                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                                               decoration: BoxDecoration(
+                                                                 color: Colors.orange.withValues(alpha: 0.15),
+                                                                 borderRadius: BorderRadius.circular(4),
+                                                                 border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 0.8),
+                                                               ),
+                                                               child: const Text(
+                                                                 'ADMIN',
+                                                                 style: TextStyle(
+                                                                   fontSize: 7.5,
+                                                                   fontWeight: FontWeight.w900,
+                                                                   color: Colors.orange,
+                                                                   letterSpacing: 0.5,
+                                                                 ),
+                                                               ),
+                                                             ),
+                                                           ],
+                                                           if (!isGroup && otherUser?['is_verified'] == true) ...[
+                                                             const SizedBox(width: 4),
+                                                             const VerificationBadge(size: 13),
+                                                           ],
                                                         ],
                                                       ),
                                                     ),

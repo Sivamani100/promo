@@ -297,11 +297,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   String? roleId(Map<String, dynamic>? room) {
+    if (room == null) return null;
     final role = ref.read(authProvider).role;
+    final userId = ref.read(authProvider).user?.id;
+    if (role == 'admin') {
+      final isBrandSide = room['brand_id'] == userId;
+      return (isBrandSide ? room['influencer_id'] : room['brand_id']) as String?;
+    }
     if (role == 'brand') {
-      return room?['influencer_id'] as String?;
+      return room['influencer_id'] as String?;
     } else {
-      return room?['brand_id'] as String?;
+      return room['brand_id'] as String?;
     }
   }
 
@@ -378,14 +384,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       barrierColor: Colors.black.withOpacity(0.95),
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (ctx, anim1, anim2) {
+        final userRole = ref.read(authProvider).role;
+        final currentUserId = ref.read(authProvider).user?.id;
+        final isLookingAtInfluencer = userRole == 'admin'
+            ? (currentUserId == _room?['brand_id'])
+            : (userRole == 'brand');
         final roomName = _room?['influencer_id'] == null
             ? (_room?['title'] ?? (_room?['card']?['title'] ?? 'Campaign Group'))
-            : (ref.read(authProvider).role == 'brand'
+            : (isLookingAtInfluencer
                 ? (_room?['influencer']?['display_name'] ?? 'Influencer')
                 : (_room?['brand']?['display_name'] ?? 'Brand'));
         final avatarUrl = _room?['influencer_id'] == null
             ? null
-            : (ref.read(authProvider).role == 'brand'
+            : (isLookingAtInfluencer
                 ? _room?['influencer']?['avatar_url']
                 : _room?['brand']?['avatar_url']);
 
@@ -677,11 +688,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           shrinkWrap: true,
                           itemCount: rooms.length,
                           itemBuilder: (context, idx) {
-                            final room = rooms[idx];
-                            final isGroup = room['influencer_id'] == null;
-                            final title = isGroup
-                                ? (room['card']?['title'] ?? 'Group')
-                                : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
+                             final room = rooms[idx];
+                             final isGroup = room['influencer_id'] == null;
+                             final isLookingAtInfluencer = role == 'admin' ? (user.id == room['brand_id']) : (role == 'brand');
+                             final title = isGroup
+                                 ? (room['card']?['title'] ?? 'Group')
+                                 : ((isLookingAtInfluencer ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
 
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
@@ -696,7 +708,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 20),
                                     )
                                   : AppAvatar(
-                                      url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
+                                      url: (isLookingAtInfluencer ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
                                       fallbackText: title,
                                       size: 36,
                                     ),
@@ -1159,7 +1171,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     final userId = ref.watch(authProvider).user?.id;
     final role = ref.watch(authProvider).role ?? 'brand';
-    final dynamic otherUserRaw = role == 'brand' ? (_room?['influencer']) : (_room?['brand']);
+    final isBrandSide = role == 'admin'
+        ? (_room != null && _room!['brand_id'] == userId)
+        : (role == 'brand');
+    final dynamic otherUserRaw = _room == null
+        ? null
+        : (isBrandSide ? _room!['influencer'] : _room!['brand']);
 
     if (_loading) {
       return Scaffold(
@@ -1280,8 +1297,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ? _showGroupInfoPanel
               : () {
                   final otherId = otherUserMap?['id'];
+                  final otherRole = otherUserMap?['role'] ?? 'influencer';
                   if (otherId != null) {
-                    if (role == 'brand') {
+                    if (role == 'admin') {
+                      if (otherRole == 'brand') {
+                        context.push('/influencer/brands/$otherId');
+                      } else {
+                        context.push('/brand/influencers/$otherId');
+                      }
+                    } else if (role == 'brand') {
                       context.push('/brand/influencers/$otherId');
                     } else {
                       context.push('/influencer/brands/$otherId');
@@ -1311,8 +1335,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         size: 36,
                         onTap: () {
                           final otherId = otherUserMap?['id'];
+                          final otherRole = otherUserMap?['role'] ?? 'influencer';
                           if (otherId != null) {
-                            if (role == 'brand') {
+                            if (role == 'admin') {
+                              if (otherRole == 'brand') {
+                                context.push('/influencer/brands/$otherId');
+                              } else {
+                                context.push('/brand/influencers/$otherId');
+                              }
+                            } else if (role == 'brand') {
                               context.push('/brand/influencers/$otherId');
                             } else {
                               context.push('/influencer/brands/$otherId');
@@ -1354,6 +1385,26 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (!isGroup && otherUserMap?['role'] == 'admin') ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 0.8),
+                              ),
+                              child: const Text(
+                                'ADMIN',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.orange,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
                           if (!isGroup && otherUserMap?['is_verified'] == true) ...[
                             const SizedBox(width: 4),
                             const VerificationBadge(size: 14),

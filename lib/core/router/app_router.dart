@@ -54,6 +54,19 @@ import '../../features/agreements/agreement_builder_screen.dart';
 import '../../features/agreements/agreement_review_screen.dart';
 import '../../features/agreements/payment_tracker_screen.dart';
 
+// Admin screens
+import '../../features/admin/admin_home_screen.dart';
+import '../../features/admin/admin_users_screen.dart';
+import '../../features/admin/admin_verification_requests_screen.dart';
+import '../../features/admin/admin_deletions_screen.dart';
+import '../../features/admin/admin_emails_screen.dart';
+import '../../features/admin/admin_analytics_screen.dart';
+import '../../features/admin/admin_notifications_screen.dart';
+import '../../features/admin/admin_settings_screen.dart';
+import '../../features/admin/admin_disputes_screen.dart';
+import '../../features/admin/admin_reports_screen.dart';
+import '../../features/admin/admin_help_articles_screen.dart';
+
 class AppRouterRefreshListenable extends ChangeNotifier {
   void refresh() {
     notifyListeners();
@@ -135,6 +148,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (path == '/banned' || path == '/suspended') {
         if (authState.role == 'brand') return '/brand/home';
         if (authState.role == 'influencer') return '/influencer/home';
+        if (authState.role == 'admin') return '/admin/home';
         return '/login';
       }
 
@@ -167,11 +181,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         final isFromSettings = state.uri.queryParameters['from_settings'] == 'true';
         if (!isFromSettings) {
           final hasCompletedOnboarding = authState.isOnboardingComplete;
-          if (!hasCompletedOnboarding) {
+          if (!hasCompletedOnboarding && authState.role != 'admin') {
             return '/onboarding/1';
           }
           if (authState.role == 'brand') return '/brand/home';
           if (authState.role == 'influencer') return '/influencer/home';
+          if (authState.role == 'admin') return '/admin/home';
           return '/login';
         }
       }
@@ -179,7 +194,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 5. If authenticated, verify onboarding completion
       final hasCompletedOnboarding = authState.isOnboardingComplete;
 
-      if (!hasCompletedOnboarding) {
+      if (!hasCompletedOnboarding && authState.role != 'admin') {
         if (!isOnboardingRoute) {
           return '/onboarding/1';
         }
@@ -190,6 +205,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isAuthRoute || isOnboardingRoute || path == '/splash' || isGateRoute) {
         if (authState.role == 'brand') return '/brand/home';
         if (authState.role == 'influencer') return '/influencer/home';
+        if (authState.role == 'admin') return '/admin/home';
         return '/login';
       }
       return null;
@@ -500,6 +516,86 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const NotificationsScreen(),
         ),
       ),
+      GoRoute(
+        path: '/admin/notifications',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminNotificationsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminSettingsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/reports',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminReportsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/help-articles',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminHelpArticlesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/settings/privacy',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const PrivacySettingsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/settings/security',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const SecuritySettingsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/chats/:roomId',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: ChatRoomScreen(roomId: state.pathParameters['roomId']!),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/deletions',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminDeletionsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/emails',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminEmailsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/disputes',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminDisputesScreen(),
+        ),
+      ),
 
       // Brand shell (with bottom bar)
       ShellRoute(
@@ -578,6 +674,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               );
             },
           ),
+        ],
+      ),
+
+      // Admin shell (with bottom bar)
+      ShellRoute(
+        builder: (_, _, child) => AppScaffold(role: 'admin', child: child),
+        routes: [
+          GoRoute(path: '/admin/home', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const AdminHomeScreen())),
+          GoRoute(path: '/admin/users', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const AdminUsersScreen())),
+          GoRoute(path: '/admin/verification', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const AdminVerificationRequestsScreen())),
+          GoRoute(path: '/admin/chats', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const ChatsListScreen(role: 'admin'))),
+          GoRoute(path: '/admin/analytics', pageBuilder: (context, state) => AppTransitions.fade(key: state.pageKey, child: const AdminAnalyticsScreen())),
         ],
       ),
     ],

@@ -49,7 +49,18 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
         _NavItem(icon: Iconsax.profile_circle, activeIcon: Iconsax.profile_circle, label: 'Profile', path: '/influencer/profile'),
       ];
 
-  List<_NavItem> get _items => widget.role == 'brand' ? _brandItems : _influencerItems;
+  List<_NavItem> get _adminItems => [
+        _NavItem(icon: Iconsax.home, activeIcon: Iconsax.home_1, label: 'Home', path: '/admin/home'),
+        _NavItem(icon: Iconsax.profile_2user, activeIcon: Iconsax.profile_2user, label: 'Users', path: '/admin/users'),
+        _NavItem(icon: Iconsax.teacher, activeIcon: Iconsax.teacher, label: 'Verify', path: '/admin/verification'),
+        _NavItem(icon: Iconsax.message, activeIcon: Iconsax.message, label: 'Support', path: '/admin/chats'),
+        _NavItem(icon: Iconsax.graph, activeIcon: Iconsax.graph, label: 'Analytics', path: '/admin/analytics'),
+      ];
+
+  List<_NavItem> get _items {
+    if (widget.role == 'admin') return _adminItems;
+    return widget.role == 'brand' ? _brandItems : _influencerItems;
+  }
 
   @override
   void didChangeDependencies() {
@@ -97,7 +108,13 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
         } else {
           if (_currentIndex != 0) {
             _isBackNavigating = true;
-            context.go(widget.role == 'brand' ? '/brand/home' : '/influencer/home');
+            if (widget.role == 'brand') {
+              context.go('/brand/home');
+            } else if (widget.role == 'admin') {
+              context.go('/admin/home');
+            } else {
+              context.go('/influencer/home');
+            }
             Future.microtask(() {
               _isBackNavigating = false;
             });

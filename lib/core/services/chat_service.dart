@@ -14,6 +14,13 @@ class ChatService {
           .eq('brand_id', userId)
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(data);
+    } else if (role == 'admin') {
+      final data = await _client
+          .from('rooms')
+          .select('*, brand:profiles!rooms_brand_id_fkey(*), influencer:profiles!rooms_influencer_id_fkey(*), card:cards!rooms_card_id_fkey(title)')
+          .or('brand_id.eq.$userId,influencer_id.eq.$userId')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(data);
     } else {
       // Fetch 1-to-1 rooms
       final rooms1to1 = await _client
