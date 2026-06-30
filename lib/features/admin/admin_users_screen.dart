@@ -171,6 +171,18 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               Text('USER ACTIONS', style: AppTextStyles.overline),
               const SizedBox(height: 12),
 
+              // View Activity Logs & Report Action
+              ListTile(
+                leading: Icon(Iconsax.document_text, color: AppColors.purple),
+                title: const Text('View Activity Logs & Report'),
+                subtitle: const Text('Inspect chats, activity history, profile views, and download reports'),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  context.push('/admin/users/logs', extra: user);
+                },
+              ),
+              const Divider(),
+
               // Verification Badge Action
               ListTile(
                 leading: Icon(Iconsax.teacher, color: AppColors.purple),
@@ -198,7 +210,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               // Warning Action
               ListTile(
                 leading: const Icon(Iconsax.info_circle, color: Colors.orange),
-                title: Text('Warn User (${warningCount} warnings)'),
+                title: Text('Warn User ($warningCount warnings)'),
                 subtitle: const Text('Add warning indicator and notify user'),
                 onTap: () {
                   Navigator.pop(sheetCtx);

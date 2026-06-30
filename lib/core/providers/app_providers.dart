@@ -238,23 +238,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
         updated = true;
       }
 
-      final onboardingAlreadyComplete = currentProfile?['onboarding_complete'] == true;
-      final updates = <String, dynamic>{};
       if (updated) {
-        updates['preferences'] = currentPrefs;
-      }
-      if (!onboardingAlreadyComplete) {
-        updates['onboarding_complete'] = true;
-      }
-
-      if (updates.isNotEmpty) {
+        final updates = <String, dynamic>{
+          'preferences': currentPrefs,
+        };
         await SupabaseService.client.from('profiles').update(updates).eq('id', userId);
-        print('[AUTH] Auto-completed sign-in onboarding gates on DB for user: $userId');
+        print('[AUTH] Auto-completed sign-in legal consent gates on DB for user: $userId');
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('onboarding_complete_$userId', true);
-      await prefs.setBool('first_time_tour_shown_$userId', true);
+      final onboardingAlreadyComplete = currentProfile?['onboarding_complete'] == true;
+      if (onboardingAlreadyComplete) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('onboarding_complete_$userId', true);
+        await prefs.setBool('first_time_tour_shown_$userId', true);
+      }
     } catch (e) {
       print('[AUTH] Error auto-accepting onboarding gates for sign-in: $e');
     }

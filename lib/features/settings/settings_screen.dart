@@ -87,6 +87,12 @@ class SettingsScreen extends ConsumerWidget {
               label: 'API Keys',
               onTap: () => context.push('/$role/settings/apikeys'),
             ),
+            _SettingsItem(
+              icon: Iconsax.cpu,
+              label: 'AI Assistant',
+              subtitle: 'Chat with Promo AI Agent',
+              onTap: () => context.push('/$role/settings/assistant'),
+            ),
           ]),
           const SizedBox(height: 20),
           _SettingsSection(title: 'Preferences', items: [

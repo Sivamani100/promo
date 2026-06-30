@@ -497,6 +497,27 @@ class _AdminHomeScreenState extends ConsumerState<AdminHomeScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: 'Moderate Gigs',
+                  icon: Iconsax.note_2,
+                  onTap: () => context.push('/admin/campaigns'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppButton(
+                  label: 'System Logs',
+                  icon: Iconsax.activity,
+                  isPrimary: false,
+                  onTap: () => context.push('/admin/audit-logs'),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

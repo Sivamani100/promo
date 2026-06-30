@@ -42,6 +42,8 @@ import '../../features/settings/security_settings.dart';
 import '../../features/settings/verification_settings.dart';
 import '../../features/settings/platform_settings.dart';
 import '../../features/settings/api_keys_settings.dart';
+import '../../features/settings/mcp_keys_settings_screen.dart';
+import '../../features/settings/ai_assistant_screen.dart';
 import '../../features/settings/document_viewer.dart';
 import '../../features/settings/developer_settings_screen.dart';
 import '../../features/support/support_screen.dart';
@@ -66,6 +68,9 @@ import '../../features/admin/admin_settings_screen.dart';
 import '../../features/admin/admin_disputes_screen.dart';
 import '../../features/admin/admin_reports_screen.dart';
 import '../../features/admin/admin_help_articles_screen.dart';
+import '../../features/admin/admin_user_logs_screen.dart';
+import '../../features/admin/admin_campaigns_screen.dart';
+import '../../features/admin/admin_audit_logs_screen.dart';
 
 class AppRouterRefreshListenable extends ChangeNotifier {
   void refresh() {
@@ -324,6 +329,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'security', builder: (_, _) => const SecuritySettingsScreen()),
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
+          GoRoute(path: 'mcpkeys', builder: (_, _) => const McpKeysSettingsScreen()),
+          GoRoute(path: 'assistant', builder: (_, _) => const AiAssistantScreen()),
           GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
@@ -401,6 +408,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'platforms', builder: (_, _) => const PlatformSettingsScreen()),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
+          GoRoute(path: 'mcpkeys', builder: (_, _) => const McpKeysSettingsScreen()),
+          GoRoute(path: 'assistant', builder: (_, _) => const AiAssistantScreen()),
           GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
@@ -594,6 +603,33 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppTransitions.slideLeft(
           key: state.pageKey,
           child: const AdminDisputesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/users/logs',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final user = state.extra as Map<String, dynamic>;
+          return AppTransitions.slideLeft(
+            key: state.pageKey,
+            child: AdminUserLogsScreen(user: user),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/admin/campaigns',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminCampaignsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/audit-logs',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => AppTransitions.slideLeft(
+          key: state.pageKey,
+          child: const AdminAuditLogsScreen(),
         ),
       ),
 
