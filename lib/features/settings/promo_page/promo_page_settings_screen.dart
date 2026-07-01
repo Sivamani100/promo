@@ -467,7 +467,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('My Promo Page')),
-        body: Center(child: const LoadingIndicator()),
+        body: Center(child: LoadingIndicator()),
       );
     }
 
