@@ -44,7 +44,7 @@
       "destination": "/landingpage/index.html"
     },
     {
-      "source": "/@:username",
+      "source": "/@:path*",
       "destination": "/index.html"
     },
     {
