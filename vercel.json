@@ -44,7 +44,7 @@
       "destination": "/landingpage/index.html"
     },
     {
-      "source": "/@:username",
+      "source": "/@([a-zA-Z0-9_]{3,30})",
       "destination": "/index.html"
     },
     {
