@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'promo_page_service.dart';
 
-class PromoPublicPageScreen extends StatefulWidget {
+class PromoPublicPageScreen extends ConsumerStatefulWidget {
   final String username;
   const PromoPublicPageScreen({super.key, required this.username});
 
   @override
-  State<PromoPublicPageScreen> createState() => _PromoPublicPageScreenState();
+  ConsumerState<PromoPublicPageScreen> createState() => _PromoPublicPageScreenState();
 }
 
-class _PromoPublicPageScreenState extends State<PromoPublicPageScreen> with TickerProviderStateMixin {
+class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> with TickerProviderStateMixin {
   bool _loading = true;
   String? _error;
   PromoPage? _page;
@@ -347,7 +349,32 @@ class _PromoPublicPageScreenState extends State<PromoPublicPageScreen> with Tick
     final bio = page.bio ?? _socials?['bio'] as String?;
 
     // Social accounts links
-    final Map<String, dynamic> platforms = _socials?['platforms'] as Map<String, dynamic>? ?? {};
+    final Map<String, dynamic> platforms = {};
+    if (_socials != null && _socials!['preferences'] != null) {
+      final prefs = Map<String, dynamic>.from(_socials!['preferences'] as Map);
+      final handles = prefs['platform_handles'] != null 
+          ? Map<String, dynamic>.from(prefs['platform_handles'] as Map) 
+          : {};
+          
+      handles.forEach((key, val) {
+        if (val != null && val.toString().trim().isNotEmpty) {
+          final handle = val.toString().trim().replaceAll('@', '');
+          final lowerKey = key.toString().toLowerCase();
+          
+          if (lowerKey == 'instagram') {
+            platforms['instagram'] = 'https://instagram.com/$handle';
+          } else if (lowerKey == 'tiktok') {
+            platforms['tiktok'] = 'https://tiktok.com/@$handle';
+          } else if (lowerKey == 'youtube') {
+            platforms['youtube'] = 'https://youtube.com/$handle';
+          } else if (lowerKey == 'twitter' || lowerKey == 'x') {
+            platforms['twitter'] = 'https://x.com/$handle';
+          } else if (lowerKey == 'linkedin') {
+            platforms['linkedin'] = 'https://linkedin.com/in/$handle';
+          }
+        }
+      });
+    }
     final hasSocials = page.showSocialPlatforms && platforms.isNotEmpty;
 
     return Scaffold(
@@ -461,6 +488,39 @@ class _PromoPublicPageScreenState extends State<PromoPublicPageScreen> with Tick
                   }),
 
                   const SizedBox(height: 48),
+
+                  // 4.5. SIGNUP CTA FOR VISITORS
+                  if (!ref.watch(authProvider).isAuthenticated) ...[
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () => context.go('/signup'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme == 'light' ? const Color(0xFF1A1A1A) : Colors.white,
+                          foregroundColor: theme == 'light' ? Colors.white : const Color(0xFF1A1A1A),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Iconsax.user_add, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Create Your Promo Page',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
 
                   // 5. PROMO BADGE
                   if (page.showPromoBadge)

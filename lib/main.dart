@@ -9,10 +9,13 @@ import 'core/services/supabase_service.dart';
 import 'core/services/push_notification_manager.dart';
 import 'core/config/app_config.dart';
 import 'core/lifecycle/app_lifecycle_manager.dart';
+import 'core/config/url_strategy_stub.dart'
+    if (dart.library.html) 'core/config/url_strategy_web.dart';
 import 'firebase_options.dart';
 import 'app.dart';
 
 void main() async {
+  configureUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseService.initialize();
 

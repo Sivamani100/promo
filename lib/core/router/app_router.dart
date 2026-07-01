@@ -118,11 +118,17 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 1. If splash is not completed, we MUST stay on /splash
       if (!isSplashCompleted) {
+        if (path.startsWith('/@')) {
+          return null;
+        }
         return '/splash';
       }
 
       // 2. If auth state is loading, wait on splash or show loading
       if (isLoading) {
+        if (path.startsWith('/@')) {
+          return null;
+        }
         return path == '/splash' ? null : null;
       }
 

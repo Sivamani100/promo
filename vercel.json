@@ -1,6 +1,5 @@
 {
   "outputDirectory": "build/web",
-  "cleanUrls": true,
   "ignoreCommand": "exit 0",
   "rewrites": [
     {

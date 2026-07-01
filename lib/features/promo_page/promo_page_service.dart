@@ -196,7 +196,7 @@ class PromoPageService {
       'is_published': false,
     }).select().single();
 
-    return PromoPage.fromJson(data);
+    return PromoPage.fromJson(Map<String, dynamic>.from(data));
   }
 
   /// Retrieve the current logged-in user's Promo Page config
@@ -211,7 +211,7 @@ class PromoPageService {
           .eq('user_id', user.id)
           .maybeSingle();
       if (data == null) return null;
-      return PromoPage.fromJson(data);
+      return PromoPage.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       debugPrint('[PROMO_PAGE] Error fetching my page: $e');
       return null;
@@ -247,7 +247,7 @@ class PromoPageService {
         .select()
         .single();
 
-    return PromoPage.fromJson(data);
+    return PromoPage.fromJson(Map<String, dynamic>.from(data));
   }
 
   /// Add a link
@@ -282,7 +282,7 @@ class PromoPageService {
       'is_enabled': true,
     }).select().single();
 
-    return PromoPageLink.fromJson(data);
+    return PromoPageLink.fromJson(Map<String, dynamic>.from(data));
   }
 
   /// Update a link
@@ -341,7 +341,7 @@ class PromoPageService {
         query = query.eq('is_enabled', true);
       }
       final data = await query.order('display_order', ascending: true);
-      return List<Map<String, dynamic>>.from(data).map(PromoPageLink.fromJson).toList();
+      return (data as List).map((x) => PromoPageLink.fromJson(Map<String, dynamic>.from(x as Map))).toList();
     } catch (e) {
       debugPrint('[PROMO_PAGE] Error fetching links: $e');
       return [];
@@ -358,7 +358,7 @@ class PromoPageService {
           .eq('is_published', true)
           .maybeSingle();
       if (data == null) return null;
-      return PromoPage.fromJson(data);
+      return PromoPage.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       debugPrint('[PROMO_PAGE] Error fetching public page: $e');
       return null;
@@ -370,10 +370,10 @@ class PromoPageService {
     try {
       final data = await _client
           .from('profiles')
-          .select('platforms, display_name, avatar_url, bio')
+          .select('platforms, display_name, avatar_url, bio, preferences')
           .eq('id', userId)
           .maybeSingle();
-      return data;
+      return data != null ? Map<String, dynamic>.from(data) : null;
     } catch (e) {
       debugPrint('[PROMO_PAGE] Error fetching profiles socials: $e');
       return null;
