@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -103,37 +105,27 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          // ── Page URL Banner ──
+          // 1. Sleek URL Overview Banner
           _buildPageUrlBanner(),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: 14),
 
-          // ── Summary Cards Grid ──
+          // 2. Summary stats cards
           _buildSummaryCards(summary),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: 14),
 
-          // ── Views Chart ──
-          _buildSectionHeader('Views Over Time', Iconsax.chart_2),
-          const SizedBox(height: AppSpacing.sm),
-          _buildChartRangeSelector(),
-          const SizedBox(height: AppSpacing.sm),
+          // 3. Bento Card: Views Over Time Chart
           _buildViewsChart(summary),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: 14),
 
-          // ── Link Performance ──
-          _buildSectionHeader('Link Performance', Iconsax.link_1),
-          const SizedBox(height: AppSpacing.sm),
+          // 4. Bento Card: Link Performance
           _buildLinkPerformance(summary),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: 14),
 
-          // ── Top Referrers ──
-          _buildSectionHeader('Traffic Sources', Iconsax.global),
-          const SizedBox(height: AppSpacing.sm),
+          // 5. Bento Card: Traffic Sources
           _buildTopReferrers(summary),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: 14),
 
-          // ── Recent Activity ──
-          _buildSectionHeader('Recent Activity', Iconsax.activity),
-          const SizedBox(height: AppSpacing.sm),
+          // 6. Bento Card: Recent Activity
           _buildRecentActivity(),
           const SizedBox(height: 32),
         ],
@@ -147,51 +139,76 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
 
   Widget _buildPageUrlBanner() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.purple.withOpacity(0.15),
-            AppColors.purple.withOpacity(0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.purple.withOpacity(0.25)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.surface3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.purple.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [AppColors.purple, AppColors.purple.withValues(alpha: 0.7)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purple.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                )
+              ],
             ),
-            child: Icon(Iconsax.chart_success, color: AppColors.purple, size: 20),
+            child: const Icon(Iconsax.chart_success, color: Colors.white, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Analytics for @${widget.username}',
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                  'Analytics Overview',
+                  style: AppTextStyles.bodySm.copyWith(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'promo.arkio.in/@${widget.username}',
-                  style: AppTextStyles.bodySm.copyWith(
+                  style: AppTextStyles.h4.copyWith(
                     color: AppColors.purple,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.3,
                   ),
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 20),
-            onPressed: _loadAnalytics,
-            tooltip: 'Refresh analytics',
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: _loadAnalytics,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.surface3),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.refresh, size: 18),
+              ),
+            ),
           ),
         ],
       ),
@@ -203,41 +220,65 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
   // ═══════════════════════════════════════════════════════════
 
   Widget _buildSummaryCards(PromoAnalyticsSummary summary) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Determine colors based on isDark (matching InfluencerHomeScreen exactly)
+    final Color skyBg = isDark ? const Color(0xFF0C243C) : const Color(0xFFD0ECFC);
+    final Color greenBg = isDark ? const Color(0xFF0D3E26) : const Color(0xFFC1F0D5);
+    final Color pinkBg = isDark ? const Color(0xFF481030) : const Color(0xFFFCD3E6);
+    final Color yellowBg = isDark ? const Color(0xFF482B08) : const Color(0xFFFDE2B5);
+
+    final Color textColor = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF1E293B);
+    final Color subTextColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final Color iconColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.6,
+      childAspectRatio: 1.0, // Perfect square aspect ratio
       children: [
         _buildStatCard(
           label: 'Total Views',
           value: _formatNumber(summary.totalViews),
           subValue: '+${summary.viewsToday} today',
           icon: Iconsax.eye,
-          color: const Color(0xFF38BDF8),
+          bgColor: skyBg,
+          textColor: textColor,
+          subTextColor: subTextColor,
+          iconColor: iconColor,
         ),
         _buildStatCard(
           label: 'Unique Visitors',
           value: _formatNumber(summary.uniqueViews),
           subValue: '${summary.viewsThisWeek} this week',
           icon: Iconsax.people,
-          color: const Color(0xFF4ADE80),
+          bgColor: greenBg,
+          textColor: textColor,
+          subTextColor: subTextColor,
+          iconColor: iconColor,
         ),
         _buildStatCard(
           label: 'Total Clicks',
           value: _formatNumber(summary.totalClicks),
           subValue: '+${summary.clicksToday} today',
           icon: Iconsax.mouse_circle,
-          color: const Color(0xFFFBBF24),
+          bgColor: pinkBg,
+          textColor: textColor,
+          subTextColor: subTextColor,
+          iconColor: iconColor,
         ),
         _buildStatCard(
           label: 'Click Rate',
           value: '${summary.ctr.toStringAsFixed(1)}%',
           subValue: 'CTR (clicks/views)',
           icon: Iconsax.percentage_circle,
-          color: const Color(0xFFF472B6),
+          bgColor: yellowBg,
+          textColor: textColor,
+          subTextColor: subTextColor,
+          iconColor: iconColor,
         ),
       ],
     );
@@ -248,62 +289,67 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
     required String value,
     required String subValue,
     required IconData icon,
-    required Color color,
+    required Color bgColor,
+    required Color textColor,
+    required Color subTextColor,
+    required Color iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: bgColor,
+        borderRadius: BorderRadius.circular(28.0), // Rounded squarish bento styling
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                child: Icon(icon, size: 16, color: color),
               ),
-              Text(
-                label,
-                style: AppTextStyles.bodySm.copyWith(
-                  color: AppColors.textMuted,
-                  fontSize: 11,
-                ),
+              const SizedBox(width: 8),
+              Icon(
+                icon,
+                color: iconColor,
+                size: 20,
               ),
             ],
           ),
           const Spacer(),
           Text(
             value,
-            style: AppTextStyles.h2.copyWith(
-              fontWeight: FontWeight.w800,
-              fontSize: 26,
+            style: GoogleFonts.inter(
+              fontSize: 38,
+              fontWeight: FontWeight.w900,
+              color: textColor,
+              letterSpacing: -1.2,
+              height: 1.0,
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 6),
           Text(
             subValue,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: subTextColor,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -315,12 +361,20 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
   // ═══════════════════════════════════════════════════════════
 
   Widget _buildChartRangeSelector() {
-    return Row(
-      children: [
-        _buildRangeChip('7', 'Last 7 Days'),
-        const SizedBox(width: 8),
-        _buildRangeChip('30', 'Last 30 Days'),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.surface3),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildRangeChip('7', 'Last 7 Days'),
+          _buildRangeChip('30', 'Last 30 Days'),
+        ],
+      ),
     );
   }
 
@@ -328,21 +382,28 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
     final isSelected = _chartRange == range;
     return GestureDetector(
       onTap: () => setState(() => _chartRange = range),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.purple : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.purple : AppColors.surface3,
-          ),
+          color: isSelected ? AppColors.purple : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.purple.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
           ),
         ),
       ),
@@ -376,37 +437,49 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
 
     return Container(
       height: 220,
-      padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(8, 20, 20, 8),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.surface3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: BarChart(
-        BarChartData(
+      child: LineChart(
+        LineChartData(
+          minX: 0,
+          maxX: (days.length - 1).toDouble(),
+          minY: 0,
           maxY: adjustedMaxY,
-          barTouchData: BarTouchData(
+          lineTouchData: LineTouchData(
             enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => AppColors.purple.withOpacity(0.9),
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => AppColors.purple.withValues(alpha: 0.9),
               tooltipRoundedRadius: 8,
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                final day = days[group.x.toInt()];
-                final dateParsed = DateTime.tryParse(day.date);
-                final dateLabel = dateParsed != null
-                    ? DateFormat('MMM d').format(dateParsed)
-                    : day.date;
-                return BarTooltipItem(
-                  '$dateLabel\n${rod.toY.toInt()} views',
-                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                );
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  final day = days[spot.x.toInt()];
+                  final dateParsed = DateTime.tryParse(day.date);
+                  final dateLabel = dateParsed != null
+                      ? DateFormat('MMM d').format(dateParsed)
+                      : day.date;
+                  return LineTooltipItem(
+                    '$dateLabel\n${spot.y.toInt()} views',
+                    const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  );
+                }).toList();
               },
             ),
           ),
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: max(1, adjustedMaxY / 4),
+            horizontalInterval: max(1.0, adjustedMaxY / 4),
             getDrawingHorizontalLine: (value) => FlLine(
               color: AppColors.surface3,
               strokeWidth: 0.8,
@@ -419,7 +492,7 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 32,
-                interval: max(1, adjustedMaxY / 4),
+                interval: max(1.0, adjustedMaxY / 4),
                 getTitlesWidget: (value, meta) {
                   return Text(
                     value.toInt().toString(),
@@ -437,7 +510,6 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
                   final idx = value.toInt();
                   if (idx < 0 || idx >= days.length) return const SizedBox.shrink();
 
-                  // Show every Nth label to avoid crowding
                   final interval = daysCount <= 7 ? 1 : 5;
                   if (idx % interval != 0 && idx != days.length - 1) {
                     return const SizedBox.shrink();
@@ -456,31 +528,43 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
             ),
           ),
           borderData: FlBorderData(show: false),
-          barGroups: days.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final day = entry.value;
-            return BarChartGroupData(
-              x: idx,
-              barRods: [
-                BarChartRodData(
-                  toY: day.views.toDouble(),
-                  width: daysCount <= 7 ? 28 : 8,
-                  borderRadius: BorderRadius.circular(daysCount <= 7 ? 6 : 3),
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.purple,
-                      AppColors.purple.withOpacity(0.6),
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: days.asMap().entries.map((entry) {
+                return FlSpot(entry.key.toDouble(), entry.value.views.toDouble());
+              }).toList(),
+              isCurved: true,
+              color: AppColors.purple,
+              barWidth: 3,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 3,
+                  color: AppColors.purple,
+                  strokeWidth: 1.5,
+                  strokeColor: Colors.white,
                 ),
-              ],
-            );
-          }).toList(),
+                checkToShowDot: (spot, barData) {
+                  return spot.x == days.length - 1;
+                },
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.purple.withValues(alpha: 0.25),
+                    AppColors.purple.withValues(alpha: 0.0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
         ),
-        swapAnimationDuration: const Duration(milliseconds: 400),
-        swapAnimationCurve: Curves.easeOutBack,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutBack,
       ),
     );
   }

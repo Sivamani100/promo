@@ -1,61 +1,8 @@
 {
   "outputDirectory": "build/web",
-  "ignoreCommand": "exit 0",
   "rewrites": [
     {
-      "source": "/landingpage/:path*",
-      "destination": "/landingpage/:path*"
-    },
-    {
-      "source": "/@:username",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/brand/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/influencer/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/signup",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/reset-password",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/set-new-password",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/terms-gate",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/consent",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/onboarding/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/dashboard-tour",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/promo/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/splash",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],

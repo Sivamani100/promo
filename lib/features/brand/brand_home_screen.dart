@@ -421,6 +421,58 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
             // Recent Activity Bento
             _buildRecentActivityBento(8),
 
+            const SizedBox(height: 16),
+            Card(
+              color: AppColors.isDarkMode ? const Color(0xFF0F0F11) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: AppColors.isDarkMode ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                  width: 1.2,
+                ),
+              ),
+              child: InkWell(
+                onTap: () => context.push('/brand/settings/promo-page'),
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.purple.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Iconsax.link, color: AppColors.purple, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'My Promo Page',
+                              style: AppTextStyles.h3.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Customize and share your links landing page',
+                              style: TextStyle(
+                                color: AppColors.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textSecondary, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
             // Footer (Jio Style)
             const SizedBox(height: 56),
             Padding(

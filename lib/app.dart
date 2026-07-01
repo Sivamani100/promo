@@ -73,6 +73,7 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
     return MaterialApp.router(
       title: 'Promo',
       debugShowCheckedModeBanner: AppConfig.showDebugBanner,
+      useInheritedMediaQuery: true,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

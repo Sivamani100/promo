@@ -2512,6 +2512,58 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        GestureDetector(
+                          onTap: () => context.push('/influencer/settings/promo-page'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark ? Colors.black.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.01),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.purple.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Iconsax.link, color: AppColors.purple, size: 20),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'My Promo Page',
+                                        style: AppTextStyles.label.copyWith(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Customize and share your links landing page',
+                                        style: AppTextStyles.captionSm.copyWith(color: AppColors.textSecondary, fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward_ios_rounded, color: AppColors.textSecondary, size: 16),
+                              ],
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 20),
                         // Action buttons row (right screen style)

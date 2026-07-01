@@ -75,12 +75,28 @@ class DeepLinkService {
         break;
       case 'brand':
         if (segments.length > 1) {
-          destination = '/brand/profile/${segments[1]}';
+          final sub = segments[1];
+          const brandAppRoutes = {
+            'home', 'cards', 'applications', 'influencers', 'saved-lists',
+            'campaigns', 'chats', 'analytics', 'profile', 'settings',
+            'support', 'map'
+          };
+          if (!brandAppRoutes.contains(sub)) {
+            destination = '/brand/profile/$sub';
+          }
         }
         break;
       case 'influencer':
         if (segments.length > 1) {
-          destination = '/influencer/profile/${segments[1]}';
+          final sub = segments[1];
+          const influencerAppRoutes = {
+            'home', 'discover', 'my-applications', 'milestones', 'saved',
+            'portfolio', 'chats', 'analytics', 'profile', 'settings',
+            'support', 'map', 'brands'
+          };
+          if (!influencerAppRoutes.contains(sub)) {
+            destination = '/influencer/profile/$sub';
+          }
         }
         break;
       case 'collab':
