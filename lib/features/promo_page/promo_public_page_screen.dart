@@ -250,7 +250,7 @@ class _PromoPublicPageScreenState extends State<PromoPublicPageScreen> with Tick
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: CircularProgressIndicator(color: AppColors.purple),
         ),
@@ -271,7 +271,7 @@ class _PromoPublicPageScreenState extends State<PromoPublicPageScreen> with Tick
                 const SizedBox(height: 8),
                 Text(
                   'The user @${widget.username} does not exist or has not created a Promo Page yet.',
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),

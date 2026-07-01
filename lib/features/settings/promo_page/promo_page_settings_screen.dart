@@ -467,7 +467,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     if (_loading) {
       return Scaffold(
         appBar: AppBar(title: const Text('My Promo Page')),
-        body: const Center(child: LoadingIndicator()),
+        body: Center(child: const LoadingIndicator()),
       );
     }
 
@@ -481,7 +481,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Iconsax.link, size: 72, color: AppColors.purple),
+              Icon(Iconsax.link, size: 72, color: AppColors.purple),
               const SizedBox(height: AppSpacing.lg),
               Text(
                 'Create Your Promo Page',
@@ -491,7 +491,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Build a beautiful, public link-in-bio page to share all your platforms & campaigns in one single link.',
-                style: AppTextStyles.bodyMedium,
+                style: AppTextStyles.body,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -653,10 +653,10 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
                   right: 0,
                   child: GestureDetector(
                     onTap: _pickAndUploadAvatar,
-                    child: const CircleAvatar(
+                    child: CircleAvatar(
                       radius: 16,
                       backgroundColor: AppColors.purple,
-                      child: Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                     ),
                   ),
                 ),
@@ -713,11 +713,11 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
             children: [
               Text(
                 'My Custom Links (${_links.length}/20)',
-                style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
                 'Drag handles to reorder',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
               ),
             ],
           ),
@@ -730,7 +730,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
                     children: [
                       const Icon(Iconsax.link, size: 48, color: Colors.grey),
                       const SizedBox(height: 12),
-                      Text('No links added yet', style: AppTextStyles.bodyMedium),
+                      Text('No links added yet', style: AppTextStyles.body),
                       const SizedBox(height: 8),
                       ElevatedButton.icon(
                         onPressed: () => _openAddLinkBottomSheet(),
@@ -758,10 +758,10 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
                           ),
                           child: Text(link.icon ?? '🔗', style: const TextStyle(fontSize: 20)),
                         ),
-                        title: Text(link.title, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                        title: Text(link.title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
                         subtitle: Text(
                           link.url,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+                          style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
