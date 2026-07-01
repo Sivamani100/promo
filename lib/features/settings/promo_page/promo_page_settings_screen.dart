@@ -14,6 +14,7 @@ import '../../../core/services/data_services.dart';
 import '../../../shared/widgets/shared_widgets.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../promo_page/promo_page_service.dart';
+import '../../promo_page/promo_analytics_screen.dart';
 
 class PromoPageSettingsScreen extends ConsumerStatefulWidget {
   const PromoPageSettingsScreen({super.key});
@@ -51,7 +52,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadPromoData();
   }
 
@@ -563,8 +564,11 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
             Tab(icon: Icon(Iconsax.user), text: 'Profile'),
             Tab(icon: Icon(Iconsax.link_1), text: 'Links'),
             Tab(icon: Icon(Iconsax.colorfilter), text: 'Theme'),
+            Tab(icon: Icon(Iconsax.chart_2), text: 'Analytics'),
             Tab(icon: Icon(Iconsax.setting), text: 'Settings'),
           ],
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
         ),
       ),
       body: Column(
@@ -612,7 +616,13 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
                 // TAB 3: Theme picking
                 _buildThemeTab(),
 
-                // TAB 4: General Settings
+                // TAB 4: Analytics Dashboard
+                PromoAnalyticsDashboard(
+                  pageId: _promoPage!.id,
+                  username: _promoPage!.username,
+                ),
+
+                // TAB 5: General Settings
                 _buildSettingsTab(),
               ],
             ),

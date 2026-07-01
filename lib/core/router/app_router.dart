@@ -48,6 +48,7 @@ import '../../features/settings/document_viewer.dart';
 import '../../features/settings/developer_settings_screen.dart';
 import '../../features/settings/promo_page/promo_page_settings_screen.dart';
 import '../../features/promo_page/promo_public_page_screen.dart';
+import '../../features/promo_page/promo_analytics_screen.dart';
 import '../../features/support/support_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -523,6 +524,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: const SearchScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/promo/analytics',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final pageId = extra['pageId'] as String? ?? '';
+          final username = extra['username'] as String? ?? '';
+          return AppTransitions.slideLeft(
+            key: state.pageKey,
+            child: PromoAnalyticsScreen(pageId: pageId, username: username),
+          );
+        },
       ),
       GoRoute(
         path: '/image-viewer',

@@ -51,6 +51,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/promo/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/splash",
       "destination": "/index.html"
     }

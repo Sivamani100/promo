@@ -203,8 +203,8 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () async {
-          // Increment click count asynchronously
-          PromoPageService.incrementLinkClick(link.id);
+          // Increment click count with referrer tracking
+          PromoPageService.incrementLinkClick(link.id, referrer: Uri.base.toString());
           final uri = Uri.parse(link.url);
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri);

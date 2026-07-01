@@ -1,5 +1,5 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/supabase_service.dart';
 
 class PromoPage {
@@ -398,12 +398,267 @@ class PromoPageService {
     }
   }
 
-  /// Record link click
-  static Future<void> incrementLinkClick(String linkId) async {
+  /// Record link click (with optional referrer for granular tracking)
+  static Future<void> incrementLinkClick(String linkId, {String? referrer}) async {
     try {
-      await _client.rpc('increment_promo_link_clicks', params: {'p_link_id': linkId});
+      await _client.rpc('increment_promo_link_clicks', params: {
+        'p_link_id': linkId,
+        'p_referrer': referrer ?? '',
+      });
     } catch (e) {
       debugPrint('[PROMO_PAGE] Error recording link click: $e');
     }
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Analytics Methods
+  // ────────────────────────────────────────────────────────────────
+
+  /// Fetch analytics summary for a promo page
+  static Future<PromoAnalyticsSummary?> getAnalyticsSummary(String pageId) async {
+    try {
+      final data = await _client.rpc(
+        'get_promo_analytics_summary',
+        params: {'p_page_id': pageId},
+      );
+      debugPrint('[PROMO_ANALYTICS] Summary raw response type: ${data.runtimeType}');
+      debugPrint('[PROMO_ANALYTICS] Summary raw response: $data');
+
+      if (data == null) return null;
+
+      // The RPC returns JSON. Supabase client may return:
+      // - A Map directly (the JSON object)
+      // - A String that needs to be decoded
+      Map<String, dynamic> parsed;
+      if (data is Map) {
+        parsed = Map<String, dynamic>.from(data);
+      } else if (data is String) {
+        // Shouldn't normally happen but safety net
+        final decoded = _tryDecodeJson(data);
+        if (decoded is Map) {
+          parsed = Map<String, dynamic>.from(decoded);
+        } else {
+          debugPrint('[PROMO_ANALYTICS] Unexpected string response: $data');
+          return null;
+        }
+      } else {
+        debugPrint('[PROMO_ANALYTICS] Unexpected response type: ${data.runtimeType}');
+        return null;
+      }
+
+      return PromoAnalyticsSummary.fromJson(parsed);
+    } catch (e, st) {
+      debugPrint('[PROMO_ANALYTICS] Error fetching analytics summary: $e');
+      debugPrint('[PROMO_ANALYTICS] Stack trace: $st');
+      return null;
+    }
+  }
+
+  /// Fetch per-link analytics for a promo page
+  static Future<List<PromoLinkAnalytics>> getLinkAnalytics(String pageId) async {
+    try {
+      final data = await _client.rpc(
+        'get_promo_link_analytics',
+        params: {'p_page_id': pageId},
+      );
+      debugPrint('[PROMO_ANALYTICS] Link analytics raw type: ${data.runtimeType}');
+      debugPrint('[PROMO_ANALYTICS] Link analytics raw: $data');
+
+      if (data == null) return [];
+
+      // The RPC returns JSON (an array). Supabase client may return:
+      // - A List directly
+      // - A Map (shouldn't happen for arrays but handle it)
+      // - A String
+      List<dynamic> list;
+      if (data is List) {
+        list = data;
+      } else if (data is String) {
+        final decoded = _tryDecodeJson(data);
+        if (decoded is List) {
+          list = decoded;
+        } else {
+          debugPrint('[PROMO_ANALYTICS] Unexpected string link data: $data');
+          return [];
+        }
+      } else {
+        debugPrint('[PROMO_ANALYTICS] Unexpected link data type: ${data.runtimeType}');
+        return [];
+      }
+
+      return list
+          .map((item) => PromoLinkAnalytics.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList();
+    } catch (e, st) {
+      debugPrint('[PROMO_ANALYTICS] Error fetching link analytics: $e');
+      debugPrint('[PROMO_ANALYTICS] Stack trace: $st');
+      return [];
+    }
+  }
+
+  /// Fetch recent page view records
+  static Future<List<PromoPageView>> getRecentViews(String pageId, {int limit = 20}) async {
+    try {
+      final data = await _client
+          .from('promo_page_views')
+          .select()
+          .eq('page_id', pageId)
+          .order('viewed_at', ascending: false)
+          .limit(limit);
+      debugPrint('[PROMO_ANALYTICS] Recent views count: ${(data as List).length}');
+      return (data as List)
+          .map((item) => PromoPageView.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList();
+    } catch (e, st) {
+      debugPrint('[PROMO_ANALYTICS] Error fetching recent views: $e');
+      debugPrint('[PROMO_ANALYTICS] Stack trace: $st');
+      return [];
+    }
+  }
+
+  /// Helper: try to decode JSON string
+  static dynamic _tryDecodeJson(String input) {
+    try {
+      return jsonDecode(input);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+// ────────────────────────────────────────────────────────────────
+// Analytics Data Models
+// ────────────────────────────────────────────────────────────────
+
+class PromoAnalyticsSummary {
+  final int totalViews;
+  final int uniqueViews;
+  final int viewsToday;
+  final int viewsThisWeek;
+  final int viewsThisMonth;
+  final int totalClicks;
+  final int clicksToday;
+  final List<ReferrerData> topReferrers;
+  final List<DailyViewData> viewsByDay;
+
+  PromoAnalyticsSummary({
+    required this.totalViews,
+    required this.uniqueViews,
+    required this.viewsToday,
+    required this.viewsThisWeek,
+    required this.viewsThisMonth,
+    required this.totalClicks,
+    required this.clicksToday,
+    required this.topReferrers,
+    required this.viewsByDay,
+  });
+
+  double get ctr => totalViews > 0 ? (totalClicks / totalViews * 100) : 0;
+
+  factory PromoAnalyticsSummary.fromJson(Map<String, dynamic> json) {
+    final referrers = (json['top_referrers'] as List? ?? [])
+        .map((r) => ReferrerData.fromJson(Map<String, dynamic>.from(r as Map)))
+        .toList();
+    final days = (json['views_by_day'] as List? ?? [])
+        .map((d) => DailyViewData.fromJson(Map<String, dynamic>.from(d as Map)))
+        .toList();
+
+    return PromoAnalyticsSummary(
+      totalViews: (json['total_views'] as num? ?? 0).toInt(),
+      uniqueViews: (json['unique_views'] as num? ?? 0).toInt(),
+      viewsToday: (json['views_today'] as num? ?? 0).toInt(),
+      viewsThisWeek: (json['views_this_week'] as num? ?? 0).toInt(),
+      viewsThisMonth: (json['views_this_month'] as num? ?? 0).toInt(),
+      totalClicks: (json['total_clicks'] as num? ?? 0).toInt(),
+      clicksToday: (json['clicks_today'] as num? ?? 0).toInt(),
+      topReferrers: referrers,
+      viewsByDay: days,
+    );
+  }
+}
+
+class ReferrerData {
+  final String source;
+  final int count;
+
+  ReferrerData({required this.source, required this.count});
+
+  factory ReferrerData.fromJson(Map<String, dynamic> json) {
+    return ReferrerData(
+      source: json['source'] as String? ?? 'Unknown',
+      count: (json['count'] as num? ?? 0).toInt(),
+    );
+  }
+}
+
+class DailyViewData {
+  final String date;
+  final int views;
+
+  DailyViewData({required this.date, required this.views});
+
+  factory DailyViewData.fromJson(Map<String, dynamic> json) {
+    return DailyViewData(
+      date: json['date'] as String? ?? '',
+      views: (json['views'] as num? ?? 0).toInt(),
+    );
+  }
+}
+
+class PromoLinkAnalytics {
+  final String linkId;
+  final String title;
+  final String url;
+  final String? icon;
+  final int totalClicks;
+  final int clicksToday;
+  final int clicksThisWeek;
+
+  PromoLinkAnalytics({
+    required this.linkId,
+    required this.title,
+    required this.url,
+    this.icon,
+    required this.totalClicks,
+    required this.clicksToday,
+    required this.clicksThisWeek,
+  });
+
+  factory PromoLinkAnalytics.fromJson(Map<String, dynamic> json) {
+    return PromoLinkAnalytics(
+      linkId: json['link_id'] as String,
+      title: json['title'] as String,
+      url: json['url'] as String,
+      icon: json['icon'] as String?,
+      totalClicks: (json['total_clicks'] as num? ?? 0).toInt(),
+      clicksToday: (json['clicks_today'] as num? ?? 0).toInt(),
+      clicksThisWeek: (json['clicks_this_week'] as num? ?? 0).toInt(),
+    );
+  }
+}
+
+class PromoPageView {
+  final String id;
+  final String pageId;
+  final String? viewerIpHash;
+  final String? referrer;
+  final DateTime viewedAt;
+
+  PromoPageView({
+    required this.id,
+    required this.pageId,
+    this.viewerIpHash,
+    this.referrer,
+    required this.viewedAt,
+  });
+
+  factory PromoPageView.fromJson(Map<String, dynamic> json) {
+    return PromoPageView(
+      id: json['id'] as String,
+      pageId: json['page_id'] as String,
+      viewerIpHash: json['viewer_ip_hash'] as String?,
+      referrer: json['referrer'] as String?,
+      viewedAt: DateTime.parse(json['viewed_at'] as String),
+    );
   }
 }
