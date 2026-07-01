@@ -11,7 +11,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/services/data_services.dart';
-import '../../../shared/widgets/shared_widgets.dart';
 import '../../../shared/widgets/app_snackbar.dart';
 import '../../promo_page/promo_page_service.dart';
 import '../../promo_page/promo_analytics_screen.dart';
@@ -30,6 +29,15 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
   bool _loading = true;
   PromoPage? _promoPage;
   List<PromoPageLink> _links = [];
+
+  // Floating bottom nav items
+  final List<_SubNavItem> _subNavItems = const [
+    _SubNavItem(icon: Iconsax.user, label: 'Profile'),
+    _SubNavItem(icon: Iconsax.link_1, label: 'Links'),
+    _SubNavItem(icon: Iconsax.colorfilter, label: 'Theme'),
+    _SubNavItem(icon: Iconsax.chart_2, label: 'Analytics'),
+    _SubNavItem(icon: Iconsax.setting, label: 'Settings'),
+  ];
 
   // Claim Username controllers
   final _usernameCtrl = TextEditingController();
@@ -53,6 +61,11 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     _loadPromoData();
   }
 
@@ -156,7 +169,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
 
     setState(() => _loading = true);
     try {
-      final page = await PromoPageService.claimUsername(username);
+      await PromoPageService.claimUsername(username);
       AppSnackbar.show(context, 'Promo page claimed! Now customize it.');
       await _loadPromoData();
     } catch (e) {
@@ -540,51 +553,124 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
 
     // STATE B: Main Editor screen
     final isPagePublished = _promoPage!.isPublished;
-    final pageUrl = 'https://promo.arkio.in/@${_promoPage!.username}';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBgColor = isDark ? const Color(0xFF1E1E22) : Colors.black;
+    final shadowColor = isDark ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.35);
+    final activePillColor = Colors.white;
+    final activeTextColor = Colors.black;
+    final inactiveIconColor = isDark ? Colors.white.withOpacity(0.5) : Colors.white.withOpacity(0.6);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Promo Page'),
         actions: [
           IconButton(
-            icon: const Icon(Iconsax.share),
+            icon: const Icon(Icons.ios_share),
             onPressed: _sharePage,
           ),
-          IconButton(
-            icon: const Icon(Iconsax.copy),
-            onPressed: _copyPageUrl,
-          ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.purple,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.purple,
-          tabs: const [
-            Tab(icon: Icon(Iconsax.user), text: 'Profile'),
-            Tab(icon: Icon(Iconsax.link_1), text: 'Links'),
-            Tab(icon: Icon(Iconsax.colorfilter), text: 'Theme'),
-            Tab(icon: Icon(Iconsax.chart_2), text: 'Analytics'),
-            Tab(icon: Icon(Iconsax.setting), text: 'Settings'),
-          ],
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 60,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                decoration: BoxDecoration(
+                  color: navBgColor,
+                  borderRadius: BorderRadius.circular(100),
+                  border: isDark
+                      ? Border.all(color: Colors.white.withOpacity(0.08), width: 1)
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(_subNavItems.length, (i) {
+                    final item = _subNavItems[i];
+                    final isActive = _tabController.index == i;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _tabController.animateTo(i);
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                          padding: isActive
+                              ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
+                              : const EdgeInsets.all(9),
+                          decoration: BoxDecoration(
+                            color: isActive ? activePillColor : Colors.transparent,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                item.icon,
+                                size: 20,
+                                color: isActive ? activeTextColor : inactiveIconColor,
+                              ),
+                              if (isActive) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    color: activeTextColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Column(
         children: [
           // Banner for live status
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: isPagePublished ? AppColors.success.withOpacity(0.15) : AppColors.warning.withOpacity(0.15),
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isPagePublished ? AppColors.success.withOpacity(0.12) : AppColors.warning.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (isPagePublished ? AppColors.success : AppColors.warning).withOpacity(0.25),
+                width: 1,
+              ),
+            ),
             child: Row(
               children: [
                 Icon(
                   isPagePublished ? Icons.check_circle : Icons.warning_rounded,
                   color: isPagePublished ? AppColors.success : AppColors.warning,
-                  size: 18,
+                  size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     isPagePublished ? 'Your Promo Page is public and live!' : 'Page is draft and unpublished.',
@@ -595,9 +681,29 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
                     ),
                   ),
                 ),
-                TextButton(
+                ElevatedButton(
                   onPressed: isPagePublished ? _unpublishPage : _publishPage,
-                  child: Text(isPagePublished ? 'Unpublish' : 'Publish'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isPagePublished 
+                        ? AppColors.error.withOpacity(0.15) 
+                        : AppColors.success.withOpacity(0.15),
+                    foregroundColor: isPagePublished ? AppColors.error : AppColors.success,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isPagePublished ? AppColors.error : AppColors.success,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    isPagePublished ? 'Unpublish' : 'Publish',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
                 ),
               ],
             ),
@@ -987,4 +1093,14 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
       ),
     );
   }
+}
+
+class _SubNavItem {
+  final IconData icon;
+  final String label;
+
+  const _SubNavItem({
+    required this.icon,
+    required this.label,
+  });
 }

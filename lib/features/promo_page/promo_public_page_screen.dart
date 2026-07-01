@@ -390,21 +390,49 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
                 children: [
                   const SizedBox(height: 48),
 
-                  // 1. AVATAR ANIMATION
+                  // 1. AVATAR & NAMES ROW ANIMATION (Avatar on left, Names horizontally straight on right)
                   _fadeAnimations.isNotEmpty
                       ? FadeTransition(
                           opacity: _fadeAnimations[0],
                           child: SlideTransition(
                             position: _slideAnimations[0],
-                            child: Center(
-                              child: CircleAvatar(
-                                radius: 48,
-                                backgroundColor: Colors.grey.shade800,
-                                backgroundImage: avatar != null ? NetworkImage(avatar) : null,
-                                child: avatar == null
-                                    ? const Icon(Iconsax.user, size: 36, color: Colors.white)
-                                    : null,
-                              ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 38,
+                                  backgroundColor: Colors.grey.shade800,
+                                  backgroundImage: avatar != null ? NetworkImage(avatar) : null,
+                                  child: avatar == null
+                                      ? const Icon(Iconsax.user, size: 28, color: Colors.white)
+                                      : null,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        displayName,
+                                        style: TextStyle(
+                                          color: textColor,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '@${widget.username}',
+                                        style: TextStyle(
+                                          color: mutedTextColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         )
@@ -412,49 +440,29 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
 
                   const SizedBox(height: 16),
 
-                  // 2. NAME & USERNAME ANIMATION
-                  _fadeAnimations.length > 1
-                      ? FadeTransition(
-                          opacity: _fadeAnimations[1],
-                          child: SlideTransition(
-                            position: _slideAnimations[1],
-                            child: Column(
-                              children: [
-                                Text(
-                                  displayName,
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '@${widget.username}',
-                                  style: TextStyle(
-                                    color: mutedTextColor,
-                                    fontSize: 14,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                if (bio != null && bio.isNotEmpty) ...[
-                                  const SizedBox(height: 12),
-                                  Text(
+                  // 2. BIO ANIMATION
+                  bio != null && bio.isNotEmpty
+                      ? (_fadeAnimations.length > 1
+                          ? FadeTransition(
+                              opacity: _fadeAnimations[1],
+                              child: SlideTransition(
+                                position: _slideAnimations[1],
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 4, right: 4, bottom: 8),
+                                  child: Text(
                                     bio,
                                     style: TextStyle(
                                       color: textColor.withOpacity(0.85),
                                       fontSize: 15,
                                     ),
-                                    textAlign: TextAlign.center,
+                                    textAlign: TextAlign.start,
                                     maxLines: 4,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        )
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink())
                       : const SizedBox.shrink(),
 
                   const SizedBox(height: 24),
