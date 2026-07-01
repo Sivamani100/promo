@@ -93,6 +93,12 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Chat with Promo AI Agent',
               onTap: () => context.push('/$role/settings/assistant'),
             ),
+            _SettingsItem(
+              icon: Iconsax.link,
+              label: 'My Promo Page',
+              subtitle: 'Your personal link-in-bio page',
+              onTap: () => context.push('/$role/settings/promo-page'),
+            ),
           ]),
           const SizedBox(height: 20),
           _SettingsSection(title: 'Preferences', items: [

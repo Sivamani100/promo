@@ -46,6 +46,8 @@ import '../../features/settings/mcp_keys_settings_screen.dart';
 import '../../features/settings/ai_assistant_screen.dart';
 import '../../features/settings/document_viewer.dart';
 import '../../features/settings/developer_settings_screen.dart';
+import '../../features/settings/promo_page/promo_page_settings_screen.dart';
+import '../../features/promo_page/promo_public_page_screen.dart';
 import '../../features/support/support_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -134,7 +136,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 4. If not authenticated
       if (!isAuth) {
-        if (!isAuthRoute && !isOnboardingRoute) {
+        if (!isAuthRoute && !isOnboardingRoute && !path.startsWith('/@')) {
           return '/login';
         }
         return null;
@@ -169,14 +171,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGateRoute = path == '/terms-gate' || path == '/consent';
 
       if (tosVersionAccepted != currentTosVersion) {
-        if (path != '/terms-gate' && !isLegalDocRoute) {
+        if (path != '/terms-gate' && !isLegalDocRoute && !path.startsWith('/@')) {
           return '/terms-gate';
         }
         return null;
       }
 
       if (needsConsent) {
-        if (path != '/consent' && !isLegalDocRoute) {
+        if (path != '/consent' && !isLegalDocRoute && !path.startsWith('/@')) {
           return '/consent';
         }
         return null;
@@ -200,7 +202,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasCompletedOnboarding = authState.isOnboardingComplete;
 
       if (!hasCompletedOnboarding && authState.role != 'admin') {
-        if (!isOnboardingRoute) {
+        if (!isOnboardingRoute && !path.startsWith('/@')) {
           return '/onboarding/1';
         }
         return null;
@@ -218,6 +220,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       // Splash
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+      
+      // Public Promo Page (Link-in-Bio)
+      GoRoute(
+        path: '/@:username',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: PromoPublicPageScreen(
+            username: state.pathParameters['username']!,
+          ),
+        ),
+      ),
       // Auth routes (no shell)
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (_, _) => const SignupScreen()),
@@ -331,6 +345,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
           GoRoute(path: 'mcpkeys', builder: (_, _) => const McpKeysSettingsScreen()),
           GoRoute(path: 'assistant', builder: (_, _) => const AiAssistantScreen()),
+          GoRoute(
+            path: 'promo-page',
+            pageBuilder: (context, state) => AppTransitions.slideLeft(
+              key: state.pageKey,
+              child: const PromoPageSettingsScreen(),
+            ),
+          ),
           GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
@@ -410,6 +431,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
           GoRoute(path: 'mcpkeys', builder: (_, _) => const McpKeysSettingsScreen()),
           GoRoute(path: 'assistant', builder: (_, _) => const AiAssistantScreen()),
+          GoRoute(
+            path: 'promo-page',
+            pageBuilder: (context, state) => AppTransitions.slideLeft(
+              key: state.pageKey,
+              child: const PromoPageSettingsScreen(),
+            ),
+          ),
           GoRoute(path: 'developers', builder: (_, _) => const DeveloperSettingsScreen()),
           GoRoute(path: 'tos', builder: (_, _) => const DocumentViewerScreen(title: 'Terms of Service', docType: 'tos')),
           GoRoute(path: 'privacy-policy', builder: (_, _) => const DocumentViewerScreen(title: 'Privacy Policy', docType: 'privacy')),
