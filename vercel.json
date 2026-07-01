@@ -1,17 +1,66 @@
 {
+  "outputDirectory": "build/web",
   "cleanUrls": true,
+  "ignoreCommand": "exit 0",
   "rewrites": [
-    { "source": "/@:username", "destination": "/index.html" },
-    { "source": "/brand/:path*", "destination": "/index.html" },
-    { "source": "/influencer/:path*", "destination": "/index.html" },
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/signup", "destination": "/index.html" },
-    { "source": "/reset-password", "destination": "/index.html" },
-    { "source": "/set-new-password", "destination": "/index.html" },
-    { "source": "/terms-gate", "destination": "/index.html" },
-    { "source": "/consent", "destination": "/index.html" },
-    { "source": "/onboarding/:path*", "destination": "/index.html" },
-    { "source": "/dashboard-tour", "destination": "/index.html" },
-    { "source": "/splash", "destination": "/index.html" }
+    {
+      "source": "/landingpage/about",
+      "destination": "/landingpage/about.html"
+    },
+    {
+      "source": "/landingpage/how-it-works",
+      "destination": "/landingpage/how-it-works.html"
+    },
+    {
+      "source": "/landingpage/privacy",
+      "destination": "/landingpage/privacy.html"
+    },
+    {
+      "source": "/landingpage/terms",
+      "destination": "/landingpage/terms.html"
+    },
+    {
+      "source": "/landingpage/blog",
+      "destination": "/landingpage/blog.html"
+    },
+    {
+      "source": "/landingpage/blog/best-influencer-marketing-strategies",
+      "destination": "/landingpage/blog/best-influencer-marketing-strategies.html"
+    },
+    {
+      "source": "/landingpage/blog/how-to-find-niche-creators",
+      "destination": "/landingpage/blog/how-to-find-niche-creators.html"
+    },
+    {
+      "source": "/landingpage/blog/roi-micro-influencers",
+      "destination": "/landingpage/blog/roi-micro-influencers.html"
+    },
+    {
+      "source": "/landingpage/blog/campaign-safety-guidelines",
+      "destination": "/landingpage/blog/campaign-safety-guidelines.html"
+    },
+    {
+      "source": "/landingpage",
+      "destination": "/landingpage/index.html"
+    },
+    {
+      "source": "/((?!.*\\.[a-z0-9]+$).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "credentialless"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        }
+      ]
+    }
   ]
 }
