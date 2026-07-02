@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo. | Beta Research Campaign 2026</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Join Promo's official Beta Research Campaign 2026. Find bugs, share product ideas, or apply for internships to win rewards and work with Team Promo.">
+  <meta name="keywords" content="Promo, Beta, Bug Bounty, Idea submission, Startup Internship, Flutter, Creator Marketing">
+  <meta property="og:title" content="Promo. | Beta Research Campaign 2026">
+  <meta property="og:description" content="Help us build the future of creator marketing. Report bugs, suggest features, or join the team as an intern.">
+  <meta property="og:image" content="https://promo.arkio.in/og-image.svg">
+  <meta property="og:type" content="website">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBg: '#0A0A0A',
+            brandPurple: '#7C3AED',
+            brandYellow: '#FACC15',
+            brandCard: '#1A1A2E',
+            brandMuted: '#9CA3AF',
+            brandSuccess: '#10B981',
+            brandError: '#EF4444',
+          },
+          boxShadow: {
+            glow: '0 0 20px rgba(124, 58, 237, 0.15)',
+            glowYellow: '0 0 20px rgba(250, 204, 21, 0.15)',
+            glowGreen: '0 0 20px rgba(16, 185, 129, 0.15)',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Custom CSS for custom animations -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0A0A0A;
+      color: #FFFFFF;
+      overflow-x: hidden;
+    }
+    /* Drifting background blob */
+    @keyframes drift {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(40px, -60px) scale(1.15); }
+      66% { transform: translate(-30px, 30px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .blob-drift {
+      animation: drift 25s infinite alternate ease-in-out;
+    }
+    @keyframes drift-reverse {
+      0% { transform: translate(0px, 0px) scale(1); }
+      50% { transform: translate(-50px, 40px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1.1); }
+    }
+    .blob-drift-rev {
+      animation: drift-reverse 20s infinite alternate ease-in-out;
+    }
+    /* Floating particles */
+    @keyframes float-particle {
+      0% { transform: translateY(0px) translateX(0px); opacity: 0.1; }
+      50% { transform: translateY(-50px) translateX(15px); opacity: 0.4; }
+      100% { transform: translateY(-100px) translateX(-10px); opacity: 0; }
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background-color: #7C3AED;
+      animation: float-particle 8s infinite linear;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0A0A0A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F1F35;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7C3AED;
+    }
+    /* Selection styling */
+    ::selection {
+      background-color: #7C3AED;
+      color: #FFFFFF;
+    }
+    .glassmorphism {
+      background: rgba(26, 26, 46, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(124, 58, 237, 0.12);
+    }
+    .glassmorphism:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+    }
+    .glassmorphism-yellow {
+      background: rgba(26, 26, 46, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(250, 204, 21, 0.12);
+    }
+    .glassmorphism-yellow:hover {
+      border-color: rgba(250, 204, 21, 0.35);
+    }
+  </style>
+</head>
+<body class="relative min-h-screen">
+
+  <!-- BACKGROUND EFFECTS -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+    <!-- Purple Blur Blob -->
+    <div class="absolute top-[10%] left-[5%] w-[350px] md:w-[600px] h-[350px] md:h-[600px] rounded-full bg-brandPurple/15 blur-[120px] blob-drift"></div>
+    <!-- Yellow/Pink Secondary Blur Blob -->
+    <div class="absolute bottom-[20%] right-[5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] rounded-full bg-[#EC4899]/10 blur-[130px] blob-drift-rev"></div>
+    
+    <!-- Floating Particles Generation -->
+    <div class="particle w-1.5 h-1.5 top-[15%] left-[20%]" style="animation-delay: 0s; animation-duration: 9s;"></div>
+    <div class="particle w-1 h-1 top-[40%] left-[80%] bg-brandYellow" style="animation-delay: 2s; animation-duration: 7s;"></div>
+    <div class="particle w-2 h-2 top-[60%] left-[15%]" style="animation-delay: 4s; animation-duration: 11s;"></div>
+    <div class="particle w-1 h-1 top-[80%] left-[70%]" style="animation-delay: 1s; animation-duration: 6s;"></div>
+    <div class="particle w-1.5 h-1.5 top-[25%] left-[60%] bg-brandYellow" style="animation-delay: 5s; animation-duration: 8s;"></div>
+    <div class="particle w-1 h-1 top-[70%] left-[45%]" style="animation-delay: 3s; animation-duration: 10s;"></div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="relative w-full z-50 max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <a href="https://promo.arkio.in" class="text-2xl font-extrabold tracking-tight text-white flex items-center">
+        Promo<span class="text-brandPurple font-black">.</span>
+      </a>
+    </div>
+    <div>
+      <a href="https://promo.arkio.in" class="text-sm font-semibold text-brandMuted hover:text-white transition-colors duration-200">
+        Back to App →
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="relative z-10 max-w-7xl mx-auto px-6">
+
+    <!-- SECTION 1: HERO -->
+    <section class="min-h-[85vh] flex flex-col justify-center items-center text-center py-12 md:py-24">
+      <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-brandYellow/10 border border-brandYellow/20 mb-8 animate-pulse">
+        <span class="w-2 h-2 rounded-full bg-brandYellow"></span>
+        <span class="text-xs font-bold text-brandYellow uppercase tracking-wider">Beta Research Campaign 2026</span>
+      </div>
+      
+      <h1 class="text-4xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-[1.1] mb-6">
+        Help us build the future of <span class="bg-gradient-to-r from-brandPurple to-pink-500 bg-clip-text text-transparent">creator marketing.</span>
+      </h1>
+      
+      <p class="text-base md:text-xl text-brandMuted max-w-2xl leading-relaxed mb-10">
+        Found a bug? Got an idea? Want to intern? We want to hear from you — and we reward the best contributions.
+      </p>
+
+      <!-- Pill Badges -->
+      <div class="flex flex-wrap justify-center gap-3 mb-12">
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-[#1A1A2E] border border-brandPurple/20 text-sm font-medium text-white shadow-glow">
+          🐛 Bug Bounty
+        </span>
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-[#1A1A2E] border border-brandYellow/20 text-sm font-medium text-white shadow-glowYellow">
+          💡 Idea Rewards
+        </span>
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-[#1A1A2E] border border-white/10 text-sm font-medium text-white">
+          🎓 Internships
+        </span>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4">
+        <a href="#bug-report" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-brandPurple text-white font-bold hover:bg-brandPurple/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brandPurple/20">
+          Report a Bug
+        </a>
+        <a href="#submit-idea" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-[#1A1A2E] border border-brandYellow/40 text-brandYellow font-bold hover:bg-[#252542] hover:scale-[1.02] active:scale-[0.98] transition-all">
+          Submit an Idea
+        </a>
+        <a href="#intern-apply" class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-transparent border border-white/20 text-white font-bold hover:bg-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all">
+          Apply to Intern
+        </a>
+      </div>
+    </section>
+
+    <!-- SECTION 2: HOW IT WORKS -->
+    <section class="py-16 border-t border-white/5">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl font-extrabold tracking-tight mb-4">How the Campaign Works</h2>
+        <p class="text-brandMuted max-w-xl mx-auto">Submit bugs, share innovations, or join our team. Follow these steps to qualify.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Bug Bounty column -->
+        <div class="glassmorphism rounded-3xl p-8 flex flex-col h-full shadow-glow">
+          <div class="w-12 h-12 rounded-2xl bg-brandPurple/10 border border-brandPurple/30 flex items-center justify-center mb-6 text-brandPurple">
+            <i data-lucide="bug" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-6">Find a Bug</h3>
+          <ul class="space-y-4 flex-1">
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">1</span><span class="text-sm text-brandMuted">Use the Promo app (promo.arkio.in)</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">2</span><span class="text-sm text-brandMuted">Spot something broken or confusing</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">3</span><span class="text-sm text-brandMuted">Submit it below with steps to reproduce</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">4</span><span class="text-sm text-brandMuted">Our system checks if it's already reported</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">5</span><span class="text-sm text-brandMuted">If new — you get a unique Bug Hunter token</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">6</span><span class="text-sm text-brandMuted">Validate your token + share your details</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandPurple/20 text-brandPurple text-xs font-bold flex items-center justify-center mr-3 mt-0.5">7</span><span class="text-sm text-brandMuted">Top bug reporters get rewarded</span></li>
+          </ul>
+        </div>
+
+        <!-- Idea Submission column -->
+        <div class="glassmorphism-yellow rounded-3xl p-8 flex flex-col h-full shadow-glowYellow">
+          <div class="w-12 h-12 rounded-2xl bg-brandYellow/10 border border-brandYellow/30 flex items-center justify-center mb-6 text-brandYellow">
+            <i data-lucide="lightbulb" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-6">Share an Idea</h3>
+          <ul class="space-y-4 flex-1">
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">1</span><span class="text-sm text-brandMuted">Think of a feature Promo is missing</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">2</span><span class="text-sm text-brandMuted">Describe the problem it solves</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">3</span><span class="text-sm text-brandMuted">Submit below — our system checks similarity</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">4</span><span class="text-sm text-brandMuted">If original — you get an Innovator token</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">5</span><span class="text-sm text-brandMuted">Best ideas go into our product roadmap</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-brandYellow/20 text-brandYellow text-xs font-bold flex items-center justify-center mr-3 mt-0.5">6</span><span class="text-sm text-brandMuted">Token holders may receive recognition + reward</span></li>
+          </ul>
+        </div>
+
+        <!-- Internship column -->
+        <div class="glassmorphism rounded-3xl p-8 flex flex-col h-full">
+          <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/30 flex items-center justify-center mb-6 text-white">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-xl font-bold mb-6">Join the Team</h3>
+          <ul class="space-y-4 flex-1">
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">1</span><span class="text-sm text-brandMuted">Want real startup experience?</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">2</span><span class="text-sm text-brandMuted">Fill the internship form below</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">3</span><span class="text-sm text-brandMuted">We review your application</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">4</span><span class="text-sm text-brandMuted">Selected candidates get an interview</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">5</span><span class="text-sm text-brandMuted">Join as a Promo intern</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">6</span><span class="text-sm text-brandMuted">Get an official offer letter</span></li>
+            <li class="flex items-start"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 text-white text-xs font-bold flex items-center justify-center mr-3 mt-0.5">7</span><span class="text-sm text-brandMuted">Complete internship → receive certificate</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DISCLAIMER BANNER -->
+    <section class="my-8">
+      <div class="bg-brandYellow/5 border-l-4 border-brandYellow rounded-r-2xl p-6 glassmorphism-yellow">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 text-brandYellow text-xl mr-3 mt-0.5">📋</div>
+          <div>
+            <p class="text-sm text-brandYellow font-medium leading-relaxed">
+              <strong>Important Note:</strong> This is Promo's official UX research and talent discovery campaign. Bug and idea rewards are subject to verification and are at Promo's discretion based on originality and impact. Internships are experience-based roles with official documentation. We are a growing startup — your contributions directly shape our product. No misleading claims are made or intended.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: BUG REPORT FORM -->
+    <section id="bug-report" class="py-16 scroll-mt-20">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brandPurple/10 border border-brandPurple/30 text-brandPurple mb-4">
+            <i data-lucide="bug" class="w-6 h-6"></i>
+          </div>
+          <h2 class="text-3xl font-extrabold mb-2">Report a Bug</h2>
+          <p class="text-brandMuted text-sm md:text-base">Found something broken? Tell us everything.</p>
+        </div>
+
+        <div class="glassmorphism rounded-3xl p-6 md:p-10 shadow-glow">
+          <form id="bug-form" class="space-y-6" onsubmit="handleFormSubmit(event, 'bug')">
+            <!-- Title -->
+            <div>
+              <label for="bug-title" class="block text-sm font-semibold mb-2">Bug Title *</label>
+              <input type="text" id="bug-title" required maxlength="100" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. Chat messages not loading on Android">
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>Short summary of the bug</span>
+                <span id="bug-title-char">0/100</span>
+              </p>
+            </div>
+
+            <!-- Screen or Feature Dropdown -->
+            <div>
+              <label for="bug-screen" class="block text-sm font-semibold mb-2">Which feature or screen? *</label>
+              <select id="bug-screen" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brandPurple transition duration-200">
+                <option value="" disabled selected>Select option</option>
+                <option value="Login/Signup">Login/Signup</option>
+                <option value="Discover Cards">Discover Cards</option>
+                <option value="Apply to Card">Apply to Card</option>
+                <option value="Chat & Messaging">Chat & Messaging</option>
+                <option value="Profile">Profile</option>
+                <option value="Map Discovery">Map Discovery</option>
+                <option value="Analytics">Analytics</option>
+                <option value="Notifications">Notifications</option>
+                <option value="Settings">Settings</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label for="bug-desc" class="block text-sm font-semibold mb-2">Describe the bug *</label>
+              <textarea id="bug-desc" required maxlength="2000" rows="4" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="What happened? What did you expect?"></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>Full bug description</span>
+                <span id="bug-desc-char">0/2000</span>
+              </p>
+            </div>
+
+            <!-- Steps to Reproduce -->
+            <div>
+              <label for="bug-steps" class="block text-sm font-semibold mb-2">Steps to reproduce</label>
+              <textarea id="bug-steps" maxlength="1000" rows="3" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="1. Open the app&#10;2. Go to..."></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>How to make this bug happen again</span>
+                <span id="bug-steps-char">0/1000</span>
+              </p>
+            </div>
+
+            <!-- Severity Grid -->
+            <div>
+              <label class="block text-sm font-semibold mb-3">Severity *</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="flex items-start p-4 rounded-xl border border-white/10 bg-[#0A0A14]/50 cursor-pointer hover:border-brandPurple/40 transition">
+                  <input type="radio" name="bug-severity" value="low" required class="mt-1 mr-3 text-brandPurple focus:ring-brandPurple">
+                  <div>
+                    <span class="text-sm font-bold flex items-center">🟢 Low</span>
+                    <span class="text-xs text-brandMuted block mt-0.5">Minor visual or text issue</span>
+                  </div>
+                </label>
+                <label class="flex items-start p-4 rounded-xl border border-white/10 bg-[#0A0A14]/50 cursor-pointer hover:border-brandPurple/40 transition">
+                  <input type="radio" name="bug-severity" value="medium" class="mt-1 mr-3 text-brandPurple focus:ring-brandPurple">
+                  <div>
+                    <span class="text-sm font-bold flex items-center">🟡 Medium</span>
+                    <span class="text-xs text-brandMuted block mt-0.5">Feature partially broken</span>
+                  </div>
+                </label>
+                <label class="flex items-start p-4 rounded-xl border border-white/10 bg-[#0A0A14]/50 cursor-pointer hover:border-brandPurple/40 transition">
+                  <input type="radio" name="bug-severity" value="high" class="mt-1 mr-3 text-brandPurple focus:ring-brandPurple">
+                  <div>
+                    <span class="text-sm font-bold flex items-center">🔴 High</span>
+                    <span class="text-xs text-brandMuted block mt-0.5">Feature completely broken</span>
+                  </div>
+                </label>
+                <label class="flex items-start p-4 rounded-xl border border-white/10 bg-[#0A0A14]/50 cursor-pointer hover:border-brandPurple/40 transition">
+                  <input type="radio" name="bug-severity" value="critical" class="mt-1 mr-3 text-brandPurple focus:ring-brandPurple">
+                  <div>
+                    <span class="text-sm font-bold flex items-center">🚨 Critical</span>
+                    <span class="text-xs text-brandMuted block mt-0.5">App crashes or data loss</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Device Type -->
+            <div>
+              <label class="block text-sm font-semibold mb-3">Device Type *</label>
+              <div class="flex flex-wrap gap-4">
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="bug-device" value="Android" required class="mr-2 text-brandPurple focus:ring-brandPurple">
+                  <span class="text-sm">Android</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="bug-device" value="iOS" class="mr-2 text-brandPurple focus:ring-brandPurple">
+                  <span class="text-sm">iOS</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="bug-device" value="Web" class="mr-2 text-brandPurple focus:ring-brandPurple">
+                  <span class="text-sm">Web</span>
+                </label>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" name="bug-device" value="Desktop" class="mr-2 text-brandPurple focus:ring-brandPurple">
+                  <span class="text-sm">Desktop</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Name and Email -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="bug-name" class="block text-sm font-semibold mb-2">Your Name *</label>
+                <input type="text" id="bug-name" required maxlength="60" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. John Doe">
+              </div>
+              <div>
+                <label for="bug-email" class="block text-sm font-semibold mb-2">Your Email *</label>
+                <input type="email" id="bug-email" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. john@example.com">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+              <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl bg-brandPurple text-white font-bold hover:bg-brandPurple/90 transition shadow-lg shadow-brandPurple/10">
+                Submit Bug Report →
+              </button>
+            </div>
+          </form>
+
+          <!-- LOADING STATE -->
+          <div id="bug-loading" class="hidden flex-col items-center justify-center py-16 text-center space-y-6">
+            <!-- Spinner -->
+            <div class="w-16 h-16 border-4 border-brandPurple/30 border-t-brandPurple rounded-full animate-spin"></div>
+            <p id="bug-loading-text" class="text-lg font-medium text-brandPurple">Analyzing your submission...</p>
+          </div>
+
+          <!-- OUTCOME A: SUCCESS CARD -->
+          <div id="bug-outcome-a" class="hidden bg-brandSuccess/5 border border-brandSuccess/30 rounded-2xl p-6 md:p-8 space-y-6 shadow-glow">
+            <div class="flex items-center space-x-3 text-brandSuccess">
+              <span class="text-3xl">✅</span>
+              <h3 class="text-xl md:text-2xl font-bold">New Bug Detected!</h3>
+            </div>
+            <p class="text-brandMuted text-sm md:text-base leading-relaxed">
+              Our system hasn't seen this one before. You've been assigned Bug Hunter Token:
+            </p>
+            <!-- Token Box -->
+            <div class="flex items-center justify-between bg-[#0A0A14] border border-white/10 rounded-xl p-4 max-w-md">
+              <code id="bug-token-val" class="text-lg font-bold text-white tracking-widest uppercase">BUG-A3F9KX2M</code>
+              <button onclick="copyToClipboard('bug-token-val', this)" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-brandPurple text-xs font-bold rounded-lg hover:bg-brandPurple/90 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="border-t border-white/10 pt-6 space-y-3">
+              <h4 class="font-semibold">To claim your reward:</h4>
+              <ol class="list-decimal list-inside text-sm text-brandMuted space-y-1.5">
+                <li>Copy your token above</li>
+                <li>Scroll down to the <strong>Token Validation</strong> section</li>
+                <li>Enter your token and contact details</li>
+                <li>We will reach out to you within 48 hours</li>
+              </ol>
+            </div>
+            <p class="text-sm font-semibold text-brandSuccess">Thank you for helping make Promo better! 🎉</p>
+            <button onclick="resetForm('bug')" class="text-xs text-brandMuted hover:text-white underline block mt-4">Report another bug</button>
+          </div>
+
+          <!-- OUTCOME B: DUPLICATE CARD -->
+          <div id="bug-outcome-b" class="hidden bg-brandYellow/5 border border-brandYellow/30 rounded-2xl p-6 md:p-8 space-y-4">
+            <div class="flex items-center space-x-3 text-brandYellow">
+              <span class="text-3xl">⚠️</span>
+              <h3 class="text-xl md:text-2xl font-bold">Similar Bug Already Reported</h3>
+            </div>
+            <p class="text-brandMuted text-sm md:text-base leading-relaxed">
+              Someone else found a similar issue before you.
+            </p>
+            <p class="text-sm text-brandMuted leading-relaxed">
+              Don't stop here — there are more bugs to find! Keep exploring the app and submit another report. Every unique bug counts. 🔍
+            </p>
+            <button onclick="resetForm('bug')" class="inline-flex items-center space-x-2 px-5 py-2.5 bg-brandYellow text-black font-bold rounded-xl hover:bg-brandYellow/90 transition text-sm">
+              <span>Try Again</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: IDEA SUBMISSION FORM -->
+    <section id="submit-idea" class="py-16 border-t border-white/5 scroll-mt-20">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brandYellow/10 border border-brandYellow/30 text-brandYellow mb-4">
+            <i data-lucide="lightbulb" class="w-6 h-6"></i>
+          </div>
+          <h2 class="text-3xl font-extrabold mb-2">Submit Your Idea</h2>
+          <p class="text-brandMuted text-sm md:text-base">Think Promo is missing something? Tell us. The best ideas get built.</p>
+        </div>
+
+        <div class="glassmorphism rounded-3xl p-6 md:p-10 shadow-glow">
+          <form id="idea-form" class="space-y-6" onsubmit="handleFormSubmit(event, 'idea')">
+            <!-- Idea Title -->
+            <div>
+              <label for="idea-title" class="block text-sm font-semibold mb-2">Idea Title *</label>
+              <input type="text" id="idea-title" required maxlength="100" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandYellow focus:ring-1 focus:ring-brandYellow transition duration-200" placeholder="e.g. Creator rating and verification badge pipeline">
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>Core concept of your idea</span>
+                <span id="idea-title-char">0/100</span>
+              </p>
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label for="idea-category" class="block text-sm font-semibold mb-2">Category *</label>
+              <select id="idea-category" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brandYellow transition duration-200">
+                <option value="" disabled selected>Select category</option>
+                <option value="discovery">Discovery & Cards</option>
+                <option value="chat">Chat & Messaging</option>
+                <option value="profile">Profile & Portfolio</option>
+                <option value="cards">Analytics</option>
+                <option value="map">Map</option>
+                <option value="onboarding">Onboarding</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <!-- Problem It Solves -->
+            <div>
+              <label for="idea-problem" class="block text-sm font-semibold mb-2">What problem does this solve? *</label>
+              <textarea id="idea-problem" required maxlength="1000" rows="3" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandYellow focus:ring-1 focus:ring-brandYellow transition duration-200" placeholder="Describe the pain point creators or brands face today..."></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>The specific issue this feature resolves</span>
+                <span id="idea-problem-char">0/1000</span>
+              </p>
+            </div>
+
+            <!-- Detailed Description -->
+            <div>
+              <label for="idea-desc" class="block text-sm font-semibold mb-2">Describe your idea in detail *</label>
+              <textarea id="idea-desc" required maxlength="3000" rows="5" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandYellow focus:ring-1 focus:ring-brandYellow transition duration-200" placeholder="How does it work? What does the UI flow look like?"></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>Full detailed specifications</span>
+                <span id="idea-desc-char">0/3000</span>
+              </p>
+            </div>
+
+            <!-- Submitter Name & Email -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="idea-name" class="block text-sm font-semibold mb-2">Your Name *</label>
+                <input type="text" id="idea-name" required maxlength="60" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandYellow focus:ring-1 focus:ring-brandYellow transition duration-200" placeholder="e.g. John Doe">
+              </div>
+              <div>
+                <label for="idea-email" class="block text-sm font-semibold mb-2">Your Email *</label>
+                <input type="email" id="idea-email" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandYellow focus:ring-1 focus:ring-brandYellow transition duration-200" placeholder="e.g. john@example.com">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+              <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl bg-brandYellow text-black font-bold hover:bg-brandYellow/90 transition shadow-lg shadow-brandYellow/10">
+                Submit My Idea →
+              </button>
+            </div>
+          </form>
+
+          <!-- LOADING STATE -->
+          <div id="idea-loading" class="hidden flex-col items-center justify-center py-16 text-center space-y-6">
+            <div class="w-16 h-16 border-4 border-brandYellow/30 border-t-brandYellow rounded-full animate-spin"></div>
+            <p id="idea-loading-text" class="text-lg font-medium text-brandYellow">Analyzing your submission...</p>
+          </div>
+
+          <!-- OUTCOME A: ORIGINAL IDEA CARD -->
+          <div id="idea-outcome-a" class="hidden bg-brandSuccess/5 border border-brandSuccess/30 rounded-2xl p-6 md:p-8 space-y-6 shadow-glow">
+            <div class="flex items-center space-x-3 text-brandSuccess">
+              <span class="text-3xl">💡</span>
+              <h3 class="text-xl md:text-2xl font-bold">Original Idea!</h3>
+            </div>
+            <p class="text-brandMuted text-sm md:text-base leading-relaxed">
+              This concept hasn't been submitted before. Innovator Token assigned:
+            </p>
+            <!-- Token Box -->
+            <div class="flex items-center justify-between bg-[#0A0A14] border border-white/10 rounded-xl p-4 max-w-md">
+              <code id="idea-token-val" class="text-lg font-bold text-white tracking-widest uppercase">IDEA-B7K2MP4X</code>
+              <button onclick="copyToClipboard('idea-token-val', this)" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-brandYellow text-xs font-bold text-black rounded-lg hover:bg-brandYellow/90 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>Copy</span>
+              </button>
+            </div>
+            <p class="text-sm text-brandMuted leading-relaxed">
+              Your idea has been added to our product review queue. If selected for development, you will be contacted and credited.
+            </p>
+            <div class="border-t border-white/10 pt-6">
+              <p class="text-sm font-semibold text-brandSuccess">
+                Validate your token below to be eligible for rewards. 🚀
+              </p>
+            </div>
+            <button onclick="resetForm('idea')" class="text-xs text-brandMuted hover:text-white underline block mt-4">Submit another idea</button>
+          </div>
+
+          <!-- OUTCOME B: SIMILAR IDEA CARD -->
+          <div id="idea-outcome-b" class="hidden bg-brandYellow/5 border border-brandYellow/30 rounded-2xl p-6 md:p-8 space-y-4">
+            <div class="flex items-center space-x-3 text-brandYellow">
+              <span class="text-3xl">🔄</span>
+              <h3 class="text-xl md:text-2xl font-bold">Similar Idea Already Submitted</h3>
+            </div>
+            <p class="text-brandMuted text-sm md:text-base leading-relaxed">
+              Someone had a similar thought!
+            </p>
+            <p class="text-sm text-brandMuted leading-relaxed">
+              But don't stop — every variation and detail matters. Try refining your idea or thinking of something completely new. The more specific, the better! 💭
+            </p>
+            <button onclick="resetForm('idea')" class="inline-flex items-center space-x-2 px-5 py-2.5 bg-brandYellow text-black font-bold rounded-xl hover:bg-brandYellow/90 transition text-sm">
+              <span>Try Again</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: TOKEN VALIDATION -->
+    <section id="validate-token" class="py-16 border-t border-white/5 scroll-mt-20">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brandPurple/10 border border-brandPurple/30 text-brandPurple mb-4">
+            <i data-lucide="target" class="w-6 h-6"></i>
+          </div>
+          <h2 class="text-3xl font-extrabold mb-2">Validate Your Token</h2>
+          <p class="text-brandMuted text-sm md:text-base">Got a token? Enter it below to register for your reward.</p>
+        </div>
+
+        <div class="glassmorphism rounded-3xl p-6 md:p-10 shadow-glow">
+          <form id="token-form" class="space-y-6" onsubmit="handleTokenSubmit(event)">
+            <!-- Token ID -->
+            <div>
+              <label for="validation-token" class="block text-sm font-semibold mb-2">Your Token *</label>
+              <input type="text" id="validation-token" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted uppercase focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="BUG-XXXXXXXX or IDEA-XXXXXXXX">
+              <p class="text-[11px] text-brandMuted mt-1.5">Enter the exact unique code generated upon submission.</p>
+            </div>
+
+            <!-- Full Name & Email -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="validation-name" class="block text-sm font-semibold mb-2">Full Name *</label>
+                <input type="text" id="validation-name" required maxlength="60" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. John Doe">
+              </div>
+              <div>
+                <label for="validation-email" class="block text-sm font-semibold mb-2">Email Address *</label>
+                <input type="email" id="validation-email" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. john@example.com">
+              </div>
+            </div>
+
+            <!-- Phone & Payment Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="validation-phone" class="block text-sm font-semibold mb-2">Phone Number *</label>
+                <input type="tel" id="validation-phone" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. +919876543210">
+              </div>
+              <div>
+                <label for="validation-payment" class="block text-sm font-semibold mb-2">UPI ID or Payment Method *</label>
+                <input type="text" id="validation-payment" required maxlength="200" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. yourname@upi or bank account info">
+              </div>
+            </div>
+
+            <!-- Optional message -->
+            <div>
+              <label for="validation-message" class="block text-sm font-semibold mb-2">Any message to the team (optional)</label>
+              <textarea id="validation-message" maxlength="1000" rows="3" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="Tell us about your experience, or details on how to coordinate the reward."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+              <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl bg-brandPurple text-white font-bold hover:bg-brandPurple/90 transition shadow-lg shadow-brandPurple/10">
+                Validate & Register →
+              </button>
+            </div>
+          </form>
+
+          <!-- SUCCESS CARD -->
+          <div id="validation-success" class="hidden bg-brandSuccess/5 border border-brandSuccess/30 rounded-2xl p-6 md:p-8 space-y-4">
+            <div class="flex items-center space-x-3 text-brandSuccess">
+              <span class="text-3xl">✅</span>
+              <h3 class="text-xl md:text-2xl font-bold">Token Registered Successfully!</h3>
+            </div>
+            <p id="validation-success-text" class="text-brandMuted text-sm md:text-base leading-relaxed">
+              Thank you! Your token has been registered.
+            </p>
+            <p class="text-sm text-brandMuted leading-relaxed">
+              Our team will review your submission and reach out to you within 5-7 working days. You are now officially part of Promo's Beta Research Program. 🎉
+            </p>
+            <p class="text-sm text-brandSuccess font-semibold">
+              Follow us for updates: <a href="https://promo.arkio.in" class="underline">promo.arkio.in</a>
+            </p>
+            <button onclick="resetValidationForm()" class="text-xs text-brandMuted hover:text-white underline block mt-4">Validate another token</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: INTERNSHIP APPLICATION FORM -->
+    <section id="intern-apply" class="py-16 border-t border-white/5 scroll-mt-20">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border border-white/30 text-white mb-4">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <h2 class="text-3xl font-extrabold mb-2">Join Promo as an Intern</h2>
+          <p class="text-brandMuted text-sm md:text-base">Real startup experience. Official offer letter. Certificate on completion.</p>
+        </div>
+
+        <!-- What we offer cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div class="glassmorphism rounded-2xl p-6 border-white/5 hover:scale-[1.01] transition-transform duration-200">
+            <h4 class="font-bold text-base flex items-center mb-3 text-brandPurple">
+              <span class="text-lg mr-2">📄</span> Official Offer Letter
+            </h4>
+            <p class="text-xs text-brandMuted leading-relaxed">
+              Receive a formal offer letter from Promo on company letterhead at start.
+            </p>
+          </div>
+          <div class="glassmorphism rounded-2xl p-6 border-white/5 hover:scale-[1.01] transition-transform duration-200">
+            <h4 class="font-bold text-base flex items-center mb-3 text-brandYellow">
+              <span class="text-lg mr-2">🏆</span> Completion Certificate
+            </h4>
+            <p class="text-xs text-brandMuted leading-relaxed">
+              Get an official certificate validating your contribution upon completion.
+            </p>
+          </div>
+          <div class="glassmorphism rounded-2xl p-6 border-white/5 hover:scale-[1.01] transition-transform duration-200">
+            <h4 class="font-bold text-base flex items-center mb-3 text-white">
+              <span class="text-lg mr-2">💼</span> Real Experience
+            </h4>
+            <p class="text-xs text-brandMuted leading-relaxed">
+              Work on a live, highly scalable creator product used by real creators.
+            </p>
+          </div>
+        </div>
+
+        <div class="glassmorphism rounded-3xl p-6 md:p-10">
+          <form id="internship-form" class="space-y-6" onsubmit="handleInternSubmit(event)">
+            <!-- Name & Email -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="intern-name" class="block text-sm font-semibold mb-2">Full Name *</label>
+                <input type="text" id="intern-name" required maxlength="60" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. John Doe">
+              </div>
+              <div>
+                <label for="intern-email" class="block text-sm font-semibold mb-2">Email Address *</label>
+                <input type="email" id="intern-email" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. john@example.com">
+              </div>
+            </div>
+
+            <!-- Phone & College/Company -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="intern-phone" class="block text-sm font-semibold mb-2">Phone Number *</label>
+                <input type="tel" id="intern-phone" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. +919876543210">
+              </div>
+              <div>
+                <label for="intern-college" class="block text-sm font-semibold mb-2">College / University / Current Company *</label>
+                <input type="text" id="intern-college" required maxlength="100" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. IIT Madras or ABC Corp">
+              </div>
+            </div>
+
+            <!-- Year of Study & Role Interest -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="intern-year" class="block text-sm font-semibold mb-2">Year of Study / Experience Level *</label>
+                <select id="intern-year" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brandPurple transition duration-200">
+                  <option value="" disabled selected>Select level</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                  <option value="Graduate">Graduate</option>
+                  <option value="Working Professional">Working Professional</option>
+                </select>
+              </div>
+              <div>
+                <label for="intern-role" class="block text-sm font-semibold mb-2">Role You're Interested In *</label>
+                <select id="intern-role" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brandPurple transition duration-200">
+                  <option value="" disabled selected>Select role</option>
+                  <option value="flutter_developer">Flutter Developer</option>
+                  <option value="ui_ux_designer">UI/UX Designer</option>
+                  <option value="marketing">Marketing & Growth</option>
+                  <option value="content_creator">Content Creator</option>
+                  <option value="business_development">Business Development</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Skills -->
+            <div>
+              <label for="intern-skills" class="block text-sm font-semibold mb-2">Your Skills *</label>
+              <textarea id="intern-skills" required maxlength="500" rows="3" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. Flutter, Dart, Firebase, Figma, Git, UI Design..."></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>List your technical or marketing skills</span>
+                <span id="intern-skills-char">0/500</span>
+              </p>
+            </div>
+
+            <!-- Why do you want to intern -->
+            <div>
+              <label for="intern-why" class="block text-sm font-semibold mb-2">Why do you want to intern at Promo? *</label>
+              <textarea id="intern-why" required maxlength="1000" rows="4" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="Tell us your story and what you bring..."></textarea>
+              <p class="text-[11px] text-brandMuted mt-1.5 flex justify-between">
+                <span>Explain your motivation</span>
+                <span id="intern-why-char">0/1000</span>
+              </p>
+            </div>
+
+            <!-- Resume Link -->
+            <div>
+              <label for="intern-resume" class="block text-sm font-semibold mb-2">Resume Link *</label>
+              <input type="url" id="intern-resume" required class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="e.g. Google Drive public link or LinkedIn PDF URL">
+              <p class="text-[11px] text-brandMuted mt-1.5">Must start with https:// and be publicly accessible.</p>
+            </div>
+
+            <!-- LinkedIn & Portfolio Links -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="intern-linkedin" class="block text-sm font-semibold mb-2">LinkedIn Profile (optional)</label>
+                <input type="url" id="intern-linkedin" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="https://linkedin.com/in/username">
+              </div>
+              <div>
+                <label for="intern-portfolio" class="block text-sm font-semibold mb-2">Portfolio / GitHub (optional)</label>
+                <input type="url" id="intern-portfolio" class="w-full bg-[#0A0A14] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-brandMuted focus:outline-none focus:border-brandPurple focus:ring-1 focus:ring-brandPurple transition duration-200" placeholder="https://github.com/username">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div>
+              <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-4 rounded-xl bg-brandPurple text-white font-bold hover:bg-brandPurple/90 transition shadow-lg shadow-brandPurple/10">
+                Apply for Internship →
+              </button>
+            </div>
+          </form>
+
+          <!-- SUCCESS CARD -->
+          <div id="internship-success" class="hidden bg-brandSuccess/5 border border-brandSuccess/30 rounded-2xl p-6 md:p-8 space-y-4">
+            <div class="flex items-center space-x-3 text-brandSuccess">
+              <span class="text-3xl">🎓</span>
+              <h3 class="text-xl md:text-2xl font-bold">Application Received!</h3>
+            </div>
+            <p id="intern-success-text" class="text-brandMuted text-sm md:text-base leading-relaxed">
+              Thank you, applicant! We have received your internship application.
+            </p>
+            <div class="border-t border-white/10 pt-4 space-y-3 text-sm text-brandMuted leading-relaxed">
+              <p>
+                Our team will review your profile and reach out to you if you are shortlisted for an interview.
+              </p>
+              <ul class="list-disc list-inside space-y-1">
+                <li><strong>Interview format:</strong> Online via Google Meet</li>
+                <li><strong>Duration:</strong> 20-30 minutes</li>
+                <li><strong>Response timeline:</strong> Typically within 7 working days</li>
+              </ul>
+            </div>
+            <p class="text-xs text-brandMuted">In the meantime, explore Promo: <a href="https://promo.arkio.in" class="underline">promo.arkio.in</a></p>
+            <p class="text-sm font-bold text-brandSuccess block pt-2">Best of luck! 🚀 — Team Promo</p>
+            <button onclick="resetInternForm()" class="text-xs text-brandMuted hover:text-white underline block mt-4">Apply for another role</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: STATS COUNTER -->
+    <section class="py-16 border-t border-white/5">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" id="stats-section">
+        <div class="p-6">
+          <div class="text-4xl md:text-6xl font-extrabold text-brandPurple mb-2" data-target="127">0</div>
+          <div class="text-xs md:text-sm font-bold uppercase tracking-wider text-white">Bug Reports</div>
+          <div class="text-xs text-brandMuted mt-1">Received</div>
+        </div>
+        <div class="p-6">
+          <div class="text-4xl md:text-6xl font-extrabold text-brandYellow mb-2" data-target="43">0</div>
+          <div class="text-xs md:text-sm font-bold uppercase tracking-wider text-white">Ideas</div>
+          <div class="text-xs text-brandMuted mt-1">Submitted</div>
+        </div>
+        <div class="p-6">
+          <div class="text-4xl md:text-6xl font-extrabold text-white mb-2" data-target="18">0</div>
+          <div class="text-xs md:text-sm font-bold uppercase tracking-wider text-white">Applicants</div>
+          <div class="text-xs text-brandMuted mt-1">So Far</div>
+        </div>
+        <div class="p-6">
+          <div class="text-4xl md:text-6xl font-extrabold text-brandPurple mb-2" data-target="1000">∞</div>
+          <div class="text-xs md:text-sm font-bold uppercase tracking-wider text-white">Passion</div>
+          <div class="text-xs text-brandMuted mt-1">Unlimited</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SECTION 9: FOOTER -->
+  <footer class="bg-black/80 border-t border-white/5 py-12 mt-12 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+      <div class="text-center md:text-left">
+        <div class="text-xl font-bold text-white mb-2">Promo<span class="text-brandPurple font-black">.</span></div>
+        <p class="text-xs text-brandMuted uppercase tracking-widest font-semibold">Connect · Create · Collaborate</p>
+      </div>
+      
+      <div class="flex space-x-6 text-sm">
+        <a href="https://promo.arkio.in" class="text-brandMuted hover:text-white transition">App</a>
+        <a href="https://promo.arkio.in/privacy-policy" class="text-brandMuted hover:text-white transition">Privacy Policy</a>
+        <a href="mailto:support@promo.arkio.in" class="text-brandMuted hover:text-white transition">Contact</a>
+      </div>
+
+      <div class="text-center md:text-right text-xs text-brandMuted space-y-1">
+        <p>&copy; 2026 Promo. All rights reserved.</p>
+        <p>Built with ❤️ in India 🇮🇳</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT HANDLERS AND LOGIC -->
+  <script>
+    // 1. Initialize Lucide Icons
+    lucide.createIcons();
+
+    // 2. Initialize Supabase
+    const SUPABASE_URL = "https://lokoxgwymvvnxhmavuyv.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxva294Z3d5bXZ2bnhobWF2dXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDM3MTEsImV4cCI6MjA5NzE3OTcxMX0.gpQT_54GRBls2q3dpxsKt70tcEkRdDgGVvjocq79qMU";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Character counters helper
+    function setupCharCounter(inputId, counterId, maxLen) {
+      const el = document.getElementById(inputId);
+      const counter = document.getElementById(counterId);
+      if (el && counter) {
+        el.addEventListener('input', () => {
+          counter.textContent = `${el.value.length}/${maxLen}`;
+        });
+      }
+    }
+    setupCharCounter('bug-title', 'bug-title-char', 100);
+    setupCharCounter('bug-desc', 'bug-desc-char', 2000);
+    setupCharCounter('bug-steps', 'bug-steps-char', 1000);
+    setupCharCounter('idea-title', 'idea-title-char', 100);
+    setupCharCounter('idea-problem', 'idea-problem-char', 1000);
+    setupCharCounter('idea-desc', 'idea-desc-char', 3000);
+    setupCharCounter('intern-skills', 'intern-skills-char', 500);
+    setupCharCounter('intern-why', 'intern-why-char', 1000);
+
+    // Helpers
+    function generateToken(prefix) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `${prefix.toUpperCase()}-${result}`;
+    }
+
+    function checkRateLimit(type) {
+      const now = Date.now();
+      const hourMs = 60 * 60 * 1000;
+      const storageKey = `promo_rate_limit_${type}`;
+      
+      let timestamps = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      // Filter timestamps in the last hour
+      timestamps = timestamps.filter(t => (now - t) < hourMs);
+      
+      if (timestamps.length >= 5) {
+        return false; // Limit reached
+      }
+      
+      timestamps.push(now);
+      localStorage.setItem(storageKey, JSON.stringify(timestamps));
+      return true;
+    }
+
+    // Utility: Copy to Clipboard
+    function copyToClipboard(elementId, btn) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const origHtml = btn.innerHTML;
+        btn.innerHTML = '<span>Copied!</span>';
+        btn.classList.remove('bg-brandPurple', 'bg-brandYellow');
+        btn.classList.add('bg-brandSuccess');
+        setTimeout(() => {
+          btn.innerHTML = origHtml;
+          btn.classList.remove('bg-brandSuccess');
+          if (elementId.includes('bug')) {
+            btn.classList.add('bg-brandPurple');
+          } else {
+            btn.classList.add('bg-brandYellow');
+          }
+        }, 1500);
+      });
+    }
+
+    // Sanitizer
+    function sanitize(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Validation helpers
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // URL validation helper (must start with http:// or https://)
+    function isValidUrl(url) {
+      return /^https:\/\/.+/.test(url);
+    }
+
+    function isValidPhone(phone) {
+      const digits = phone.replace(/\D/g, '');
+      return digits.length >= 10;
+    }
+
+    // 3. Form Submit Handler (Bugs & Ideas)
+    async function handleFormSubmit(event, type) {
+      event.preventDefault();
+      
+      // Check Rate limit first
+      if (!checkRateLimit(type)) {
+        alert("You've submitted recently. Please wait before submitting again.");
+        return;
+      }
+
+      // Collect data
+      let data = {};
+      const token = generateToken(type === 'bug' ? 'BUG' : 'IDEA');
+      
+      if (type === 'bug') {
+        const title = document.getElementById('bug-title').value.trim();
+        const screen = document.getElementById('bug-screen').value;
+        const description = document.getElementById('bug-desc').value.trim();
+        const steps = document.getElementById('bug-steps').value.trim();
+        const severity = document.querySelector('input[name="bug-severity"]:checked')?.value;
+        const device = document.querySelector('input[name="bug-device"]:checked')?.value;
+        const name = document.getElementById('bug-name').value.trim();
+        const email = document.getElementById('bug-email').value.trim();
+
+        // Validation
+        if (!title || !screen || !description || !severity || !device || !name || !email) {
+          alert('Please fill out all required fields.');
+          return;
+        }
+        if (!isValidEmail(email)) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+
+        data = {
+          title: sanitize(title),
+          screen_or_feature: screen,
+          description: sanitize(description),
+          steps_to_reproduce: sanitize(steps),
+          severity: severity,
+          device_type: device,
+          submitter_name: sanitize(name),
+          submitter_email: sanitize(email),
+          token: token
+        };
+
+      } else {
+        const title = document.getElementById('idea-title').value.trim();
+        const category = document.getElementById('idea-category').value;
+        const problem = document.getElementById('idea-problem').value.trim();
+        const description = document.getElementById('idea-desc').value.trim();
+        const name = document.getElementById('idea-name').value.trim();
+        const email = document.getElementById('idea-email').value.trim();
+
+        // Validation
+        if (!title || !category || !problem || !description || !name || !email) {
+          alert('Please fill out all required fields.');
+          return;
+        }
+        if (!isValidEmail(email)) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+
+        data = {
+          title: sanitize(title),
+          category: category,
+          problem_it_solves: sanitize(problem),
+          description: sanitize(description),
+          submitter_name: sanitize(name),
+          submitter_email: sanitize(email),
+          token: token
+        };
+      }
+
+      // Hide Form, show Loader
+      const formEl = document.getElementById(`${type}-form`);
+      const loadingEl = document.getElementById(`${type}-loading`);
+      formEl.classList.add('hidden');
+      loadingEl.classList.remove('hidden');
+
+      // Loader Text cycle
+      const texts = [
+        "Analyzing your submission...",
+        "Checking against known issues...",
+        "Verifying originality..."
+      ];
+      let tIndex = 0;
+      const textEl = document.getElementById(`${type}-loading-text`);
+      const textInterval = setInterval(() => {
+        tIndex = (tIndex + 1) % texts.length;
+        textEl.textContent = texts[tIndex];
+      }, 800);
+
+      // Trigger Database Save asynchronously
+      const dbPromise = supabaseClient
+        .from(type === 'bug' ? 'bug_reports' : 'idea_submissions')
+        .insert([data]);
+
+      // Delay Outcome showing by 2.5 seconds to simulate system processing
+      setTimeout(async () => {
+        clearInterval(textInterval);
+        loadingEl.classList.add('hidden');
+
+        try {
+          const { error } = await dbPromise;
+          if (error) {
+            console.error("Supabase Save Error:", error);
+            alert("An error occurred while saving to the database. Please try again.");
+            formEl.classList.remove('hidden');
+            return;
+          }
+
+          // LocalStorage Duplicate Simulation Logic
+          const sessionSubmissionsKey = `promo_${type}_submitted_count`;
+          let count = parseInt(localStorage.getItem(sessionSubmissionsKey) || '0');
+          
+          let outcome = 'A';
+          if (count > 0) {
+            // Subsequent submissions: 70% outcome A, 30% outcome B
+            outcome = Math.random() < 0.7 ? 'A' : 'B';
+          }
+
+          localStorage.setItem(sessionSubmissionsKey, (count + 1).toString());
+
+          if (outcome === 'A') {
+            document.getElementById(`${type}-token-val`).innerText = token;
+            document.getElementById(`${type}-outcome-a`).classList.remove('hidden');
+          } else {
+            document.getElementById(`${type}-outcome-b`).classList.remove('hidden');
+          }
+
+        } catch (err) {
+          console.error("Processing Error:", err);
+          alert("Submission failed. Check your internet connection.");
+          formEl.classList.remove('hidden');
+        }
+
+      }, 2500);
+    }
+
+    // Reset Form views
+    function resetForm(type) {
+      document.getElementById(`${type}-outcome-a`).classList.add('hidden');
+      document.getElementById(`${type}-outcome-b`).classList.add('hidden');
+      const form = document.getElementById(`${type}-form`);
+      form.reset();
+      
+      // Reset counters
+      const titleCounter = document.getElementById(`${type}-title-char`);
+      if (titleCounter) titleCounter.textContent = '0/100';
+      const descCounter = document.getElementById(`${type}-desc-char`);
+      if (descCounter) descCounter.textContent = '0/' + (type === 'bug' ? '2000' : '3000');
+      const stepsCounter = document.getElementById(`${type}-steps-char`);
+      if (stepsCounter) stepsCounter.textContent = '0/1000';
+      const problemCounter = document.getElementById(`${type}-problem-char`);
+      if (problemCounter) problemCounter.textContent = '0/1000';
+
+      form.classList.remove('hidden');
+    }
+
+    // 4. Token Validation Form Submit
+    async function handleTokenSubmit(event) {
+      event.preventDefault();
+
+      if (!checkRateLimit('validation')) {
+        alert("You've submitted recently. Please wait before submitting again.");
+        return;
+      }
+
+      const tokenVal = document.getElementById('validation-token').value.trim().toUpperCase();
+      const name = document.getElementById('validation-name').value.trim();
+      const email = document.getElementById('validation-email').value.trim();
+      const phone = document.getElementById('validation-phone').value.trim();
+      const payment = document.getElementById('validation-payment').value.trim();
+      const message = document.getElementById('validation-message').value.trim();
+
+      // Form validation
+      if (!tokenVal || !name || !email || !phone || !payment) {
+        alert('Please fill out all required fields.');
+        return;
+      }
+      
+      // Token Regex: starts with BUG- or IDEA- followed by 8 alphanumeric characters
+      if (!/^(BUG|IDEA)-[A-Z0-9]{8}$/.test(tokenVal)) {
+        alert('Invalid token format. Must be BUG-XXXXXXXX or IDEA-XXXXXXXX (8 alphanumeric characters).');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+
+      if (!isValidPhone(phone)) {
+        alert('Please enter a valid phone number (10+ digits).');
+        return;
+      }
+
+      const valData = {
+        token: tokenVal,
+        full_name: sanitize(name),
+        email: sanitize(email),
+        phone: sanitize(phone),
+        payment_info: sanitize(payment),
+        message: sanitize(message)
+      };
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Validating...</span>';
+
+      try {
+        const { error } = await supabaseClient
+          .from('token_validations')
+          .insert([valData]);
+
+        if (error) {
+          console.error("Supabase Save Error:", error);
+          alert("An error occurred during token registration. Please verify your data and try again.");
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+
+        // Show Success
+        document.getElementById('token-form').classList.add('hidden');
+        document.getElementById('validation-success-text').innerHTML = `Thank you, <strong>${sanitize(name)}</strong>! Your token <strong>${tokenVal}</strong> has been registered successfully.`;
+        document.getElementById('validation-success').classList.remove('hidden');
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to submit verification. Please try again.");
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    function resetValidationForm() {
+      document.getElementById('validation-success').classList.add('hidden');
+      const form = document.getElementById('token-form');
+      form.reset();
+      form.classList.remove('hidden');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = false;
+    }
+
+    // 5. Internship Form Submit
+    async function handleInternSubmit(event) {
+      event.preventDefault();
+
+      if (!checkRateLimit('internship')) {
+        alert("You've submitted recently. Please wait before submitting again.");
+        return;
+      }
+
+      const name = document.getElementById('intern-name').value.trim();
+      const email = document.getElementById('intern-email').value.trim();
+      const phone = document.getElementById('intern-phone').value.trim();
+      const college = document.getElementById('intern-college').value.trim();
+      const year = document.getElementById('intern-year').value;
+      const role = document.getElementById('intern-role').value;
+      const skills = document.getElementById('intern-skills').value.trim();
+      const why = document.getElementById('intern-why').value.trim();
+      const resume = document.getElementById('intern-resume').value.trim();
+      const linkedin = document.getElementById('intern-linkedin').value.trim();
+      const portfolio = document.getElementById('intern-portfolio').value.trim();
+
+      if (!name || !email || !phone || !college || !year || !role || !skills || !why || !resume) {
+        alert('Please fill out all required fields.');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+
+      if (!isValidPhone(phone)) {
+        alert('Please enter a valid phone number (10+ digits).');
+        return;
+      }
+
+      if (!isValidUrl(resume)) {
+        alert('Please enter a valid URL for your resume (starting with https://).');
+        return;
+      }
+
+      if (linkedin && !isValidUrl(linkedin)) {
+        alert('Please enter a valid URL for LinkedIn (starting with https://).');
+        return;
+      }
+
+      if (portfolio && !isValidUrl(portfolio)) {
+        alert('Please enter a valid URL for portfolio/GitHub (starting with https://).');
+        return;
+      }
+
+      const internData = {
+        full_name: sanitize(name),
+        email: sanitize(email),
+        phone: sanitize(phone),
+        college_or_company: sanitize(college),
+        year_of_study: year,
+        role_interest: role,
+        skills: sanitize(skills),
+        why_promo: sanitize(why),
+        resume_url: resume,
+        linkedin_url: linkedin || null,
+        portfolio_url: portfolio || null
+      };
+
+      const btn = event.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>Submitting Application...</span>';
+
+      try {
+        const { error } = await supabaseClient
+          .from('internship_applications')
+          .insert([internData]);
+
+        if (error) {
+          console.error("Supabase Save Error:", error);
+          alert("An error occurred during application submission. Please try again.");
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+
+        // Show Success
+        document.getElementById('internship-form').classList.add('hidden');
+        document.getElementById('intern-success-text').innerHTML = `Thank you, <strong>${sanitize(name)}</strong>! We have received your application for the <strong>${role.replace('_', ' ').toUpperCase()}</strong> role.`;
+        document.getElementById('internship-success').classList.remove('hidden');
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to submit application. Please check your network and try again.");
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    function resetInternForm() {
+      document.getElementById('internship-success').classList.add('hidden');
+      const form = document.getElementById('internship-form');
+      form.reset();
+      
+      // Reset char counters
+      const skillsCounter = document.getElementById('intern-skills-char');
+      if (skillsCounter) skillsCounter.textContent = '0/500';
+      const whyCounter = document.getElementById('intern-why-char');
+      if (whyCounter) whyCounter.textContent = '0/1000';
+
+      form.classList.remove('hidden');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = false;
+    }
+
+    // 6. Stats Counter Animate on Scroll Into View
+    let statsAnimated = false;
+    const statsSection = document.getElementById('stats-section');
+
+    function animateStats() {
+      const counters = statsSection.querySelectorAll('[data-target]');
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        if (target === 1000) {
+          counter.textContent = '∞';
+          return;
+        }
+
+        let start = 0;
+        const duration = 2000;
+        const stepTime = Math.abs(Math.floor(duration / target));
+        
+        const timer = setInterval(() => {
+          start += 1;
+          counter.textContent = start;
+          if (start >= target) {
+            counter.textContent = target;
+            clearInterval(timer);
+          }
+        }, stepTime);
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !statsAnimated) {
+          statsAnimated = true;
+          animateStats();
+        }
+      });
+    }, { threshold: 0.2 });
+
+    if (statsSection) {
+      observer.observe(statsSection);
+    }
+  </script>
+</body>
+</html>

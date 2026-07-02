@@ -14,6 +14,7 @@ import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/services/block_service.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class BrandInfluencersScreen extends ConsumerStatefulWidget {
   const BrandInfluencersScreen({super.key});
@@ -418,13 +419,11 @@ class _BrandInfluencersScreenState extends ConsumerState<BrandInfluencersScreen>
                 ),
               ],
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: () async {
                 HapticFeedback.lightImpact();
                 await _load();
               },
-              color: AppColors.accent,
-              backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
               child: Column(
                 children: [
                   // Bento Search Bar

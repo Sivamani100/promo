@@ -21,6 +21,7 @@ import 'discover_map_view.dart';
 import '../../core/cache/app_cache.dart';
 import '../../core/services/block_service.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class InfluencerDiscoverScreen extends ConsumerStatefulWidget {
   final String? filter;
@@ -489,7 +490,7 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
       ),
       body: _loading
           ? const InfluencerDiscoverSkeleton()
-          : RefreshIndicator(
+          : AppRefreshIndicator(
                   onRefresh: _load,
                   child: Column(
                     children: [
@@ -609,12 +610,11 @@ class _InfluencerDiscoverScreenState extends ConsumerState<InfluencerDiscoverScr
                       
                       // Bento List Card list
                       Expanded(
-                        child: RefreshIndicator(
+                        child: AppRefreshIndicator(
                           onRefresh: () async {
                             HapticFeedback.lightImpact();
                             await _load();
                           },
-                          color: AppColors.accent,
                           child: ListView.separated(
                           padding: const EdgeInsets.fromLTRB(
                             AppSpacing.pageMarginHorizontal,

@@ -2179,22 +2179,22 @@ class ChatTileSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 4),
       child: SkeletonShimmer(
         child: Row(
           children: [
             // Avatar Stack with online dot placeholder
             Stack(
               children: [
-                SkeletonCircle(size: 50),
+                SkeletonCircle(size: 56),
                 Positioned(
                   bottom: 0,
                   right: 0,
-                  child: SkeletonCircle(size: 12),
+                  child: SkeletonCircle(size: 14),
                 ),
               ],
             ),
-            SizedBox(width: 12),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2202,18 +2202,18 @@ class ChatTileSkeleton extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SkeletonText(width: 120, height: 14),
-                      SkeletonText(width: 40, height: 10),
+                      SkeletonText(width: 130, height: 15),
+                      SkeletonText(width: 40, height: 11),
                     ],
                   ),
-                  SizedBox(height: 6),
-                  SkeletonText(width: 180, height: 11),
+                  SizedBox(height: 8),
+                  SkeletonText(width: 190, height: 12),
                 ],
               ),
             ),
             SizedBox(width: 8),
             // Right-side chevron or unread badge placeholder
-            SkeletonCircle(size: 16),
+            SkeletonCircle(size: 18),
           ],
         ),
       ),

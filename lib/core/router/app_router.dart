@@ -47,6 +47,8 @@ import '../../features/settings/ai_assistant_screen.dart';
 import '../../features/settings/document_viewer.dart';
 import '../../features/settings/developer_settings_screen.dart';
 import '../../features/settings/promo_page/promo_page_settings_screen.dart';
+import '../../features/settings/creator_certifications_screen.dart';
+import '../../features/settings/creator_leaderboard_screen.dart';
 import '../../features/promo_page/promo_public_page_screen.dart';
 import '../../features/promo_page/promo_analytics_screen.dart';
 import '../../features/support/support_screen.dart';
@@ -143,7 +145,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 4. If not authenticated
       if (!isAuth) {
-        if (!isAuthRoute && !isOnboardingRoute && !path.startsWith('/@')) {
+        if (!isAuthRoute && !isOnboardingRoute && !path.startsWith('/@') && path != '/leaderboard') {
           return '/login';
         }
         return null;
@@ -178,14 +180,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isGateRoute = path == '/terms-gate' || path == '/consent';
 
       if (tosVersionAccepted != currentTosVersion) {
-        if (path != '/terms-gate' && !isLegalDocRoute && !path.startsWith('/@')) {
+        if (path != '/terms-gate' && !isLegalDocRoute && !path.startsWith('/@') && path != '/leaderboard') {
           return '/terms-gate';
         }
         return null;
       }
 
       if (needsConsent) {
-        if (path != '/consent' && !isLegalDocRoute && !path.startsWith('/@')) {
+        if (path != '/consent' && !isLegalDocRoute && !path.startsWith('/@') && path != '/leaderboard') {
           return '/consent';
         }
         return null;
@@ -209,7 +211,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hasCompletedOnboarding = authState.isOnboardingComplete;
 
       if (!hasCompletedOnboarding && authState.role != 'admin') {
-        if (!isOnboardingRoute && !path.startsWith('/@')) {
+        if (!isOnboardingRoute && !path.startsWith('/@') && path != '/leaderboard') {
           return '/onboarding/1';
         }
         return null;
@@ -227,6 +229,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       // Splash
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
+
+      // Public Leaderboard
+      GoRoute(
+        path: '/leaderboard',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, _) => const CreatorLeaderboardScreen(),
+      ),
       
       // Public Promo Page (Link-in-Bio)
       GoRoute(
@@ -435,6 +444,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'security', builder: (_, _) => const SecuritySettingsScreen()),
           GoRoute(path: 'verification', builder: (_, _) => const VerificationSettingsScreen()),
           GoRoute(path: 'platforms', builder: (_, _) => const PlatformSettingsScreen()),
+          GoRoute(
+            path: 'certifications',
+            builder: (_, _) => const CreatorCertificationsScreen(),
+          ),
           GoRoute(path: 'apikeys', builder: (_, _) => const ApiKeysSettingsScreen()),
           GoRoute(path: 'mcpkeys', builder: (_, _) => const McpKeysSettingsScreen()),
           GoRoute(path: 'assistant', builder: (_, _) => const AiAssistantScreen()),

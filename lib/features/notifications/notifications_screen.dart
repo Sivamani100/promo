@@ -15,6 +15,7 @@ import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
@@ -615,9 +616,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
               ],
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
-              color: AppColors.accent,
               child: _notifications.isEmpty
                   ? const AppEmptyState(icon: Iconsax.notification, title: "You're all caught up!", subtitle: "")
                   : Column(

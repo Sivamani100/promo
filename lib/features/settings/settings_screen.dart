@@ -75,13 +75,26 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Request account verification',
               onTap: () => context.push('/$role/settings/verification'),
             ),
-            if (role == 'influencer')
+            if (role == 'influencer') ...[
               _SettingsItem(
                 icon: Iconsax.mobile,
                 label: 'Platform Settings',
                 subtitle: 'Manage connected platforms',
                 onTap: () => context.push('/$role/settings/platforms'),
               ),
+              _SettingsItem(
+                icon: Iconsax.award,
+                label: 'Creator Certifications',
+                subtitle: 'Earn badges and certificates',
+                onTap: () => context.push('/$role/settings/certifications'),
+              ),
+            ],
+            _SettingsItem(
+              icon: Iconsax.ranking,
+              label: 'Promo Leaderboard',
+              subtitle: 'Top performing creators',
+              onTap: () => context.push('/leaderboard'),
+            ),
             _SettingsItem(
               icon: Iconsax.key,
               label: 'API Keys',

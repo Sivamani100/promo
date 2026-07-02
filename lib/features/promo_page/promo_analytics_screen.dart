@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import 'promo_page_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 /// Embeddable analytics dashboard widget for the Promo Page.
 /// Used both inside the settings tab and as a standalone screen.
@@ -98,9 +99,8 @@ class _PromoAnalyticsDashboardState extends State<PromoAnalyticsDashboard> {
 
     final summary = _summary!;
 
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _loadAnalytics,
-      color: AppColors.purple,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.md),

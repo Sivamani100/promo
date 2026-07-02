@@ -68,6 +68,7 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
       var page = await PromoPageService.getPublicPage(widget.username);
       if (!mounted || _isDisposed) return;
       
+      
       // Override/Mock default live page for sivamanikanta if not present
       if (page == null && widget.username.toLowerCase() == 'sivamanikanta') {
         page = PromoPage(
@@ -466,6 +467,60 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
     return cardChild;
   }
 
+  Widget _buildCertBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.4), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified, color: color, size: 11),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w900,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendingBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange.withOpacity(0.4), width: 0.8),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Iconsax.flash5, color: Colors.orange, size: 11),
+          SizedBox(width: 4),
+          Text(
+            'Trending',
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w900,
+              color: Colors.orange,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEmbedded = widget.embedded;
@@ -635,6 +690,17 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
     final displayName = page.displayName ?? _socials?['display_name'] as String? ?? widget.username;
     final bio = page.bio ?? _socials?['bio'] as String?;
 
+    // Extract Certifications & Trending state
+    final Map<String, dynamic> certs = {};
+    bool isTrending = false;
+    if (_socials != null && _socials!['preferences'] != null) {
+      final prefs = Map<String, dynamic>.from(_socials!['preferences'] as Map);
+      if (prefs['certifications'] is Map) {
+        certs.addAll(Map<String, dynamic>.from(prefs['certifications'] as Map));
+      }
+      isTrending = prefs['trending'] == true;
+    }
+
     // Social accounts links
     final Map<String, dynamic> platforms = {};
     if (_socials != null && _socials!['preferences'] != null) {
@@ -716,6 +782,23 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
+                                    if (isTrending || certs.isNotEmpty) ...[
+                                      const SizedBox(height: 10),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 6,
+                                        alignment: WrapAlignment.center,
+                                        children: [
+                                          if (isTrending) _buildTrendingBadge(),
+                                          if (certs['professional_collaborator'] != null)
+                                            _buildCertBadge('Promo Certified — Professional Collaborator ✓', Colors.purple),
+                                          if (certs['content_brief_master'] != null)
+                                            _buildCertBadge('Promo Certified — Content Brief Master ✓', Colors.blue),
+                                          if (certs['rate_negotiation_pro'] != null)
+                                            _buildCertBadge('Promo Certified — Rate Negotiation Pro ✓', Colors.green),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 )
                               : Row(
@@ -748,13 +831,29 @@ class _PromoPublicPageScreenState extends ConsumerState<PromoPublicPageScreen> w
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          Text(
+                                           Text(
                                             '@${widget.username}',
                                             style: TextStyle(
                                               color: mutedTextColor,
                                               fontSize: 14,
                                             ),
                                           ),
+                                          if (isTrending || certs.isNotEmpty) ...[
+                                            const SizedBox(height: 8),
+                                            Wrap(
+                                              spacing: 6,
+                                              runSpacing: 6,
+                                              children: [
+                                                if (isTrending) _buildTrendingBadge(),
+                                                if (certs['professional_collaborator'] != null)
+                                                  _buildCertBadge('Promo Certified — Professional Collaborator ✓', Colors.purple),
+                                                if (certs['content_brief_master'] != null)
+                                                  _buildCertBadge('Promo Certified — Content Brief Master ✓', Colors.blue),
+                                                if (certs['rate_negotiation_pro'] != null)
+                                                  _buildCertBadge('Promo Certified — Rate Negotiation Pro ✓', Colors.green),
+                                              ],
+                                            ),
+                                          ],
                                         ],
                                       ),
                                     ),

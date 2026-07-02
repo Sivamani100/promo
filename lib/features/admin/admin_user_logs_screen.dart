@@ -15,6 +15,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_card.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class AdminUserLogsScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -452,7 +453,7 @@ class _AdminUserLogsScreenState extends State<AdminUserLogsScreen> {
       statusColor = Colors.yellow.shade700;
     }
 
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _loadData,
       child: ListView(
         padding: const EdgeInsets.all(16),

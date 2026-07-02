@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_card.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class AdminDisputesScreen extends StatefulWidget {
   const AdminDisputesScreen({super.key});
@@ -166,7 +167,7 @@ class _AdminDisputesScreenState extends State<AdminDisputesScreen> {
           ),
         ),
       ),
-      body: RefreshIndicator(
+      body: AppRefreshIndicator(
         onRefresh: _loadDisputes,
         child: _loading
             ? const Center(child: CircularProgressIndicator())

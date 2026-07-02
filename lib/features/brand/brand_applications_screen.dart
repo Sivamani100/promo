@@ -17,6 +17,7 @@ import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class BrandApplicationsScreen extends ConsumerStatefulWidget {
   const BrandApplicationsScreen({super.key});
@@ -103,7 +104,7 @@ class _BrandApplicationsScreenState extends ConsumerState<BrandApplicationsScree
                 ),
               ],
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: Column(
                 children: [

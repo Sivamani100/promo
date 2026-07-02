@@ -15,6 +15,7 @@ import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../core/cache/app_cache.dart';
 import '../../core/network/connectivity_service.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class BrandCardsScreen extends ConsumerStatefulWidget {
   const BrandCardsScreen({super.key});
@@ -467,13 +468,11 @@ class _BrandCardsScreenState extends ConsumerState<BrandCardsScreen> {
                 ),
               ],
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: () async {
                 HapticFeedback.lightImpact();
                 await _load();
               },
-              color: AppColors.accent,
-              backgroundColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
               child: Column(
                 children: [
                   // Custom Bento Filter Tabs with counts

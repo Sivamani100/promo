@@ -68,6 +68,9 @@ class DeepLinkService {
 
     String? destination;
     switch (segments[0]) {
+      case 'leaderboard':
+        ref.read(routerProvider).go('/leaderboard');
+        return;
       case 'card':
         if (segments.length > 1) {
           destination = '/card/${segments[1]}';

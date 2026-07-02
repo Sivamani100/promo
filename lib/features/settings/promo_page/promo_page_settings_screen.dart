@@ -6,6 +6,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -129,9 +130,11 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     setState(() => _loading = true);
     try {
       final page = await PromoPageService.getMyPage();
+      if (!mounted) return;
       if (page != null) {
         final linksList = await PromoPageService.getLinks(page.id);
         
+        if (!mounted) return;
         final profile = ref.read(authProvider).profile;
         final prefs = profile?['preferences'] as Map<String, dynamic>? ?? {};
         final handles = prefs['platform_handles'] as Map<String, dynamic>? ?? {};
@@ -149,7 +152,7 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
           _accentColorHex = page.accentColor;
           _customBgPhotoUrl = page.backgroundColor;
 
-           final parsedAccent = _parseAccentField(page.accentColor);
+          final parsedAccent = _parseAccentField(page.accentColor);
           _selectedButtonColor = parsedAccent['buttonColor'] ?? 'black';
           _selectedButtonShape = parsedAccent['buttonShape'] ?? 'normal_rounded';
           _selectedButtonTextColor = parsedAccent['buttonTextColor'] ?? (_selectedButtonColor == 'white' ? 'black' : 'white');
@@ -163,9 +166,13 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
         });
       }
     } catch (e) {
-      AppSnackbar.show(context, 'Failed to load Promo Page: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to load Promo Page: $e');
+      }
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -234,11 +241,15 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     setState(() => _loading = true);
     try {
       await PromoPageService.claimUsername(username);
-      AppSnackbar.show(context, 'Promo page claimed! Now customize it.');
+      if (mounted) {
+        AppSnackbar.show(context, 'Promo page claimed! Now customize it.');
+      }
       await _loadPromoData();
     } catch (e) {
-      AppSnackbar.show(context, 'Failed to claim username: $e');
-      setState(() => _loading = false);
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to claim username: $e');
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -262,17 +273,20 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
 
       // Update page state with new avatar
       final updated = await PromoPageService.updatePage({'avatar_url': publicUrl});
+      
+      if (!mounted) return;
+
       setState(() {
         _promoPage = updated;
         _uploadingAvatar = false;
       });
 
-      if (mounted) {
-        AppSnackbar.show(context, 'Avatar updated successfully!');
-      }
+      AppSnackbar.show(context, 'Avatar updated successfully!');
     } catch (e) {
-      setState(() => _uploadingAvatar = false);
-      AppSnackbar.show(context, 'Error uploading avatar: $e');
+      if (mounted) {
+        setState(() => _uploadingAvatar = false);
+        AppSnackbar.show(context, 'Error uploading avatar: $e');
+      }
     }
   }
 
@@ -294,17 +308,19 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
         'image/$cleanExt',
       );
 
+      if (!mounted) return;
+
       setState(() {
         _customBgPhotoUrl = publicUrl;
         _uploadingBackground = false;
       });
 
-      if (mounted) {
-        AppSnackbar.show(context, 'Background photo uploaded successfully! Save to apply changes.');
-      }
+      AppSnackbar.show(context, 'Background photo uploaded successfully! Save to apply changes.');
     } catch (e) {
-      setState(() => _uploadingBackground = false);
-      AppSnackbar.show(context, 'Error uploading background image: $e');
+      if (mounted) {
+        setState(() => _uploadingBackground = false);
+        AppSnackbar.show(context, 'Error uploading background image: $e');
+      }
     }
   }
 
@@ -359,15 +375,19 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
         await ref.read(authProvider.notifier).refreshProfile();
       }
 
+      if (!mounted) return;
+
       setState(() {
         _promoPage = updated;
       });
 
-      if (mounted) {
-        AppSnackbar.show(context, 'Promo profile saved!');
-      }
+      AppSnackbar.show(context, 'Promo profile saved!');
     } catch (e) {
-      AppSnackbar.show(context, 'Error saving profile: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Error saving profile: $e');
+      } else {
+        debugPrint('Error saving profile (unmounted): $e');
+      }
     } finally {
       if (mounted) setState(() => _savingProfile = false);
     }
@@ -377,14 +397,15 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     if (_promoPage == null) return;
     try {
       final updated = await PromoPageService.updatePage({'is_published': true});
+      if (!mounted) return;
       setState(() {
         _promoPage = updated;
       });
-      if (mounted) {
-        AppSnackbar.show(context, 'Your Promo Page is now Live!');
-      }
+      AppSnackbar.show(context, 'Your Promo Page is now Live!');
     } catch (e) {
-      AppSnackbar.show(context, 'Error publishing page: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Error publishing page: $e');
+      }
     }
   }
 
@@ -392,14 +413,15 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     if (_promoPage == null) return;
     try {
       final updated = await PromoPageService.updatePage({'is_published': false});
+      if (!mounted) return;
       setState(() {
         _promoPage = updated;
       });
-      if (mounted) {
-        AppSnackbar.show(context, 'Your Promo Page is unpublished.');
-      }
+      AppSnackbar.show(context, 'Your Promo Page is unpublished.');
     } catch (e) {
-      AppSnackbar.show(context, 'Error unpublishing page: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Error unpublishing page: $e');
+      }
     }
   }
 
@@ -562,23 +584,29 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
     try {
       await PromoPageService.updateLink(link.id, {'is_enabled': enabled});
       final updatedLinks = await PromoPageService.getLinks(_promoPage!.id);
+      if (!mounted) return;
       setState(() {
         _links = updatedLinks;
       });
     } catch (e) {
-      AppSnackbar.show(context, 'Error updating link: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Error updating link: $e');
+      }
     }
   }
 
   Future<void> _deleteLink(PromoPageLink link) async {
     try {
       await PromoPageService.deleteLink(link.id);
+      if (!mounted) return;
       setState(() {
         _links.removeWhere((l) => l.id == link.id);
       });
       AppSnackbar.show(context, 'Link deleted');
     } catch (e) {
-      AppSnackbar.show(context, 'Error deleting link: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Error deleting link: $e');
+      }
     }
   }
 
@@ -592,7 +620,9 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
       final orderedIds = _links.map((l) => l.id).toList();
       await PromoPageService.reorderLinks(_promoPage!.id, orderedIds);
     } catch (e) {
-      AppSnackbar.show(context, 'Failed to update link order: $e');
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to update link order: $e');
+      }
     }
   }
 
@@ -1907,6 +1937,19 @@ class _PromoPageSettingsScreenState extends ConsumerState<PromoPageSettingsScree
             value: _showBadge,
             onChanged: (val) => setState(() => _showBadge = val),
             activeColor: AppColors.purple,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ListTile(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            tileColor: Theme.of(context).cardColor,
+            leading: Icon(Iconsax.award, color: AppColors.purple),
+            title: const Text('Creator Certifications'),
+            subtitle: const Text('Earn badges and certificates to display on your profile'),
+            trailing: const Icon(Icons.chevron_right, size: 20),
+            onTap: () {
+              final role = ref.read(authProvider).profile?['role'] ?? 'influencer';
+              context.push('/$role/settings/certifications');
+            },
           ),
           const SizedBox(height: AppSpacing.xl),
           ElevatedButton(

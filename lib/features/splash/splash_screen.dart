@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -20,14 +19,17 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _logoCtrl;
-  late AnimationController _subtitleCtrl;
+  late AnimationController _storyCtrl;
+  late AnimationController _floatCtrl;
   late AnimationController _shimmerCtrl;
-  late Animation<double> _logoFade;
-  late Animation<double> _logoScale;
-  late Animation<Offset> _logoSlide;
+
+  late Animation<double> _mergeAnimation;
+  late Animation<double> _pulseRadiusAnimation;
+  late Animation<double> _pulseOpacityAnimation;
+  late Animation<double> _morphAnimation;
+  late Animation<double> _textRevealAnimation;
+  late Animation<double> _dotScaleAnimation;
   late Animation<double> _subtitleFade;
-  late Animation<double> _dotScale;
   late Animation<double> _shimmerValue;
 
   bool _isLocked = false;
@@ -211,34 +213,68 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
 
-    // Logo animation: fade + scale + slide
-    _logoCtrl = AnimationController(
+    // 1. Storytelling animation controller (3.5 seconds)
+    _storyCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _logoFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: const Interval(0, 0.6, curve: Curves.easeOut)),
-    );
-    _logoScale = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: const Interval(0, 0.7, curve: Curves.elasticOut)),
-    );
-    _logoSlide = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: const Interval(0, 0.6, curve: Curves.easeOut)),
-    );
-    _dotScale = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _logoCtrl, curve: const Interval(0.5, 1.0, curve: Curves.elasticOut)),
+      duration: const Duration(milliseconds: 3500),
     );
 
-    // Subtitle fade in
-    _subtitleCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _subtitleFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _subtitleCtrl, curve: Curves.easeIn),
+    _mergeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.0, 0.40, curve: Curves.easeOut),
+      ),
     );
 
-    // Shimmer bar
+    _pulseRadiusAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.35, 0.65, curve: Curves.easeOut),
+      ),
+    );
+
+    _pulseOpacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.35, 0.65, curve: Curves.easeIn),
+      ),
+    );
+
+    _morphAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.40, 0.70, curve: Curves.easeInOut),
+      ),
+    );
+
+    _textRevealAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.65, 0.90, curve: Curves.easeOut),
+      ),
+    );
+
+    _dotScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.80, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _subtitleFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _storyCtrl,
+        curve: const Interval(0.85, 1.0, curve: Curves.easeIn),
+      ),
+    );
+
+    // 2. Floating continuous animation controller
+    _floatCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    // 3. Shimmer bar loader animation controller
     _shimmerCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -252,7 +288,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _continueAfterUpdateCheck() async {
     try {
-      // 2. Check Biometric Lock
       final session = SupabaseService.client.auth.currentSession;
       final biometricEnabled = ref.read(biometricLockProvider);
       if (session != null && biometricEnabled) {
@@ -261,11 +296,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           setState(() {
             _isLocked = true;
           });
-          return; // STOP splash completion redirect, lock overlay shows
+          return; // STOP redirect
         }
       }
 
-      await Future.delayed(const Duration(milliseconds: 1600));
       if (!mounted) return;
       ref.read(splashCompletedProvider.notifier).state = true;
     } catch (e) {
@@ -280,14 +314,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     try {
       await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
-      _logoCtrl.forward();
 
-      await Future.delayed(const Duration(milliseconds: 700));
-      if (!mounted) return;
-      _subtitleCtrl.forward();
+      // Start animations
+      _floatCtrl.repeat(reverse: true);
       _shimmerCtrl.repeat(reverse: true);
+      final animationFuture = _storyCtrl.forward();
 
-      // 1. Check Force Update
+      // 1. Check Force Update in background
       String? minVersion;
       try {
         final configData = await SupabaseService.client
@@ -308,7 +341,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         }
       }
 
-      await _continueAfterUpdateCheck();
+      // 2. Check biometric requirement state
+      final session = SupabaseService.client.auth.currentSession;
+      final biometricEnabled = ref.read(biometricLockProvider);
+      bool needBiometricLock = false;
+      if (session != null && biometricEnabled) {
+        final success = await _authenticateWithBiometrics();
+        if (!success) {
+          needBiometricLock = true;
+        }
+      }
+
+      // Wait for the storytelling animation to complete playing
+      await animationFuture;
+
+      if (!mounted) return;
+
+      if (needBiometricLock) {
+        setState(() {
+          _isLocked = true;
+        });
+        return; // STOP redirect
+      }
+
+      // All checks complete & animation played: transition
+      ref.read(splashCompletedProvider.notifier).state = true;
     } catch (e) {
       debugPrint('Error in splash screen animation: $e');
       if (mounted) {
@@ -319,8 +376,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   void dispose() {
-    _logoCtrl.dispose();
-    _subtitleCtrl.dispose();
+    _storyCtrl.dispose();
+    _floatCtrl.dispose();
     _shimmerCtrl.dispose();
     super.dispose();
   }
@@ -341,63 +398,78 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           children: [
             const Spacer(flex: 3),
 
-            // Animated logo
-            SlideTransition(
-              position: _logoSlide,
-              child: FadeTransition(
-                opacity: _logoFade,
-                child: ScaleTransition(
-                  scale: _logoScale,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Promo',
-                        style: GoogleFonts.inter(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w900,
-                          color: isDark ? const Color(0xFFFBFBEF) : const Color(0xFF000000),
-                          letterSpacing: -2,
-                        ),
+            // Animated Storytelling Logo Stack (merged circles morphing into cursive Promo.)
+            SizedBox(
+              height: 120,
+              width: 300,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // 1. Merging circles
+                  FadeTransition(
+                    opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
+                      CurvedAnimation(
+                        parent: _storyCtrl,
+                        curve: const Interval(0.40, 0.70, curve: Curves.easeInOut),
                       ),
-                      ScaleTransition(
-                        scale: _dotScale,
-                        child: Text(
-                          '.',
-                          style: GoogleFonts.inter(
-                            fontSize: 52,
-                            fontWeight: FontWeight.w900,
-                            color: const Color(0xFFA855F7),
-                            letterSpacing: -2,
+                    ),
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([_storyCtrl, _floatCtrl]),
+                      builder: (context, child) {
+                        final floatVal = (CurvedAnimation(
+                          parent: _floatCtrl,
+                          curve: Curves.easeInOut,
+                        ).value * 2.0) - 1.0;
+                        return CustomPaint(
+                          size: const Size(200, 100),
+                          painter: StorytellingLogoPainter(
+                            floatOffset: floatVal,
+                            mergeProgress: _mergeAnimation.value,
+                            pulseRadius: _pulseRadiusAnimation.value,
+                            pulseOpacity: _pulseOpacityAnimation.value,
+                            isDark: isDark,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // 2. Stylish cursive "Promo." text
+                  FadeTransition(
+                    opacity: _textRevealAnimation,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Promo',
+                          style: GoogleFonts.dancingScript(
+                            fontSize: 64,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? const Color(0xFFFBFBEF) : const Color(0xFF000000),
                           ),
                         ),
-                      ),
-                    ],
+                        ScaleTransition(
+                          scale: _dotScaleAnimation,
+                          child: Text(
+                            '.',
+                            style: GoogleFonts.dancingScript(
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFA855F7),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Subtitle
-            FadeTransition(
-              opacity: _subtitleFade,
-              child: Text(
-                'Connect · Create · Collaborate',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: isDark ? AppColors.textMuted : const Color(0xFF9E9E9E),
-                  letterSpacing: 1.5,
-                ),
+                ],
               ),
             ),
 
             const Spacer(flex: 2),
 
-            // Loading shimmer bar
+            // Loading shimmer bar (visual only)
             AnimatedBuilder(
               animation: _shimmerValue,
               builder: (context, child) {
@@ -432,31 +504,87 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
 
-    if (kIsWeb) {
-      return Container(
-        color: isDark ? const Color(0xFF14141E) : const Color(0xFFF2F2F7),
-        child: Center(
-          child: Container(
-            width: 393,
-            height: 852,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: content,
-            ),
-          ),
-        ),
-      );
+    return content;
+  }
+}
+
+class StorytellingLogoPainter extends CustomPainter {
+  final double floatOffset; // oscillation between -1.0 and 1.0
+  final double mergeProgress;
+  final double pulseRadius;
+  final double pulseOpacity;
+  final bool isDark;
+
+  StorytellingLogoPainter({
+    required this.floatOffset,
+    required this.mergeProgress,
+    required this.pulseRadius,
+    required this.pulseOpacity,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final baseRadius = 22.0;
+
+    // 1. Draw collision pulse shockwave (no radial blur shades, simple stroke)
+    if (pulseOpacity > 0.01 && pulseRadius > 0.0) {
+      final pulseStroke = Paint()
+        ..color = const Color(0xFFA855F7).withOpacity(pulseOpacity * 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+      canvas.drawCircle(center, pulseRadius * 100, pulseStroke);
     }
 
-    return content;
+    // 2. Draw the two circles (Brand & Influencer)
+    // Distance goes from 75px to 0px
+    final distance = 75.0 * (1.0 - mergeProgress);
+
+    // Brand Circle (Cyan) - Solid with clean edges
+    final brandCenter = Offset(
+      center.dx - distance,
+      center.dy + (floatOffset * 10.0 * (1.0 - mergeProgress)),
+    );
+    final brandSolid = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF0891B2), Color(0xFF06B6D4)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromCircle(center: brandCenter, radius: baseRadius))
+      ..style = PaintingStyle.fill;
+
+    // Influencer Circle (Pink) - Solid with clean edges
+    final influencerCenter = Offset(
+      center.dx + distance,
+      center.dy - (floatOffset * 10.0 * (1.0 - mergeProgress)),
+    );
+    final influencerSolid = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFDB2777), Color(0xFFEC4899)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromCircle(center: influencerCenter, radius: baseRadius))
+      ..style = PaintingStyle.fill;
+
+    // Draw solid clean circles
+    canvas.drawCircle(brandCenter, baseRadius, brandSolid);
+    canvas.drawCircle(influencerCenter, baseRadius, influencerSolid);
+
+    // Blending intersection overlap if overlapping
+    if (mergeProgress > 0.5) {
+      final overlapPaint = Paint()
+        ..color = const Color(0xFFA855F7).withOpacity((mergeProgress - 0.5) * 2)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, baseRadius * (mergeProgress - 0.5), overlapPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant StorytellingLogoPainter oldDelegate) {
+    return oldDelegate.floatOffset != floatOffset ||
+        oldDelegate.mergeProgress != mergeProgress ||
+        oldDelegate.pulseRadius != pulseRadius ||
+        oldDelegate.pulseOpacity != pulseOpacity;
   }
 }

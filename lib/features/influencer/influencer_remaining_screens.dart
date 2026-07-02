@@ -20,6 +20,7 @@ import '../../core/services/supabase_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../shared/widgets/premium_image_cropper.dart';
 import 'dart:typed_data';
@@ -171,7 +172,7 @@ class _InfluencerBrandsScreenState extends ConsumerState<InfluencerBrandsScreen>
                 itemBuilder: (_, __) => const BrandTileSkeleton(),
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: Column(
                 children: [
@@ -335,7 +336,7 @@ class _InfluencerSavedScreenState extends ConsumerState<InfluencerSavedScreen> {
                 itemBuilder: (_, __) => const CampaignCardSkeleton(),
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: _saved.isEmpty
                   ? const AppEmptyState(icon: Iconsax.archive_1, title: "No saved cards yet.", subtitle: "")
@@ -438,7 +439,7 @@ class _InfluencerPortfolioScreenState extends ConsumerState<InfluencerPortfolioS
                 ),
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: _items.isEmpty
                   ? AppEmptyState(
@@ -1381,7 +1382,7 @@ class _InfluencerAnalyticsScreenState extends ConsumerState<InfluencerAnalyticsS
       ),
       body: _loading
           ? const SkeletonShimmer(child: AnalyticsScreenSkeleton())
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _load,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
@@ -1978,6 +1979,10 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
     final profile = ref.watch(authProvider).profile;
     final niches = (profile?['niche'] as List?)?.cast<String>() ?? [];
     final platforms = (profile?['platforms'] as List?)?.cast<String>() ?? [];
+    final prefs = profile?['preferences'] as Map? ?? {};
+    final certsMap = prefs['certifications'];
+    final certs = certsMap is Map ? Map<String, dynamic>.from(certsMap) : <String, dynamic>{};
+    final isTrending = prefs['trending'] == true;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final unreadNotifications = ref.watch(unreadNotificationCountProvider);
 
@@ -2070,12 +2075,11 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
       ),
       body: _loadingData
           ? const ProfileDetailSkeleton()
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: () async {
                 ref.read(authProvider.notifier).refreshProfile();
                 await _loadDashboardData();
               },
-              color: AppColors.accent,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.pageMarginHorizontal,
@@ -2374,6 +2378,23 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                                             ),
                                           ],
                                         ),
+                                        if (isTrending || certs.isNotEmpty) ...[
+                                          const SizedBox(height: 6),
+                                          Wrap(
+                                            spacing: 6,
+                                            runSpacing: 4,
+                                            children: [
+                                              if (isTrending)
+                                                _buildCertBadge('Trending 🔥', Colors.orange),
+                                              if (certs['professional_collaborator'] != null)
+                                                _buildCertBadge('Promo Certified — Professional Collaborator ✓', Colors.purple),
+                                              if (certs['content_brief_master'] != null)
+                                                _buildCertBadge('Promo Certified — Content Brief Master ✓', Colors.blue),
+                                              if (certs['rate_negotiation_pro'] != null)
+                                                _buildCertBadge('Promo Certified — Rate Negotiation Pro ✓', Colors.green),
+                                            ],
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
@@ -2768,6 +2789,34 @@ class _InfluencerProfileScreenState extends ConsumerState<InfluencerProfileScree
                       ],
               ),
             ),
+    );
+  }
+
+  Widget _buildCertBadge(String label, Color color) {
+    final isTrending = label.contains('Trending');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.4), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(isTrending ? Iconsax.flash5 : Icons.verified, color: color, size: 10),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 8.5,
+              fontWeight: FontWeight.w900,
+              color: color,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -3915,9 +3964,8 @@ class _ProfileViewsScreenState extends ConsumerState<ProfileViewsScreen> {
                 itemBuilder: (_, __) => const GenericListTileSkeleton(),
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _loadViews,
-              color: AppColors.accent,
               child: _views.isEmpty
                   ? const AppEmptyState(
                       icon: Iconsax.eye,
@@ -4653,9 +4701,8 @@ class _InfluencerMilestonesScreenState extends ConsumerState<InfluencerMilestone
                 itemBuilder: (_, __) => const ApplicationCardSkeleton(),
               ),
             )
-          : RefreshIndicator(
+          : AppRefreshIndicator(
               onRefresh: _loadData,
-              color: AppColors.accent,
               child: _collaborations.isEmpty
                   ? const AppEmptyState(
                       icon: Iconsax.crown,

@@ -16,6 +16,7 @@ import '../../core/services/application_service.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import '../../shared/widgets/app_skeleton.dart';
 import '../../shared/widgets/screen_skeletons.dart';
+import '../../shared/widgets/app_refresh_indicator.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -419,12 +420,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
       );
     }
 
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: () async {
         HapticFeedback.lightImpact();
         await _doSearch(_searchCtrl.text);
       },
-      color: AppColors.accent,
       child: content,
     );
   }
@@ -452,12 +452,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       );
     }
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: () async {
         HapticFeedback.lightImpact();
         await _doSearch(_searchCtrl.text);
       },
-      color: AppColors.accent,
       child: content,
     );
   }
@@ -485,12 +484,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       );
     }
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: () async {
         HapticFeedback.lightImpact();
         await _doSearch(_searchCtrl.text);
       },
-      color: AppColors.accent,
       child: content,
     );
   }
@@ -518,12 +516,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> with SingleTickerPr
         ),
       );
     }
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: () async {
         HapticFeedback.lightImpact();
         await _doSearch(_searchCtrl.text);
       },
-      color: AppColors.accent,
       child: content,
     );
   }

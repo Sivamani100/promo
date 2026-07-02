@@ -1281,13 +1281,13 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                     },
                                     onLongPress: () => _showRoomOptions(room),
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                                       child: Row(
                                         children: [
                                           if (isGroup)
                                             Container(
-                                              width: 50,
-                                              height: 50,
+                                              width: 56,
+                                              height: 56,
                                               decoration: BoxDecoration(
                                                 color: AppColors.accent.withValues(alpha: 0.08),
                                                 shape: BoxShape.circle,
@@ -1304,7 +1304,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                 AppAvatar(
                                                   url: otherUser?['avatar_url'],
                                                   fallbackText: otherUser?['display_name'] ?? '?',
-                                                  size: 50,
+                                                  size: 56,
                                                   onTap: () {
                                                     final otherId = otherUser?['id'];
                                                     if (otherId != null) {
@@ -1332,7 +1332,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                   ),
                                               ],
                                             ),
-                                          const SizedBox(width: 12),
+                                          const SizedBox(width: 14),
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1352,7 +1352,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                                       : (cardTitle.isNotEmpty ? cardTitle : 'Group Chat'))
                                                                   : (otherUser?['display_name'] ?? 'User'),
                                                               style: GoogleFonts.inter(
-                                                                fontSize: 14,
+                                                                fontSize: 15.5,
                                                                 fontWeight: FontWeight.bold,
                                                                 color: AppColors.textPrimary,
                                                               ),
@@ -1401,7 +1401,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                       ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 6),
                                                 Text.rich(
                                                   TextSpan(
                                                     children: [
@@ -1428,7 +1428,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                                         TextSpan(
                                                           text: lastMsg?['content'] ?? 'No messages yet',
                                                           style: GoogleFonts.inter(
-                                                            fontSize: 12.5,
+                                                            fontSize: 13,
                                                             color: unreadCount > 0
                                                                 ? AppColors.textPrimary
                                                                 : AppColors.textMuted,

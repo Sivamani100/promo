@@ -801,31 +801,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ),
     );
 
-    if (kIsWeb) {
-      return Container(
-        color: isDark ? const Color(0xFF14141E) : const Color(0xFFF2F2F7),
-        child: Center(
-          child: Container(
-            width: 393,
-            height: 852,
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: content,
-            ),
-          ),
-        ),
-      );
-    }
-
     return content;
   }
 }

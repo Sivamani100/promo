@@ -279,6 +279,11 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
     final niches = (inf['niche'] as List?)?.cast<String>() ?? [];
     final platforms = (inf['platforms'] as List?)?.cast<String>() ?? [];
     final location = inf['location'] ?? 'Global';
+    final prefsMap = inf['preferences'];
+    final prefs = prefsMap is Map ? Map<String, dynamic>.from(prefsMap) : <String, dynamic>{};
+    final certsMap = prefs['certifications'];
+    final certs = certsMap is Map ? Map<String, dynamic>.from(certsMap) : <String, dynamic>{};
+    final isTrending = prefs['trending'] == true;
 
     final followersCount = inf['follower_count'] ?? 0;
     String followersText = '$followersCount';
@@ -495,6 +500,23 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
+                              if (isTrending || certs.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: [
+                                    if (isTrending)
+                                      _buildCertBadge('Trending 🔥', Colors.orange),
+                                    if (certs['professional_collaborator'] != null)
+                                      _buildCertBadge('Promo Certified — Professional Collaborator ✓', Colors.purple),
+                                    if (certs['content_brief_master'] != null)
+                                      _buildCertBadge('Promo Certified — Content Brief Master ✓', Colors.blue),
+                                    if (certs['rate_negotiation_pro'] != null)
+                                      _buildCertBadge('Promo Certified — Rate Negotiation Pro ✓', Colors.green),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -618,6 +640,34 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                 _buildPortfolioTab(),
                 _buildReviewsTab(),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCertBadge(String label, Color color) {
+    final isTrending = label.contains('Trending');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.4), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(isTrending ? Iconsax.flash5 : Icons.verified, color: color, size: 10),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 8.5,
+              fontWeight: FontWeight.w900,
+              color: color,
+              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -962,6 +1012,14 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  Text(
+                                    '@${SocialAgent.normalizeHandle(platform, handle)}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textSecondary,
                                     ),
                                   ),
                                   Text(
