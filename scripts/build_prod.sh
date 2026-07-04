@@ -10,6 +10,7 @@ flutter build apk --release \
   --dart-define=ENV=prod \
   --dart-define=SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+  --dart-define=GOOGLE_SERVER_CLIENT_ID="${GOOGLE_SERVER_CLIENT_ID:-857153035385-ghuulmjm3j1ttisphp10kv34lmhut0vc.apps.googleusercontent.com}" \
   --dart-define=FIREBASE_API_KEY_WEB="$FIREBASE_API_KEY" \
   --dart-define=FIREBASE_API_KEY_ANDROID="$FIREBASE_API_KEY" \
   --dart-define=FIREBASE_API_KEY_IOS="$FIREBASE_API_KEY" \

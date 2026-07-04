@@ -386,7 +386,7 @@ export function generateWebApplicationSchema(): WebApplicationSchema {
       'Mobile app support',
     ],
     screenshot: 'https://Promo.arkio.in/og-image.svg',
-    softwareVersion: '1.0.3',
+    softwareVersion: '1.0.4',
     author: {
       '@type': 'Organization',
       name: 'Promo',

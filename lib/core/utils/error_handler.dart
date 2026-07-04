@@ -33,7 +33,10 @@ class AppErrorHandler {
           msg.contains('google') ||
           msg.contains('token signature') ||
           msg.contains('invalid token') ||
-          msg.contains('invalid id token')) {
+          msg.contains('invalid id token') ||
+          msg.contains('invalid_audience') ||
+          msg.contains('audience') ||
+          msg.contains('invalid_client')) {
         return 'Google authentication failed. Please try again.';
       }
 

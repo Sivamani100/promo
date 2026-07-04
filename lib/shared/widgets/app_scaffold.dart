@@ -8,6 +8,7 @@ import '../../core/providers/app_providers.dart';
 import 'package:flutter/services.dart';
 
 import 'analytics_consent_dialog.dart';
+import 'shared_widgets.dart';
 
 class AppScaffold extends ConsumerStatefulWidget {
   final String role;
@@ -86,6 +87,7 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     final unreadMessages = ref.watch(unreadMessageCountProvider);
     final hideBottomNav = ref.watch(hideBottomNavProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final profile = ref.watch(authProvider).profile;
 
     // Dynamic Bottom Nav Colors
     final navBgColor = isDark ? const Color(0xFF1E1E22) : Colors.black;
@@ -216,11 +218,31 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                                             color: isActive ? activeTextColor : inactiveIconColor,
                                           ),
                                         )
-                                      : Icon(
-                                          isActive ? item.activeIcon : item.icon,
-                                          size: 20,
-                                          color: isActive ? activeTextColor : inactiveIconColor,
-                                        ),
+                                      : item.label == 'Profile'
+                                          ? Container(
+                                              width: 22,
+                                              height: 22,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: isActive
+                                                      ? Colors.black
+                                                      : Colors.white.withValues(alpha: 0.3),
+                                                  width: isActive ? 1.5 : 1.0,
+                                                ),
+                                              ),
+                                              padding: const EdgeInsets.all(1.0),
+                                              child: AppAvatar(
+                                                url: profile?['avatar_url'],
+                                                fallbackText: profile?['display_name'] ?? 'P',
+                                                size: 20,
+                                              ),
+                                            )
+                                          : Icon(
+                                              isActive ? item.activeIcon : item.icon,
+                                              size: 20,
+                                              color: isActive ? activeTextColor : inactiveIconColor,
+                                            ),
                                   if (showBadge)
                                     Positioned(
                                       right: -6,

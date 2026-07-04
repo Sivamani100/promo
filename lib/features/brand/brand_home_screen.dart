@@ -338,9 +338,7 @@ class _BrandHomeScreenState extends ConsumerState<BrandHomeScreen> {
                 ),
               ),
             if (profile?['account_status'] == 'warned')
-              const WarningBanner(
-                message: 'Your account has been warned for violating community guidelines. Repeated violations will result in account suspension.',
-              ),
+              const WarningBanner(),
             _buildWelcomeBentoBox(profile, 0),
             if (_activeNudge != null) ...[
               const SizedBox(height: 12),

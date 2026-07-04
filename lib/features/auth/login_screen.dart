@@ -102,6 +102,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   Future<void> _handleGoogleSignIn() async {
     setState(() => _loading = true);
     try {
+      final googleServerClientId = const String.fromEnvironment(
+        'GOOGLE_SERVER_CLIENT_ID',
+        defaultValue: '857153035385-ghuulmjm3j1ttisphp10kv34lmhut0vc.apps.googleusercontent.com',
+      );
+
       if (kIsWeb) {
         final success = await SupabaseService.client.auth.signInWithOAuth(
           OAuthProvider.google,
@@ -114,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       }
 
       final googleSignIn = GoogleSignIn(
-        serverClientId: '857153035385-ghuulmjm3j1ttisphp10kv34lmhut0vc.apps.googleusercontent.com',
+        serverClientId: googleServerClientId,
       );
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
@@ -127,8 +132,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       final idToken = googleAuth.idToken;
       final accessToken = googleAuth.accessToken;
 
-      if (idToken == null) {
-        throw Exception('Could not fetch Google ID token.');
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('Google sign-in did not return a valid ID token.');
       }
 
       final role = await ref.read(authProvider.notifier).signInWithGoogle(

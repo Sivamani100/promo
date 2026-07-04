@@ -211,13 +211,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               ListTile(
                 leading: const Icon(Iconsax.info_circle, color: Colors.orange),
                 title: Text('Warn User ($warningCount warnings)'),
-                subtitle: const Text('Add warning indicator and notify user'),
+                subtitle: const Text('Issue a new warning with reason'),
                 onTap: () {
                   Navigator.pop(sheetCtx);
-                  _updateUserField(userId, {'warning_count': warningCount + 1, 'account_status': 'warned'});
+                  _showWarnDialog(user);
                 },
               ),
               const Divider(),
+
+              // Manage Warnings
+              if (warningCount > 0) ...[
+                ListTile(
+                  leading: const Icon(Iconsax.shield_tick, color: Colors.teal),
+                  title: Text('Manage Warnings ($warningCount active)'),
+                  subtitle: const Text('View, review, or remove warnings'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    _showManageWarningsDialog(user);
+                  },
+                ),
+                const Divider(),
+              ],
 
               // Suspension / Ban
               ListTile(
@@ -325,6 +339,468 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       ),
     );
   }
+
+  /// Dialog to issue a new warning with a reason.
+  void _showWarnDialog(Map<String, dynamic> user) {
+    final reasonCtrl = TextEditingController();
+    final userId = user['id'] as String;
+    final warningCount = user['warning_count'] as int? ?? 0;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Iconsax.info_circle, color: Colors.orange, size: 22),
+              const SizedBox(width: 8),
+              Text('Warn ${user['display_name'] ?? 'User'}'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Current warnings: $warningCount',
+                style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Reason for Warning *',
+                  hintText: 'e.g. Posting misleading content...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final reason = reasonCtrl.text.trim();
+                if (reason.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a reason for the warning')),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx);
+                _issueWarning(userId, reason, warningCount);
+              },
+              child: const Text('Issue Warning', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Issues a warning: inserts a record into user_warnings AND updates profiles.
+  Future<void> _issueWarning(String userId, String reason, int currentCount) async {
+    try {
+      final adminId = SupabaseService.client.auth.currentUser?.id;
+      if (adminId == null) return;
+
+      // Insert warning record
+      await SupabaseService.client.from('user_warnings').insert({
+        'user_id': userId,
+        'issued_by': adminId,
+        'reason': reason,
+        'status': 'active',
+      });
+
+      // Update profile warning count and status
+      await SupabaseService.client.from('profiles').update({
+        'warning_count': currentCount + 1,
+        'account_status': 'warned',
+      }).eq('id', userId);
+
+      _loadUsers();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Warning issued successfully')),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ADMIN] Error issuing warning: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to issue warning: $e')),
+        );
+      }
+    }
+  }
+
+  /// Shows a dialog listing all active warnings with the ability to remove them.
+  void _showManageWarningsDialog(Map<String, dynamic> user) async {
+    final userId = user['id'] as String;
+    final displayName = user['display_name'] ?? 'User';
+
+    // Fetch all warnings for this user
+    List<Map<String, dynamic>> warnings = [];
+    try {
+      final data = await SupabaseService.client
+          .from('user_warnings')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      warnings = List<Map<String, dynamic>>.from(data);
+    } catch (e) {
+      debugPrint('[ADMIN] Error fetching warnings: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load warnings: $e')),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final activeWarnings = warnings.where((w) => w['status'] == 'active').toList();
+            final removedWarnings = warnings.where((w) => w['status'] == 'removed').toList();
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.75,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(top: 12, bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        const Icon(Iconsax.shield_tick, color: Colors.teal, size: 22),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Warnings for $displayName',
+                            style: AppTextStyles.h3,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${activeWarnings.length} active \u00b7 ${removedWarnings.length} removed',
+                        style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+
+                  // Warnings list
+                  Flexible(
+                    child: warnings.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Text('No warnings found.', style: AppTextStyles.body.copyWith(color: AppColors.textMuted)),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shrinkWrap: true,
+                            itemCount: warnings.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (ctx, idx) {
+                              final w = warnings[idx];
+                              final isActive = w['status'] == 'active';
+                              final createdAt = DateTime.tryParse(w['created_at'] ?? '');
+                              final dateStr = createdAt != null
+                                  ? DateFormat('MMM dd, yyyy \u00b7 hh:mm a').format(createdAt.toLocal())
+                                  : 'Unknown date';
+                              final removedAt = DateTime.tryParse(w['removed_at'] ?? '');
+                              final removedDateStr = removedAt != null
+                                  ? DateFormat('MMM dd, yyyy \u00b7 hh:mm a').format(removedAt.toLocal())
+                                  : null;
+
+                              return Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: isActive
+                                      ? Colors.orange.withValues(alpha: 0.06)
+                                      : AppColors.textMuted.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isActive
+                                        ? Colors.orange.withValues(alpha: 0.2)
+                                        : AppColors.border.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          isActive ? Iconsax.warning_2 : Iconsax.tick_circle,
+                                          size: 16,
+                                          color: isActive ? Colors.orange : Colors.green,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          isActive ? 'ACTIVE' : 'REMOVED',
+                                          style: AppTextStyles.overline.copyWith(
+                                            color: isActive ? Colors.orange : Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(dateStr, style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      w['reason'] ?? 'No reason provided',
+                                      style: AppTextStyles.bodySm.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        decoration: isActive ? null : TextDecoration.lineThrough,
+                                        color: isActive ? AppColors.textPrimary : AppColors.textMuted,
+                                      ),
+                                    ),
+                                    if (!isActive && w['removed_reason'] != null) ...[
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Icon(Iconsax.message_text, size: 13, color: Colors.green.withValues(alpha: 0.6)),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              'Removal reason: ${w['removed_reason']}',
+                                              style: AppTextStyles.captionSm.copyWith(color: Colors.green.shade700),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (removedDateStr != null) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Removed on $removedDateStr',
+                                          style: AppTextStyles.captionSm.copyWith(color: AppColors.textMuted, fontSize: 10),
+                                        ),
+                                      ],
+                                    ],
+                                    if (isActive) ...[
+                                      const SizedBox(height: 10),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton.icon(
+                                          icon: const Icon(Iconsax.close_circle, size: 16, color: Colors.teal),
+                                          label: const Text('Remove', style: TextStyle(color: Colors.teal, fontSize: 12)),
+                                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                                          onPressed: () {
+                                            _showRemoveWarningDialog(w, userId, user, () {
+                                              // Refresh warnings list
+                                              SupabaseService.client
+                                                  .from('user_warnings')
+                                                  .select()
+                                                  .eq('user_id', userId)
+                                                  .order('created_at', ascending: false)
+                                                  .then((data) {
+                                                setSheetState(() {
+                                                  warnings = List<Map<String, dynamic>>.from(data);
+                                                });
+                                              });
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Dialog to confirm removing a specific warning with a removal reason.
+  void _showRemoveWarningDialog(
+    Map<String, dynamic> warning,
+    String userId,
+    Map<String, dynamic> user,
+    VoidCallback onRemoved,
+  ) {
+    final removalReasonCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Iconsax.close_circle, color: Colors.teal, size: 22),
+              SizedBox(width: 8),
+              Text('Remove Warning'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.15)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('ORIGINAL WARNING:', style: AppTextStyles.overline.copyWith(color: Colors.orange)),
+                    const SizedBox(height: 4),
+                    Text(
+                      warning['reason'] ?? 'No reason',
+                      style: AppTextStyles.bodySm.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: removalReasonCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Reason for Removal *',
+                  hintText: 'e.g. Warning was issued in error...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final reason = removalReasonCtrl.text.trim();
+                if (reason.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a reason for removing this warning')),
+                  );
+                  return;
+                }
+                Navigator.pop(ctx);
+                _removeWarning(warning['id'], userId, user, reason, onRemoved);
+              },
+              child: const Text('Remove Warning', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Removes a warning: marks as removed in user_warnings, decrements warning_count.
+  Future<void> _removeWarning(
+    String warningId,
+    String userId,
+    Map<String, dynamic> user,
+    String removalReason,
+    VoidCallback onRemoved,
+  ) async {
+    try {
+      final adminId = SupabaseService.client.auth.currentUser?.id;
+      if (adminId == null) return;
+
+      // Mark warning as removed
+      await SupabaseService.client.from('user_warnings').update({
+        'status': 'removed',
+        'removed_by': adminId,
+        'removed_at': DateTime.now().toUtc().toIso8601String(),
+        'removed_reason': removalReason,
+      }).eq('id', warningId);
+
+      // Count remaining active warnings
+      final activeData = await SupabaseService.client
+          .from('user_warnings')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('status', 'active');
+      final activeCount = (activeData as List).length;
+
+      // Update profile
+      final updates = <String, dynamic>{
+        'warning_count': activeCount,
+      };
+      if (activeCount == 0) {
+        updates['account_status'] = 'active';
+      }
+      await SupabaseService.client.from('profiles').update(updates).eq('id', userId);
+
+      _loadUsers();
+      onRemoved();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Warning removed successfully')),
+        );
+      }
+    } catch (e) {
+      debugPrint('[ADMIN] Error removing warning: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to remove warning: $e')),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {

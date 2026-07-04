@@ -19,6 +19,9 @@ void main() {
 
       final exc2 = AuthException('invalid_grant: id_token is expired', statusCode: '400');
       expect(AppErrorHandler.toUserMessage(exc2), 'Google authentication failed. Please try again.');
+
+      final exc3 = AuthException('invalid_audience: The audience is invalid', statusCode: '400');
+      expect(AppErrorHandler.toUserMessage(exc3), 'Google authentication failed. Please try again.');
     });
 
     test('Maps actual session/refresh token expirations to Session expired message', () {
