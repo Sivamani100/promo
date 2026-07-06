@@ -7,150 +7,232 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #000000;
-            --surface-color: #0F0F11;
-            --border-color: #242428;
-            --text-primary: #FBFBEF;
-            --text-secondary: #9E9E9E;
-            --accent-color: #A855F7;
-            --error-color: #EF4444;
+            --bg-color: #06070a;
+            --surface-color: rgba(255, 255, 255, 0.04);
+            --surface-strong: #12141b;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --text-primary: #f8f7f2;
+            --text-secondary: #b2b7c2;
+            --accent-color: #a855f7;
+            --accent-strong: #8b5cf6;
+            --error-color: #ff6b6b;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 40px 20px;
+            min-height: 100vh;
+            padding: 24px;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background:
+                radial-gradient(circle at top left, rgba(168, 85, 247, 0.25), transparent 30%),
+                linear-gradient(135deg, #05070b 0%, #0d1118 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
         }
 
         .container {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 48px;
-            max-width: 560px;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            text-align: center;
+            max-width: 860px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .hero {
+            padding: 36px 36px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.025);
         }
 
         .logo {
-            font-size: 36px;
+            font-size: 34px;
             font-weight: 900;
-            letter-spacing: -1.5px;
-            margin-bottom: 24px;
+            letter-spacing: -1.2px;
+            margin-bottom: 18px;
         }
 
-        .logo span {
-            color: var(--accent-color);
+        .logo span { color: var(--accent-color); }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(168, 85, 247, 0.15);
+            color: #e8dcff;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 14px;
         }
 
         h1 {
-            font-size: 24px;
+            margin: 0 0 10px;
+            font-size: 30px;
+            line-height: 1.2;
             font-weight: 800;
-            margin-bottom: 16px;
-            color: var(--text-primary);
         }
 
-        p {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 32px;
-        }
-
-        .warning-card {
-            background-color: rgba(239, 68, 68, 0.08);
-            border: 1px dashed var(--error-color);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 36px;
-            text-align: left;
-        }
-
-        .warning-card h2 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--error-color);
-            margin: 0 0 8px 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .warning-card p {
-            font-size: 13.5px;
-            color: var(--text-secondary);
+        .hero p {
             margin: 0;
-            line-height: 1.5;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 680px;
+        }
+
+        .content {
+            padding: 28px 36px 36px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--surface-strong);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px 22px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .card p, .card li {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .warning {
+            border-color: rgba(255, 107, 107, 0.3);
+            background: rgba(255, 107, 107, 0.08);
+        }
+
+        .warning h2 {
+            color: var(--error-color);
+        }
+
+        .steps {
+            display: grid;
+            gap: 12px;
+            padding-left: 18px;
+            margin: 10px 0 0;
+        }
+
+        .steps li {
+            margin-bottom: 6px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 6px;
         }
 
         .btn {
-            background-color: var(--accent-color);
-            color: #000000;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 999px;
+            padding: 13px 18px;
             font-weight: 700;
             font-size: 15px;
-            padding: 14px 28px;
-            border-radius: 12px;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            box-sizing: border-box;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
 
         .btn:hover {
-            opacity: 0.9;
             transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-strong));
+            color: #ffffff;
         }
 
         .btn-secondary {
-            background-color: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-            margin-top: 16px;
-        }
-
-        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.06);
             color: var(--text-primary);
-            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
         }
 
         .footer {
-            margin-top: 48px;
+            margin-top: 6px;
             font-size: 12px;
             color: var(--text-secondary);
+            text-align: center;
         }
 
         .footer a {
-            color: var(--accent-color);
+            color: #e8dcff;
             text-decoration: none;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 14px; }
+            .hero, .content { padding-left: 20px; padding-right: 20px; }
+            .hero { padding-top: 24px; }
+            h1 { font-size: 24px; }
+            .actions { flex-direction: column; }
+            .btn { width: 100%; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">Promo<span>.</span></div>
-        <h1>Account Deletion Request</h1>
-        <p>If you wish to permanently delete your Promo account, you can do so directly in-app via <strong>Settings &gt; Delete Account</strong>. Alternatively, you can submit an online request below.</p>
-        
-        <div class="warning-card">
-            <h2>Warning: Permanent Action</h2>
-            <p>Deleting your account permanently erases your profile, campaign cards, messages, applications, agreements, and all associated media from our databases. This action is irreversible.</p>
+        <div class="hero">
+            <div class="logo">Promo<span>.</span></div>
+            <div class="eyebrow">Account deletion request</div>
+            <h1>Delete your account with clarity and confidence</h1>
+            <p>If you no longer want to use Promo, you can remove your account in-app or submit a request here. Please read the details below first so you understand what will happen and what may be lost.</p>
         </div>
 
-        <a href="mailto:support@promo.arkio.in?subject=Account Deletion Request&body=Please delete my account associated with this email address. I understand that this permanently erases my profile and all associated data." class="btn">Submit Deletion Request via Email</a>
-        <a href="https://promo.arkio.in" class="btn btn-secondary">Go to Homepage</a>
+        <div class="content">
+            <div class="card">
+                <h2>How to delete your account</h2>
+                <ol class="steps">
+                    <li>Open the Promo app and go to <strong>Settings &gt; Delete Account</strong> for the quickest self-serve option.</li>
+                    <li>If you cannot access the app, send an email request to <strong>support@promo.arkio.in</strong> with the email address linked to your account.</li>
+                    <li>We will review the request and confirm once the account removal process has been completed.</li>
+                </ol>
+            </div>
 
-        <div class="footer">
-            &copy; 2026 Promo. All rights reserved. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms">Terms of Service</a>.
+            <div class="card warning">
+                <h2>What happens when your account is deleted</h2>
+                <ul class="steps">
+                    <li>Your profile and sign-in access will be permanently removed.</li>
+                    <li>Your campaign cards, messages, applications, agreements, saved preferences, and uploaded media may be deleted from active systems.</li>
+                    <li>You will lose access to any ongoing conversations, collaborations, saved work, and related account history.</li>
+                    <li>Any future activity tied to that account will no longer be available, and you may need to create a new account to use Promo again.</li>
+                    <li>Some information may remain in secure backups or logs for a limited time where required for security, fraud prevention, or legal obligations.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Before you submit</h2>
+                <p>Please make sure you are comfortable losing your account data, conversations, and any content connected to your profile. If you are unsure, consider reviewing your account details first or contacting support before proceeding.</p>
+                <div class="actions">
+                    <a href="mailto:support@promo.arkio.in?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20account%20associated%20with%20this%20email%20address.%20I%20understand%20that%20this%20will%20permanently%20remove%20my%20profile%20and%20related%20data." class="btn btn-primary">Submit deletion request</a>
+                    <a href="https://promo.arkio.in" class="btn btn-secondary">Return to homepage</a>
+                </div>
+            </div>
+
+            <div class="footer">
+                &copy; 2026 Promo. All rights reserved. Read our <a href="/privacy-policy">Privacy Policy</a> and <a href="/terms">Terms of Service</a>.
+            </div>
         </div>
     </div>
 </body>

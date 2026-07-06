@@ -8,10 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
-import '../../shared/widgets/shared_widgets.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../shared/widgets/analytics_consent_dialog.dart';
@@ -157,6 +154,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         _showSnack('Google Authentication error: $e');
       }
     }
+  }
+
+  Future<void> _showGoogleOneTapSignInSheet() async {
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.surface
+          : const Color(0xFFFFFFFF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 48,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF4C4C5C) : const Color(0xFFE7E4DD),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'One tap sign in',
+                  style: GoogleFonts.fraunces(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                    height: 1.2,
+                    color: isDark ? AppColors.textPrimary : const Color(0xFF15171C),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Slide up and tap once to sign in instantly with Google. This keeps the flow fast, secure, and familiar.',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15,
+                    height: 1.5,
+                    color: isDark ? AppColors.textSecondary : const Color(0xFF6C6F75),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                GoogleSignInButton(
+                  onPressed: _loading
+                      ? null
+                      : () async {
+                          Navigator.of(context).pop();
+                          await _handleGoogleSignIn();
+                        },
+                ),
+                const SizedBox(height: 18),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: isDark ? AppColors.textSecondary : const Color(0xFF6C6F75),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Use email instead',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showSnack(String msg) {
@@ -363,7 +444,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                     StaggeredEntryWidget(
                       delay: const Duration(milliseconds: 300),
                       child: GoogleSignInButton(
-                        onPressed: _loading ? null : _handleGoogleSignIn,
+                        onPressed: _loading ? null : _showGoogleOneTapSignInSheet,
                       ),
                     ),
 
