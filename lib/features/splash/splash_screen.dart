@@ -204,10 +204,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void initState() {
     super.initState();
 
-    // 3.5 seconds color sweep animation from left to right
+    // 1.5 seconds color sweep animation from left to right
     _sweepController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3500),
+      duration: const Duration(milliseconds: 1500),
     );
 
     _sweepProgress = Tween<double>(begin: -0.2, end: 1.2).animate(
@@ -234,8 +234,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   void _onAnimationFinished() async {
-    // Hold the completed state for 1.5 seconds (matching the 5.0 seconds total video duration)
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Hold the completed state for 0.5 seconds
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
     if (_needBiometricLock) {
