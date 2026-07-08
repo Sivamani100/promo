@@ -8,6 +8,8 @@ import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/services/auth_service.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'widgets/auth_background.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -83,60 +85,53 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     TextInputType? keyboardType,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.white24 : Colors.black12;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 2),
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             label,
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
-              height: 1.15,
+              fontSize: 13,
+              color: isDark ? Colors.white70 : Colors.black87,
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
+          cursorColor: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
           style: GoogleFonts.inter(
-            fontSize: 13,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+            fontSize: 15,
+            color: isDark ? Colors.white : Colors.black87,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark
-                  ? AppColors.textMuted
-                  : const Color(0xFF333333).withValues(alpha: 0.5),
+              fontSize: 15,
+              color: isDark ? Colors.white30 : Colors.black26,
             ),
             filled: true,
-            fillColor: isDark ? AppColors.surface : const Color(0xFFFFFFFF),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: BorderSide(
-                  color: isDark ? AppColors.border : const Color(0xFFE7EAEB),
-                  width: 1.0),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: BorderSide(
-                  color: isDark ? AppColors.border : const Color(0xFFE7EAEB),
-                  width: 1.0),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(
-                  color: isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF000000),
-                  width: 1.5),
+                color: isDark ? Colors.white54 : Colors.black54,
+                width: 1.0,
+              ),
             ),
           ),
         ),
@@ -150,53 +145,46 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     bool isLoading = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: 283,
-      height: 45,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(62),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: isLoading ? null : onTap,
+        child: Container(
+          height: 54,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: isDark ? Colors.white : Colors.black,
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.white : Colors.black).withOpacity(0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
+          child: Center(
+            child: isLoading
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: isDark ? Colors.black : Colors.white,
+                    ),
+                  )
+                : Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: isDark ? Colors.black : Colors.white,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+          ),
+        ),
       ),
-      child: isLoading
-          ? Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: isDark
-                      ? const Color(0xFF000000)
-                      : const Color(0xFFFFFFFF),
-                ),
-              ),
-            )
-          : ElevatedButton(
-              onPressed: onTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(62),
-                ),
-              ),
-              child: Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: isDark
-                      ? const Color(0xFF000000)
-                      : const Color(0xFFFFFFFF),
-                ),
-              ),
-            ),
     );
   }
 
@@ -205,48 +193,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget content = Scaffold(
-      backgroundColor: isDark ? AppColors.background : const Color(0xFFFFFFFF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 35),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () => context.go('/login'),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surface : const Color(0xFFFFFFFF),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xFF000000),
-                      width: 2.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 16,
-                      color: isDark
-                          ? const Color(0xFFFFFFFF)
-                          : const Color(0xFF000000),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 44),
+      backgroundColor: Colors.transparent,
+      body: AuthBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
 
               if (_sent) ...[
                 // Success State
@@ -425,6 +380,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
             ],
           ),
         ),
+      ),
       ),
     );
 

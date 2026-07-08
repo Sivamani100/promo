@@ -4,12 +4,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:iconsax/iconsax.dart';
+
+import 'widgets/auth_background.dart';
+import 'widgets/glass_container.dart';
+import 'widgets/google_sign_in_button.dart';
 
 const _niches = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
@@ -56,7 +61,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscureConfirmPassword = true;
 
   Future<void> _handleSignUp() async {
-    // Valdiate role specific details before final submission
+    // Validate role specific details before final submission
     if (_role == 'brand' && (_companyCtrl.text.trim().isEmpty || _industry.isEmpty)) {
       _showSnack('Please fill in company name and select an industry.');
       return;
@@ -129,22 +134,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     void Function(String)? onSubmitted,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.white24 : Colors.black12;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 2),
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             label,
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
-              height: 1.15,
+              fontSize: 13,
+              color: isDark ? Colors.white70 : Colors.black87,
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscure,
@@ -152,30 +158,31 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           focusNode: focusNode,
           textInputAction: textInputAction,
           onFieldSubmitted: onSubmitted,
+          cursorColor: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
           style: GoogleFonts.inter(
-            fontSize: 13,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+            fontSize: 15,
+            color: isDark ? Colors.white : Colors.black,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark ? AppColors.textMuted : const Color(0xFF333333).withOpacity(0.5),
+              fontSize: 15,
+              color: isDark ? Colors.white38 : Colors.black38,
             ),
             filled: true,
-            fillColor: isDark ? AppColors.surface : const Color(0xFFFFFFFF),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE7EAEB), width: 1.0),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE7EAEB), width: 1.0),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: borderColor, width: 1.0),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(7),
-              borderSide: BorderSide(color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000), width: 1.5),
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57), width: 1.5),
             ),
             suffixIcon: suffixIcon,
           ),
@@ -190,48 +197,69 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     bool isLoading = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: 283,
-      height: 45,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(62),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: isLoading
-          ? Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
-                ),
+    
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+        bool isPressed = false;
+
+        final bgColor = isDark
+            ? (isHovered ? Colors.white.withOpacity(0.9) : Colors.white)
+            : (isHovered ? Colors.black87 : Colors.black);
+        final textColor = isDark ? Colors.black : Colors.white;
+        final scale = isPressed ? 0.96 : 1.0;
+
+        return MouseRegion(
+          onEnter: (_) => setState(() => isHovered = true),
+          onExit: (_) => setState(() => isHovered = false),
+          child: GestureDetector(
+            onTapDown: (_) => setState(() => isPressed = true),
+            onTapUp: (_) => setState(() => isPressed = false),
+            onTapCancel: () => setState(() => isPressed = false),
+            onTap: isLoading ? null : onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOutCubic,
+              height: 54,
+              width: double.infinity,
+              transform: Matrix4.identity()..scale(scale, scale),
+              transformAlignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isHovered && !isPressed
+                    ? [
+                        BoxShadow(
+                          color: isDark ? Colors.white24 : Colors.black26,
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        )
+                      ]
+                    : [],
               ),
-            )
-          : ElevatedButton(
-              onPressed: onTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(62),
-                ),
-              ),
-              child: Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF),
-                ),
-              ),
+              alignment: Alignment.center,
+              child: isLoading
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(textColor),
+                      ),
+                    )
+                  : Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: textColor,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
             ),
+          ),
+        );
+      },
     );
   }
 
@@ -243,74 +271,105 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected
-              ? (isDark ? Colors.white : const Color(0xFF000000))
-              : (isDark ? AppColors.surface : const Color(0xFFFFFFFF)),
-          border: Border.all(
-            color: selected
-                ? (isDark ? Colors.white : const Color(0xFF000000))
-                : (isDark ? AppColors.border : const Color(0xFFE7EAEB)),
-            width: 1.5,
+    
+    return StatefulBuilder(builder: (context, setState) {
+      bool isHovered = false;
+      bool isPressed = false;
+      
+      final bgColor = selected
+          ? (isDark ? Colors.white : Colors.black)
+          : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02));
+      final borderColor = selected
+          ? (isDark ? Colors.white : Colors.black)
+          : (isDark ? Colors.white24 : Colors.black12);
+      final iconColor = selected
+          ? (isDark ? Colors.black : Colors.white)
+          : (isDark ? Colors.white : Colors.black);
+      final titleColor = selected
+          ? (isDark ? Colors.black : Colors.white)
+          : (isDark ? Colors.white : Colors.black);
+      final descColor = selected
+          ? (isDark ? Colors.black54 : Colors.white70)
+          : (isDark ? Colors.white54 : Colors.black54);
+          
+      final scale = isPressed ? 0.95 : (isHovered && !selected ? 1.02 : 1.0);
+
+      return MouseRegion(
+        onEnter: (_) => setState(() => isHovered = true),
+        onExit: (_) => setState(() => isHovered = false),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => isPressed = true),
+          onTapUp: (_) => setState(() => isPressed = false),
+          onTapCancel: () => setState(() => isPressed = false),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.all(16),
+            transform: Matrix4.identity()..scale(scale, scale),
+            transformAlignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: bgColor,
+              border: Border.all(color: borderColor, width: selected ? 2.0 : 1.0),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: isHovered && !selected
+                ? [
+                    BoxShadow(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                : [],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  icon,
+                  size: 24,
+                  color: iconColor,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: descColor,
+                  ),
+                ),
+              ],
+            ),
           ),
-          borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              size: 24,
-              color: selected
-                  ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
-                  : AppColors.textPrimary,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: selected
-                    ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
-                    : AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              description,
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w400,
-                color: selected
-                    ? (isDark ? const Color(0x99000000) : const Color(0x99FFFFFF))
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _chipSelector(String label, List<String> options, List<String> selected) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 2),
+          padding: const EdgeInsets.only(left: 4),
           child: Text(
             label,
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+              fontSize: 13,
+              color: isDark ? Colors.white70 : Colors.black87,
             ),
           ),
         ),
@@ -330,27 +389,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   }
                 });
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? (isDark ? Colors.white : const Color(0xFF000000))
-                      : (isDark ? AppColors.surface : const Color(0xFFFFFFFF)),
+                      ? (isDark ? Colors.white : Colors.black)
+                      : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02)),
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
                     color: isSelected
-                        ? (isDark ? Colors.white : const Color(0xFF000000))
-                        : (isDark ? AppColors.border : const Color(0xFFE7EAEB)),
+                        ? Colors.transparent
+                        : (isDark ? Colors.white24 : Colors.black12),
                   ),
                 ),
                 child: Text(
                   opt,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected
-                        ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
-                        : AppColors.textPrimary,
+                        ? (isDark ? Colors.black : Colors.white)
+                        : (isDark ? Colors.white : Colors.black),
                   ),
                 ),
               ),
@@ -365,38 +425,39 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return [
       Text(
         'Create your\naccount',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.fraunces(
           fontWeight: FontWeight.w600,
-          fontSize: 28,
-          height: 1.2,
-          color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+          fontSize: 32,
+          height: 1.1875,
+          color: isDark ? Colors.white : const Color(0xFF15171C),
+          letterSpacing: -0.32,
         ),
-      ),
+      ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 12),
       Text(
         'Enter your email and set up a secure password to get started',
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w400,
-          fontSize: 14,
+          fontSize: 15,
           height: 1.4,
-          color: isDark ? AppColors.textSecondary : const Color(0xFF333333),
+          color: isDark ? Colors.white70 : const Color(0xFF55575C),
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 36),
 
       _buildInputField(
-        label: 'Your Email Address',
+        label: 'Email Address',
         hint: 'you@example.com',
         controller: _emailCtrl,
         keyboardType: TextInputType.emailAddress,
         focusNode: _emailFocusNode,
         textInputAction: TextInputAction.next,
         onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
-      ),
-      const SizedBox(height: 16),
+      ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
+      const SizedBox(height: 20),
 
       _buildInputField(
-        label: 'Your Password',
+        label: 'Password',
         hint: 'Min 6 characters',
         controller: _passwordCtrl,
         obscure: _obscurePassword,
@@ -407,15 +468,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           icon: Icon(
             _obscurePassword ? Iconsax.eye : Iconsax.eye_slash,
             size: 20,
-            color: AppColors.textMuted,
+            color: isDark ? Colors.white54 : Colors.black54,
           ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
-      ),
-      const SizedBox(height: 16),
+      ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
+      const SizedBox(height: 20),
 
       _buildInputField(
-        label: 'Confirm Your Password',
+        label: 'Confirm Password',
         hint: '••••••••',
         controller: _confirmPasswordCtrl,
         obscure: _obscureConfirmPassword,
@@ -443,11 +504,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           icon: Icon(
             _obscureConfirmPassword ? Iconsax.eye : Iconsax.eye_slash,
             size: 20,
-            color: AppColors.textMuted,
+            color: isDark ? Colors.white54 : Colors.black54,
           ),
           onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 40),
 
       Center(
@@ -472,9 +533,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             setState(() => _step = 2);
           },
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 32),
-
+      
+      Center(
+        child: GoogleSignInButton(
+          label: 'Sign up with Google',
+          onPressed: () {
+            // Google Sign Up Logic
+          },
+        ),
+      ).animate().fade(duration: 400.ms, delay: 550.ms).slideY(begin: 0.2, end: 0),
+      
+      const SizedBox(height: 32),
       Center(
         child: Wrap(
           alignment: WrapAlignment.center,
@@ -485,7 +556,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: isDark ? AppColors.textSecondary : const Color(0xFF333333),
+                color: isDark ? Colors.white70 : const Color(0xFF55575C),
               ),
             ),
             GestureDetector(
@@ -495,13 +566,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+                  color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
                 ),
               ),
             ),
           ],
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 600.ms).slideY(begin: 0.2, end: 0),
     ];
   }
 
@@ -509,27 +580,28 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return [
       Text(
         'Tell us about\nyourself',
-        style: GoogleFonts.inter(
+        style: GoogleFonts.fraunces(
           fontWeight: FontWeight.w600,
-          fontSize: 28,
-          height: 1.2,
-          color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+          fontSize: 32,
+          height: 1.1875,
+          color: isDark ? Colors.white : const Color(0xFF15171C),
+          letterSpacing: -0.32,
         ),
-      ),
+      ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 12),
       Text(
         'Enter your full name and choose your primary role in the app',
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w400,
-          fontSize: 14,
+          fontSize: 15,
           height: 1.4,
-          color: isDark ? AppColors.textSecondary : const Color(0xFF333333),
+          color: isDark ? Colors.white70 : const Color(0xFF55575C),
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 36),
 
       _buildInputField(
-        label: 'Your Full Name',
+        label: 'Full Name',
         hint: 'John Doe',
         controller: _nameCtrl,
         focusNode: _nameFocusNode,
@@ -541,20 +613,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           }
           setState(() => _step = 3);
         },
-      ),
+      ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 24),
 
       Padding(
-        padding: const EdgeInsets.only(left: 2),
+        padding: const EdgeInsets.only(left: 4),
         child: Text(
           'Choose Your Role',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+            fontSize: 13,
+            color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 12),
       Row(
         children: [
@@ -567,7 +639,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               onTap: () => setState(() => _role = 'influencer'),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: _roleCard(
               title: 'Brand',
@@ -578,7 +650,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
           ),
         ],
-      ),
+      ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
       const SizedBox(height: 48),
 
       Center(
@@ -592,7 +664,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             setState(() => _step = 3);
           },
         ),
-      ),
+      ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
     ];
   }
 
@@ -601,58 +673,59 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       return [
         Text(
           'Brand details',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.fraunces(
             fontWeight: FontWeight.w600,
-            fontSize: 28,
-            height: 1.2,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+            fontSize: 32,
+            height: 1.1875,
+            color: isDark ? Colors.white : const Color(0xFF15171C),
+            letterSpacing: -0.32,
           ),
-        ),
+        ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 12),
         Text(
           'Enter company name and select your industry',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w400,
-            fontSize: 14,
+            fontSize: 15,
             height: 1.4,
-            color: isDark ? AppColors.textSecondary : const Color(0xFF333333),
+            color: isDark ? Colors.white70 : const Color(0xFF55575C),
           ),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 36),
 
         _buildInputField(
-          label: 'Your Company Name',
+          label: 'Company Name',
           hint: 'Acme Corp',
           controller: _companyCtrl,
           focusNode: _companyFocusNode,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _handleSignUp(),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 20),
 
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 2),
+              padding: const EdgeInsets.only(left: 4),
               child: Text(
                 'Industry',
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+                  fontSize: 13,
+                  color: isDark ? Colors.white70 : Colors.black87,
                 ),
               ),
             ),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              height: 54,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.surface : const Color(0xFFFFFFFF),
-                border: Border.all(color: isDark ? AppColors.border : const Color(0xFFE7EAEB)),
-                borderRadius: BorderRadius.circular(7),
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+                border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -660,18 +733,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   hint: Text(
                     'Select Industry',
                     style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: AppColors.textMuted,
+                      fontSize: 15,
+                      color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
-                  dropdownColor: isDark ? AppColors.surface2 : const Color(0xFFFFFFFF),
+                  dropdownColor: isDark ? const Color(0xFF1F2128) : Colors.white,
                   isExpanded: true,
+                  icon: Icon(Iconsax.arrow_down_1, size: 20, color: isDark ? Colors.white54 : Colors.black54),
                   items: _industries
                       .map((i) => DropdownMenuItem(
                             value: i,
                             child: Text(
                               i,
-                              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textPrimary),
+                              style: GoogleFonts.inter(fontSize: 15, color: isDark ? Colors.white : Colors.black),
                             ),
                           ))
                       .toList(),
@@ -680,7 +754,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
             ),
           ],
-        ),
+        ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 48),
 
         Center(
@@ -689,35 +763,39 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             onTap: _handleSignUp,
             isLoading: _loading,
           ),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
       ];
     } else {
       return [
         Text(
           'Influencer details',
-          style: GoogleFonts.inter(
+          style: GoogleFonts.fraunces(
             fontWeight: FontWeight.w600,
-            fontSize: 28,
-            height: 1.2,
-            color: isDark ? AppColors.textPrimary : const Color(0xFF333333),
+            fontSize: 32,
+            height: 1.1875,
+            color: isDark ? Colors.white : const Color(0xFF15171C),
+            letterSpacing: -0.32,
           ),
-        ),
+        ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 12),
         Text(
           'Select your niche tags, primary channels and reach details',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w400,
-            fontSize: 14,
+            fontSize: 15,
             height: 1.4,
-            color: isDark ? AppColors.textSecondary : const Color(0xFF333333),
+            color: isDark ? Colors.white70 : const Color(0xFF55575C),
           ),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 36),
 
-        _chipSelector('Niches', _niches, _selectedNiches),
-        const SizedBox(height: 20),
-        _chipSelector('Platforms', _platforms, _selectedPlatforms),
-        const SizedBox(height: 20),
+        _chipSelector('Niches', _niches, _selectedNiches)
+            .animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
+        const SizedBox(height: 24),
+        
+        _chipSelector('Platforms', _platforms, _selectedPlatforms)
+            .animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
+        const SizedBox(height: 24),
 
         _buildInputField(
           label: 'Location',
@@ -726,7 +804,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           focusNode: _locationFocusNode,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _handleSignUp(),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
         const SizedBox(height: 48),
 
         Center(
@@ -735,7 +813,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             onTap: _handleSignUp,
             isLoading: _loading,
           ),
-        ),
+        ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
       ];
     }
   }
@@ -745,97 +823,55 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget content = Scaffold(
-      backgroundColor: isDark ? AppColors.background : const Color(0xFFFFFFFF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 35),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  if (_step > 1) {
-                    setState(() => _step--);
-                  } else {
-                    context.go('/login');
-                  }
-                },
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surface : const Color(0xFFFFFFFF),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                      width: 2.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 10,
+      backgroundColor: Colors.transparent,
+      body: AuthBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                      // Animated Step Content
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.05, 0),
+                                end: Offset.zero,
+                              ).animate(CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              )),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(_step),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_step == 1) ..._buildStep1(isDark),
+                              if (_step == 2) ..._buildStep2(isDark),
+                              if (_step == 3) ..._buildStep3(isDark),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: CustomPaint(
-                      size: const Size(16, 16),
-                      painter: SvgBackIconPainter(
-                        color: isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                      ),
-                    ),
-                  ),
                 ),
               ),
-              const SizedBox(height: 44),
-
-              if (_step == 1) ..._buildStep1(isDark),
-              if (_step == 2) ..._buildStep2(isDark),
-              if (_step == 3) ..._buildStep3(isDark),
-
-              const SizedBox(height: 40),
-            ],
-          ),
         ),
       ),
     );
 
     return content;
   }
-}
-
-class SvgBackIconPainter extends CustomPainter {
-  final Color color;
-  const SvgBackIconPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final path = Path();
-    // M14.9998 19.9201
-    path.moveTo(14.9998, 19.9201);
-    // L8.47984 13.4001
-    path.lineTo(8.47984, 13.4001);
-    // C7.70984 12.6301 7.70984 11.3701 8.47984 10.6001
-    path.cubicTo(7.70984, 12.6301, 7.70984, 11.3701, 8.47984, 10.6001);
-    // L14.9998 4.08008
-    path.lineTo(14.9998, 4.08008);
-
-    // Scale painter to fit constraints if different from 24x24 viewBox
-    final matrix = Matrix4.identity();
-    matrix.scale(size.width / 24.0, size.height / 24.0);
-    final scaledPath = path.transform(matrix.storage);
-
-    canvas.drawPath(scaledPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

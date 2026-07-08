@@ -190,93 +190,106 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
                       child: GestureDetector(
                         onTap: () {
                           if (_currentIndex != i) {
+                            HapticFeedback.lightImpact();
                             context.go(item.path);
                           }
                         },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          curve: Curves.easeInOut,
-                          padding: isActive
-                              ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
-                              : const EdgeInsets.all(9),
-                          decoration: BoxDecoration(
-                            color: isActive ? activePillColor : Colors.transparent,
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  item.label == 'Chats'
-                                      ? Transform.rotate(
-                                          angle: -0.22, // HARDENING: ui-agent 2026-06-25 - Tilt send icon upwards to match Instagram style
-                                          child: Icon(
-                                            isActive ? item.activeIcon : item.icon,
-                                            size: 20,
-                                            color: isActive ? activeTextColor : inactiveIconColor,
-                                          ),
-                                        )
-                                      : item.label == 'Profile'
-                                          ? Container(
-                                              width: 22,
-                                              height: 22,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: isActive
-                                                      ? Colors.black
-                                                      : Colors.white.withValues(alpha: 0.3),
-                                                  width: isActive ? 1.5 : 1.0,
-                                                ),
-                                              ),
-                                              padding: const EdgeInsets.all(1.0),
-                                              child: AppAvatar(
-                                                url: profile?['avatar_url'],
-                                                fallbackText: profile?['display_name'] ?? 'P',
-                                                size: 20,
-                                              ),
-                                            )
-                                          : Icon(
+                        child: ButteryTabItem(
+                          isActive: isActive,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: const Cubic(0.2, 1.25, 0.3, 1.0), // Butter-smooth stretch/sliding transition
+                            padding: isActive
+                                ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
+                                : const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: isActive ? activePillColor : Colors.transparent,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    item.label == 'Chats'
+                                        ? Transform.rotate(
+                                            angle: -0.22, // HARDENING: ui-agent 2026-06-25 - Tilt send icon upwards to match Instagram style
+                                            child: Icon(
                                               isActive ? item.activeIcon : item.icon,
                                               size: 20,
                                               color: isActive ? activeTextColor : inactiveIconColor,
                                             ),
-                                  if (showBadge)
-                                    Positioned(
-                                      right: -6,
-                                      top: -4,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(3),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.purple,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Text(
-                                          unreadMessages > 9 ? '9+' : '$unreadMessages',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 8,
-                                            fontWeight: FontWeight.w700,
+                                          )
+                                        : item.label == 'Profile'
+                                            ? Container(
+                                                width: 22,
+                                                height: 22,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: isActive
+                                                        ? Colors.black
+                                                        : Colors.white.withValues(alpha: 0.3),
+                                                    width: isActive ? 1.5 : 1.0,
+                                                  ),
+                                                ),
+                                                padding: const EdgeInsets.all(1.0),
+                                                child: AppAvatar(
+                                                  url: profile?['avatar_url'],
+                                                  fallbackText: profile?['display_name'] ?? 'P',
+                                                  size: 20,
+                                                ),
+                                              )
+                                            : Icon(
+                                                isActive ? item.activeIcon : item.icon,
+                                                size: 20,
+                                                color: isActive ? activeTextColor : inactiveIconColor,
+                                              ),
+                                    if (showBadge)
+                                      Positioned(
+                                        right: -6,
+                                        top: -4,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(3),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.purple,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Text(
+                                            unreadMessages > 9 ? '9+' : '$unreadMessages',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w700,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                ],
-                              ),
-                              if (isActive) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    color: activeTextColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  ],
+                                ),
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: const Cubic(0.2, 1.25, 0.3, 1.0),
+                                  child: isActive
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              item.label,
+                                              style: TextStyle(
+                                                color: activeTextColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : const SizedBox.shrink(),
                                 ),
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -291,6 +304,106 @@ class _AppScaffoldState extends ConsumerState<AppScaffold> {
     ),
   );
 }
+}
+
+class ButteryTabItem extends StatefulWidget {
+  final Widget child;
+  final bool isActive;
+
+  const ButteryTabItem({
+    super.key,
+    required this.child,
+    required this.isActive,
+  });
+
+  @override
+  State<ButteryTabItem> createState() => _ButteryTabItemState();
+}
+
+class _ButteryTabItemState extends State<ButteryTabItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _squashX;
+  late Animation<double> _squashY;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    // Sequence for X scale (stretch horizontally when squashing, then overshoot, then settle)
+    _squashX = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.25).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 30, // squash down: wide
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.25, end: 0.88).chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 35, // bounce up: thin/tall
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.88, end: 1.05).chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 20, // overshoot: slightly wide
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.05, end: 1.0).chain(CurveTween(curve: Curves.easeInCubic)),
+        weight: 15, // settle
+      ),
+    ]).animate(_controller);
+
+    // Sequence for Y scale (squash vertically when hitting the floor, then stretch, then settle)
+    _squashY = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.65).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 30, // squash down: short
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.65, end: 1.22).chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 35, // bounce up: tall
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.22, end: 0.95).chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 20, // overshoot: slightly short
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.95, end: 1.0).chain(CurveTween(curve: Curves.easeInCubic)),
+        weight: 15, // settle
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void didUpdateWidget(covariant ButteryTabItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final scaleX = _controller.isAnimating ? _squashX.value : 1.0;
+        final scaleY = _controller.isAnimating ? _squashY.value : 1.0;
+        return Transform(
+          alignment: Alignment.bottomCenter, // squash and stretch anchored to the bottom "floor"
+          transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+          child: widget.child,
+        );
+      },
+      child: widget.child,
+    );
+  }
 }
 
 class _NavItem {

@@ -247,18 +247,32 @@ class ChatService {
   }
 
   Future<Map<String, dynamic>> getOrCreate1to1Room({required String brandId, required String influencerId, String? cardId}) async {
-    // 1. Check if ANY 1-to-1 room exists between this brand and influencer
-    final existingRoom = await _client
-        .from('rooms')
-        .select()
-        .eq('brand_id', brandId)
-        .eq('influencer_id', influencerId)
-        .order('created_at', ascending: false)
-        .limit(1)
-        .maybeSingle();
-        
-    if (existingRoom != null) {
-      return existingRoom;
+    // 1. Check if a 1-to-1 room exists between this brand and influencer for this specific card
+    if (cardId != null) {
+      final cardRoom = await _client
+          .from('rooms')
+          .select()
+          .eq('brand_id', brandId)
+          .eq('influencer_id', influencerId)
+          .eq('card_id', cardId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      if (cardRoom != null) {
+        return cardRoom;
+      }
+    } else {
+      final existingRoom = await _client
+          .from('rooms')
+          .select()
+          .eq('brand_id', brandId)
+          .eq('influencer_id', influencerId)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      if (existingRoom != null) {
+        return existingRoom;
+      }
     }
 
     // 2. If none exists, find any accepted application to auto-link

@@ -7,12 +7,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_one_tap_sign_in/google_one_tap_sign_in.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/providers/app_providers.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../shared/widgets/analytics_consent_dialog.dart';
+import 'widgets/auth_background.dart';
+import 'widgets/google_sign_in_button.dart';
+import 'widgets/glass_container.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -45,13 +49,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
     _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
     );
     _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 4.0), weight: 25),
-      TweenSequenceItem(tween: Tween<double>(begin: 4.0, end: -4.0), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: -4.0, end: 0.0), weight: 25),
-    ]).animate(_shakeController);
+      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 8.0), weight: 25),
+      TweenSequenceItem(tween: Tween<double>(begin: 8.0, end: -8.0), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: -8.0, end: 0.0), weight: 25),
+    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
   }
 
   void _onTextChanged() {
@@ -196,51 +200,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     });
 
     Widget content = Scaffold(
-      backgroundColor: isDark ? AppColors.background : const Color(0xFFFAF9F6), // --bg-base
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24), // Screen horizontal padding: 24px
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button (shown if can pop, matches Figma style circular button)
-              if (Navigator.of(context).canPop()) ...[
-                const SizedBox(height: 24),
-                GestureDetector(
-                  onTap: () => context.pop(),
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.surface : const Color(0xFFFFFFFF), // --surface
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? AppColors.border : const Color(0xFFE7E4DD), // --border
-                        width: 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: CustomPaint(
-                        size: const Size(16, 16),
-                        painter: SvgBackIconPainter(
-                          color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ] else ...[
-                const SizedBox(height: 48),
-              ],
-
-              AnimatedBuilder(
+      backgroundColor: Colors.transparent, // Background handled by AuthBackground
+      body: AuthBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: AnimatedBuilder(
                 animation: _shakeAnimation,
                 builder: (context, child) {
                   return Transform.translate(
@@ -250,182 +216,155 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title and Subtitle Frame
-                    StaggeredEntryWidget(
-                      delay: Duration.zero,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Sign in to\nyour account',
-                            style: GoogleFonts.fraunces(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 32,
-                              height: 1.1875,
-                              color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
-                              letterSpacing: -0.32,
-                            ),
+
+                        // Title and Subtitle
+                        Text(
+                          'Welcome Back',
+                          style: GoogleFonts.fraunces(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 32,
+                            height: 1.1875,
+                            color: isDark ? Colors.white : const Color(0xFF15171C),
+                            letterSpacing: -0.32,
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Enter your credentials to start matching & collaborating',
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 15,
-                              height: 1.4667,
-                              color: isDark ? AppColors.textSecondary : const Color(0xFF888B92), // --ink-400
-                            ),
+                        ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
+                        
+                        const SizedBox(height: 8),
+                        
+                        Text(
+                          'Sign in to continue your journey',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 15,
+                            height: 1.4667,
+                            color: isDark ? Colors.white70 : const Color(0xFF55575C),
                           ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32), // Vertical rhythm: 32px
-
-                    // Email Input
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 60),
-                      child: PremiumInputField(
-                        label: 'Your Email Address',
-                        hint: 'you@example.com',
-                        controller: _emailCtrl,
-                        focusNode: _emailFocusNode,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20), // Vertical rhythm: 20px
-
-                    // Password Input
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 120),
-                      child: PremiumInputField(
-                        label: 'Your Password',
-                        hint: '••••••••',
-                        controller: _passwordCtrl,
-                        focusNode: _passwordFocusNode,
-                        obscure: _obscurePassword,
-                        errorText: _errorMessage,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _handleSignIn(),
-                        suffixIcon: HoverablePasswordEye(
+                        ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 40),
+        
+                        // Email Input
+                        PremiumInputField(
+                          label: 'Email Address',
+                          hint: 'you@example.com',
+                          controller: _emailCtrl,
+                          focusNode: _emailFocusNode,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
+                        ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 20),
+        
+                        // Password Input
+                        PremiumInputField(
+                          label: 'Password',
+                          hint: '••••••••',
+                          controller: _passwordCtrl,
+                          focusNode: _passwordFocusNode,
                           obscure: _obscurePassword,
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // Forgot password?
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 180),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: HoverableTextButton(
-                            text: 'Forgot password?',
-                            onPressed: () => context.push('/reset-password'),
+                          errorText: _errorMessage,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _handleSignIn(),
+                          suffixIcon: HoverablePasswordEye(
+                            obscure: _obscurePassword,
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                           ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 28), // Vertical rhythm: 28px
-
-                    // Sign In Button
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 240),
-                      child: PrimaryCtaButton(
-                        label: 'Sign In',
-                        isLoading: _loading,
-                        onPressed: _handleSignIn,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // OR Separator
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 300),
-                      child: Row(
-                        children: [
-                          Expanded(child: Container(height: 1, color: isDark ? AppColors.border : const Color(0xFFE7E4DD))),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'OR',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isDark ? AppColors.textMuted : const Color(0xFF888B92), // --ink-400
-                                letterSpacing: 0.08 * 12,
-                              ),
+                        ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
+        
+                        // Forgot password?
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: HoverableTextButton(
+                              text: 'Forgot password?',
+                              onPressed: () => context.push('/reset-password'),
                             ),
                           ),
-                          Expanded(child: Container(height: 1, color: isDark ? AppColors.border : const Color(0xFFE7E4DD))),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Google Sign-In Button
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 300),
-                      child: GoogleSignInButton(
-                        onPressed: _loading ? null : _handleGoogleSignIn,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Bottom Account Section (Don't have an account? Sign up)
-                    StaggeredEntryWidget(
-                      delay: const Duration(milliseconds: 360),
-                      child: Center(
-                        child: Wrap(
-                          alignment: WrapAlignment.center,
-                          crossAxisAlignment: WrapCrossAlignment.center,
+                        ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 32),
+        
+                        // Sign In Button
+                        PrimaryCtaButton(
+                          label: 'Sign In',
+                          isLoading: _loading,
+                          onPressed: _handleSignIn,
+                        ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 24),
+        
+                        // OR Separator
+                        Row(
                           children: [
-                            Text(
-                              "Don't have an account? ",
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: isDark ? AppColors.textSecondary : const Color(0xFF888B92), // --ink-400
-                                height: 1.4286,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => context.push('/signup'),
+                            Expanded(child: Container(height: 1, color: isDark ? Colors.white24 : Colors.black12)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
-                                'Sign up',
+                                'OR',
                                 style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57), // --accent
-                                  height: 1.4286,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark ? Colors.white54 : Colors.black54,
+                                  letterSpacing: 0.08 * 12,
                                 ),
                               ),
                             ),
+                            Expanded(child: Container(height: 1, color: isDark ? Colors.white24 : Colors.black12)),
                           ],
-                        ),
-                      ),
+                        ).animate().fade(duration: 400.ms, delay: 600.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 24),
+        
+                        // Google Sign-In Button
+                        GoogleSignInButton(
+                          onPressed: _loading ? null : _handleGoogleSignIn,
+                        ).animate().fade(duration: 400.ms, delay: 700.ms).slideY(begin: 0.2, end: 0),
+        
+                        const SizedBox(height: 32),
+        
+                        // Bottom Account Section
+                        Center(
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account? ",
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: isDark ? Colors.white70 : const Color(0xFF55575C),
+                                  height: 1.4286,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => context.push('/signup'),
+                                child: Text(
+                                  'Sign up',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
+                                    height: 1.4286,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).animate().fade(duration: 400.ms, delay: 800.ms).slideY(begin: 0.2, end: 0),
+                      ],
                     ),
-
-                    const SizedBox(height: 32),
-                  ],
+                  ),
                 ),
               ),
-            ],
-          ),
         ),
       ),
     );
@@ -435,82 +374,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 }
 
 // ========== Custom Supporting Premium Widgets ==========
-
-class StaggeredEntryWidget extends StatefulWidget {
-  final Widget child;
-  final Duration delay;
-  const StaggeredEntryWidget({super.key, required this.child, required this.delay});
-
-  @override
-  State<StaggeredEntryWidget> createState() => _StaggeredEntryWidgetState();
-}
-
-class _StaggeredEntryWidgetState extends State<StaggeredEntryWidget> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _opacityAnimation;
-  late Animation<double> _translateAnimation;
-  bool _started = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-    );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _translateAnimation = Tween<double>(begin: 8.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_started) {
-      _started = true;
-      final disableAnimations = MediaQuery.of(context).disableAnimations;
-      Future.delayed(widget.delay, () {
-        if (mounted) {
-          if (disableAnimations) {
-            _controller.value = 1.0;
-          } else {
-            _controller.forward();
-          }
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final disableAnimations = MediaQuery.of(context).disableAnimations;
-    if (disableAnimations) {
-      return widget.child;
-    }
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Opacity(
-          opacity: _opacityAnimation.value,
-          child: Transform.translate(
-            offset: Offset(0, _translateAnimation.value),
-            child: child,
-          ),
-        );
-      },
-      child: widget.child,
-    );
-  }
-}
 
 class PremiumInputField extends StatefulWidget {
   final String label;
@@ -570,18 +433,18 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasError = widget.errorText != null;
     
-    Color borderColor = isDark ? AppColors.border : const Color(0xFFE7E4DD); // --border
+    Color borderColor = isDark ? Colors.white24 : Colors.black12;
     if (hasError) {
-      borderColor = const Color(0xFFC2483A); // --error
+      borderColor = const Color(0xFFE53935);
     } else if (_isFocused) {
-      borderColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57); // --border-focus
+      borderColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57);
     }
 
-    Color labelColor = isDark ? AppColors.textSecondary : const Color(0xFF33353B); // --ink-700
+    Color labelColor = isDark ? Colors.white70 : Colors.black87;
     if (hasError) {
-      labelColor = const Color(0xFFC2483A);
+      labelColor = const Color(0xFFE53935);
     } else if (_isFocused) {
-      labelColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57); // --accent
+      labelColor = isDark ? AppColors.purpleLight : const Color(0xFFB08D57);
     }
 
     return Column(
@@ -590,7 +453,7 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
         AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 150),
           style: GoogleFonts.inter(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             fontSize: 13,
             color: labelColor,
             letterSpacing: 0.02,
@@ -599,15 +462,15 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
         ),
         const SizedBox(height: 8),
         AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: (_isFocused && !hasError)
                 ? [
                     BoxShadow(
-                      color: (isDark ? AppColors.purple : const Color(0xFFB08D57)).withOpacity(0.12),
-                      blurRadius: 3,
-                      spreadRadius: 3,
+                      color: (isDark ? AppColors.purple : const Color(0xFFB08D57)).withOpacity(0.15),
+                      blurRadius: 12,
+                      spreadRadius: 2,
                     )
                   ]
                 : [],
@@ -621,38 +484,37 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
             onFieldSubmitted: widget.onSubmitted,
             cursorColor: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
             style: GoogleFonts.inter(
-              fontSize: 16,
-              height: 1.5,
-              color: isDark ? AppColors.textPrimary : const Color(0xFF15171C), // --ink-900
+              fontSize: 15,
+              color: isDark ? Colors.white : Colors.black,
             ),
             decoration: InputDecoration(
               hintText: widget.hint,
               hintStyle: GoogleFonts.inter(
-                fontSize: 16,
-                color: isDark ? AppColors.textMuted : const Color(0xFF888B92), // --ink-400
+                fontSize: 15,
+                color: isDark ? Colors.white38 : Colors.black38,
               ),
               filled: true,
-              fillColor: isDark ? AppColors.surface : const Color(0xFFFFFFFF), // --surface
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: borderColor, width: 1.0),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: borderColor, width: 1.0),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: borderColor, width: 1.0),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: borderColor, width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFFC2483A), width: 1.0),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.0),
               ),
               focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xFFC2483A), width: 1.5),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
               ),
               errorStyle: const TextStyle(height: 0, fontSize: 0),
               suffixIcon: widget.suffixIcon,
@@ -660,19 +522,19 @@ class _PremiumInputFieldState extends State<PremiumInputField> {
           ),
         ),
         AnimatedSize(
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
           child: widget.errorText != null
               ? Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 4),
+                  padding: const EdgeInsets.only(top: 6, left: 4),
                   child: AnimatedOpacity(
                     opacity: hasError ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 120),
+                    duration: const Duration(milliseconds: 200),
                     child: Text(
                       widget.errorText!,
                       style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: const Color(0xFFC2483A), // --error
+                        fontSize: 12,
+                        color: const Color(0xFFE53935),
                       ),
                     ),
                   ),
@@ -698,14 +560,18 @@ class _HoverablePasswordEyeState extends State<HoverablePasswordEye> {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = _isHovered ? const Color(0xFF15171C) : const Color(0xFF888B92);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = _isHovered 
+      ? (isDark ? Colors.white : Colors.black) 
+      : (isDark ? Colors.white54 : Colors.black54);
+      
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: IconButton(
         padding: const EdgeInsets.only(right: 12),
         icon: AnimatedCrossFade(
-          duration: const Duration(milliseconds: 150),
+          duration: const Duration(milliseconds: 200),
           firstChild: Icon(Iconsax.eye, size: 20, color: iconColor),
           secondChild: Icon(Iconsax.eye_slash, size: 20, color: iconColor),
           crossFadeState: widget.obscure ? CrossFadeState.showFirst : CrossFadeState.showSecond,
@@ -730,6 +596,9 @@ class _HoverableTextButtonState extends State<HoverableTextButton> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = isDark ? AppColors.purpleLight : const Color(0xFFB08D57);
+    
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -737,15 +606,16 @@ class _HoverableTextButtonState extends State<HoverableTextButton> {
         onTap: widget.onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text(
-            widget.text,
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 150),
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFFB08D57), // --accent
+              color: _isHovered ? color.withOpacity(0.8) : color,
               decoration: _isHovered ? TextDecoration.underline : TextDecoration.none,
-              decorationColor: const Color(0xFFB08D57),
+              decorationColor: color.withOpacity(0.8),
             ),
+            child: Text(widget.text),
           ),
         ),
       ),
@@ -777,14 +647,13 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     if (widget.isDisabled) {
       return Container(
-        height: 52,
+        height: 54,
         decoration: BoxDecoration(
-          color: isDark 
-              ? Colors.white.withOpacity(0.12)
-              : const Color(0xFF888B92).withOpacity(0.4),
-          borderRadius: BorderRadius.circular(14),
+          color: isDark ? Colors.white10 : Colors.black12,
+          borderRadius: BorderRadius.circular(16),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -792,35 +661,19 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
             fontSize: 15,
-            color: isDark 
-                ? Colors.white.withOpacity(0.3)
-                : const Color(0xFFFAF9F6).withOpacity(0.6),
-            letterSpacing: 0.01,
+            color: isDark ? Colors.white30 : Colors.black38,
+            letterSpacing: 0.5,
           ),
         ),
       );
     }
 
     final bgColor = isDark
-        ? (_isHovered ? const Color(0xFFEEEEEE) : const Color(0xFFFFFFFF))
-        : (_isHovered ? const Color(0xFF1F2128) : const Color(0xFF15171C));
-    final textColor = isDark ? const Color(0xFF000000) : const Color(0xFFFAF9F6);
-    final scale = _isPressed ? 0.98 : 1.0;
+        ? (_isHovered ? Colors.white.withOpacity(0.9) : Colors.white)
+        : (_isHovered ? Colors.black87 : Colors.black);
+    final textColor = isDark ? Colors.black : Colors.white;
+    final scale = _isPressed ? 0.96 : 1.0;
     
-    final shadow = (_isHovered && !_isPressed)
-        ? [
-            BoxShadow(
-              color: isDark 
-                  ? Colors.white.withOpacity(0.08)
-                  : const Color.fromRGBO(21, 23, 28, 0.18),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            )
-          ]
-        : <BoxShadow>[];
-
-    final translateOffset = (_isHovered && !_isPressed) ? -1.0 : 0.0;
-
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -831,20 +684,30 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
         onTap: widget.isLoading ? null : widget.onPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          height: 52,
+          curve: Curves.easeOutCubic,
+          height: 54,
+          transform: Matrix4.identity()..scale(scale, scale),
+          transformAlignment: Alignment.center,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: shadow,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: _isHovered && !_isPressed
+                ? [
+                    BoxShadow(
+                      color: isDark ? Colors.white24 : Colors.black26,
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    )
+                  ]
+                : [],
           ),
-          transform: Matrix4.translationValues(0, translateOffset, 0)..scale(scale, scale),
           alignment: Alignment.center,
           child: widget.isLoading
               ? SizedBox(
-                  width: 16,
-                  height: 16,
+                  width: 20,
+                  height: 20,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
+                    strokeWidth: 2.5,
                     valueColor: AlwaysStoppedAnimation<Color>(textColor),
                   ),
                 )
@@ -853,115 +716,12 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
-                    color: textColor, // --text-on-inverse
-                    letterSpacing: 0.01,
+                    color: textColor,
+                    letterSpacing: 0.5,
                   ),
                 ),
         ),
       ),
     );
   }
-}
-
-class GoogleSignInButton extends StatefulWidget {
-  final VoidCallback? onPressed;
-  const GoogleSignInButton({super.key, this.onPressed});
-
-  @override
-  State<GoogleSignInButton> createState() => _GoogleSignInButtonState();
-}
-
-class _GoogleSignInButtonState extends State<GoogleSignInButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final bgColor = isDark
-        ? (_isHovered ? const Color(0xFF24242E) : const Color(0xFF1C1C26))
-        : (_isHovered ? const Color(0xFFF5F3EE) : const Color(0xFFFFFFFF));
-    final borderColor = isDark
-        ? (_isHovered ? const Color(0xFF3A3A4A) : const Color(0xFF2C2C3A))
-        : (_isHovered ? const Color(0xFFD8D4CB) : const Color(0xFFE7E4DD));
-    final textColor = isDark ? AppColors.textPrimary : const Color(0xFF33353B);
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        height: 52,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor, width: 1.0),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: widget.onPressed,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.network(
-                  'https://developers.google.com/identity/images/g-logo.png',
-                  width: 18,
-                  height: 18,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.g_mobiledata_rounded,
-                      color: textColor,
-                      size: 22,
-                    );
-                  },
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Sign In with Google',
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: textColor, // --ink-700
-                    letterSpacing: 0.01,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SvgBackIconPainter extends CustomPainter {
-  final Color color;
-  const SvgBackIconPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final path = Path();
-    path.moveTo(14.9998, 19.9201);
-    path.lineTo(8.47984, 13.4001);
-    path.cubicTo(7.70984, 12.6301, 7.70984, 11.3701, 8.47984, 10.6001);
-    path.lineTo(14.9998, 4.08008);
-
-    final matrix = Matrix4.identity();
-    matrix.scale(size.width / 24.0, size.height / 24.0);
-    final scaledPath = path.transform(matrix.storage);
-
-    canvas.drawPath(scaledPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
