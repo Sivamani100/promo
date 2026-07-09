@@ -37,6 +37,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
   bool _loading = true;
   final _searchCtrl = TextEditingController();
   String _selectedFilter = 'All';
+  List<Map<String, dynamic>> _matchingProfiles = [];
 
   // Realtime subscriptions
   RealtimeChannel? _messagesSubscription;
@@ -63,6 +64,30 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       RealtimeSubscriptionManager.unsubscribe('typing:$roomId');
     }
     super.dispose();
+  }
+
+  Future<void> _searchProfiles(String query) async {
+    if (query.isEmpty) {
+      setState(() => _matchingProfiles = []);
+      return;
+    }
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+    try {
+      final results = await SupabaseService.client
+          .from('profiles')
+          .select('id, display_name, role, avatar_url, company_name, is_verified')
+          .neq('id', user.id)
+          .ilike('display_name', '%$query%')
+          .limit(15);
+      if (mounted && _searchCtrl.text.trim().toLowerCase() == query.toLowerCase()) {
+        setState(() {
+          _matchingProfiles = List<Map<String, dynamic>>.from(results);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error searching profiles: $e');
+    }
   }
 
   Future<void> _load({bool ignoreCache = false}) async {
@@ -344,7 +369,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                             subtitle: Text(role.toUpperCase(), style: AppTextStyles.captionSm),
                             onTap: () async {
                               Navigator.pop(sheetCtx);
-                              _startOneToOneChat(profile['id'] as String);
+                              _startOneToOneChat(profile['id'] as String, role);
                             },
                           );
                         },
@@ -369,15 +394,17 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
     );
   }
 
-  Future<void> _startOneToOneChat(String otherUserId) async {
+  Future<void> _startOneToOneChat(String otherUserId, String otherUserRole) async {
     final user = ref.read(authProvider).user;
     if (user == null) return;
+
+    final currentUserRole = ref.read(authProvider).role;
 
     setState(() => _loading = true);
     try {
       final room = await ChatService().getOrCreate1to1Room(
-        brandId: user.id,
-        influencerId: otherUserId,
+        brandId: currentUserRole == 'brand' ? user.id : otherUserId,
+        influencerId: currentUserRole == 'influencer' ? user.id : otherUserId,
       );
       if (mounted) {
         setState(() => _loading = false);
@@ -914,6 +941,16 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
 
     final basePath = widget.role == 'brand' ? '/brand' : (widget.role == 'admin' ? '/admin' : '/influencer');
     final searchQuery = _searchCtrl.text.toLowerCase().trim();
+    final user = ref.watch(authProvider).user;
+    final activeUserIds = _rooms.map((r) {
+      final otherUser = (r['brand']?['id'] == user?.id)
+          ? r['influencer'] as Map<String, dynamic>?
+          : r['brand'] as Map<String, dynamic>?;
+      return otherUser?['id'] as String?;
+    }).whereType<String>().toSet();
+
+    final newConversations = _matchingProfiles.where((p) => !activeUserIds.contains(p['id'])).toList();
+
     final pinnedRoomIds = ref.watch(pinnedRoomsProvider);
     final archivedRoomIds = ref.watch(archivedRoomsProvider);
     final mutedRoomIds = ref.watch(mutedRoomsProvider);
@@ -940,7 +977,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
         }
       }
 
-      final otherUser = widget.role == 'brand'
+      final otherUser = (room['brand']?['id'] == user?.id)
           ? room['influencer'] as Map<String, dynamic>?
           : room['brand'] as Map<String, dynamic>?;
       final cardTitle = (room['card'] as Map<String, dynamic>?)?['title'] ?? '';
@@ -1105,8 +1142,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                 child: Column(
                   children: [
                     _buildSearchField(),
-                    _buildFilterChips(),
-                    Expanded(
+                    if (searchQuery.isEmpty) ...[
+                      _buildFilterChips(),
+                      Expanded(
                       child: ListView.separated(
                         padding: const EdgeInsets.only(
                           top: AppSpacing.sm,
@@ -1142,7 +1180,7 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                   final isGroup = room['influencer_id'] == null;
                                   final isPinned = pinnedRoomIds.contains(roomId);
 
-                                  final otherUser = widget.role == 'brand'
+                                  final otherUser = (room['brand']?['id'] == ref.read(authProvider).user?.id)
                                       ? room['influencer'] as Map<String, dynamic>?
                                       : room['brand'] as Map<String, dynamic>?;
                                   final cardTitle = (room['card'] as Map<String, dynamic>?)?['title'] ?? '';
@@ -1494,8 +1532,19 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                                 },
                               ),
                     ),
+                  ] else ...[
+                    _buildSearchResults(
+                      filteredRooms,
+                      newConversations,
+                      isDark,
+                      basePath,
+                      pinnedRoomIds,
+                      mutedRoomIds,
+                      unreadOverrides,
+                    ),
                   ],
-                ),
+                ],
+              ),
               ),
             ),
     );
@@ -1507,7 +1556,10 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm, top: 4),
       child: TextField(
         controller: _searchCtrl,
-        onChanged: (val) => setState(() {}),
+        onChanged: (val) {
+          setState(() {});
+          _searchProfiles(val.trim());
+        },
         style: AppTextStyles.bodySm,
         decoration: InputDecoration(
           hintText: 'Search chats...',
@@ -1521,7 +1573,9 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
                   icon: Icon(Iconsax.close_circle, size: 16, color: AppColors.textSecondary),
                   onPressed: () {
                     _searchCtrl.clear();
-                    setState(() {});
+                    setState(() {
+                      _matchingProfiles = [];
+                    });
                   },
                 ),
               Padding(
@@ -1562,6 +1616,320 @@ class _ChatsListScreenState extends ConsumerState<ChatsListScreen> {
           fillColor: isDark ? const Color(0xFF0F0F11) : Colors.white,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults(
+    List<Map<String, dynamic>> filteredRooms,
+    List<Map<String, dynamic>> newConversations,
+    bool isDark,
+    String basePath,
+    List<String> pinnedRoomIds,
+    List<String> mutedRoomIds,
+    List<String> unreadOverrides,
+  ) {
+    if (filteredRooms.isEmpty && newConversations.isEmpty) {
+      return Expanded(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Iconsax.search_status, size: 48, color: AppColors.textMuted),
+            const SizedBox(height: 16),
+            Text(
+              'No matches found',
+              style: AppTextStyles.h4,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try searching for another name or brand.',
+              style: AppTextStyles.bodySm.copyWith(color: AppColors.textMuted),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Expanded(
+      child: ListView(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.sm,
+          bottom: AppSpacing.bottomScreenPadding + AppSpacing.md,
+        ),
+        children: [
+          if (filteredRooms.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Active Chats',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            ...filteredRooms.map((room) {
+              final roomId = room['id'] as String;
+              final isGroup = room['influencer_id'] == null;
+              final isPinned = pinnedRoomIds.contains(roomId);
+
+              final otherUser = (room['brand']?['id'] == ref.read(authProvider).user?.id)
+                  ? room['influencer'] as Map<String, dynamic>?
+                  : room['brand'] as Map<String, dynamic>?;
+              final cardTitle = (room['card'] as Map<String, dynamic>?)?['title'] ?? '';
+              final lastMsg = _lastMessages[roomId];
+              final unreadCount = _unreadCounts[roomId] ?? 0;
+              final lastTime = lastMsg?['created_at'] != null
+                  ? DateTime.tryParse(lastMsg!['created_at'])
+                  : null;
+
+              // Online check
+              final lastSeenStr = otherUser?['last_seen'] as String?;
+              bool isOnline = false;
+              if (lastSeenStr != null && !isGroup) {
+                final lastSeen = DateTime.tryParse(lastSeenStr);
+                if (lastSeen != null) {
+                  isOnline = DateTime.now().toUtc().difference(lastSeen).inMinutes < 2;
+                }
+              }
+
+              final typingName = _typingNames[roomId];
+
+              return InkWell(
+                onTap: () async {
+                  await context.push('$basePath/chats/$roomId');
+                  _load(ignoreCache: true);
+                },
+                onLongPress: () => _showRoomOptions(room),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                  child: Row(
+                    children: [
+                      if (isGroup)
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.accent.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.accent.withValues(alpha: 0.15),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(Iconsax.profile_2user, color: AppColors.accent, size: 22),
+                        )
+                      else
+                        Stack(
+                          children: [
+                            AppAvatar(
+                              url: otherUser?['avatar_url'],
+                              fallbackText: otherUser?['display_name'] ?? '?',
+                              size: 50,
+                              onTap: () {
+                                final otherId = otherUser?['id'];
+                                if (otherId != null) {
+                                  if (widget.role == 'brand') {
+                                    context.push('/brand/influencers/$otherId');
+                                  } else {
+                                    context.push('/influencer/brands/$otherId');
+                                  }
+                                }
+                              },
+                            ),
+                            if (isOnline)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: isDark ? const Color(0xFF0F0F11) : Colors.white, width: 2),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          isGroup
+                                              ? (room['title'] != null && (room['title'] as String).isNotEmpty
+                                                  ? room['title'] as String
+                                                  : (cardTitle.isNotEmpty ? cardTitle : 'Group Chat'))
+                                              : (otherUser?['display_name'] ?? 'User'),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (!isGroup && otherUser?['role'] == 'admin') ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 0.8),
+                                          ),
+                                          child: const Text(
+                                            'ADMIN',
+                                            style: TextStyle(
+                                              fontSize: 7.5,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.orange,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      if (!isGroup && otherUser?['is_verified'] == true) ...[
+                                        const SizedBox(width: 4),
+                                        const VerificationBadge(size: 13),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                if (lastTime != null)
+                                  Text(
+                                    timeago.format(lastTime, locale: 'en_short'),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: unreadCount > 0
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: unreadCount > 0
+                                          ? AppColors.accent
+                                          : AppColors.textMuted,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              typingName != null
+                                  ? '$typingName is typing...'
+                                  : (lastMsg?['content'] ?? 'No messages yet'),
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                color: unreadCount > 0 || typingName != null
+                                    ? AppColors.textPrimary
+                                    : AppColors.textMuted,
+                                fontWeight: unreadCount > 0
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+          ],
+          if (newConversations.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'Start a New Chat',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            ...newConversations.map((profile) {
+              final display = profile['display_name'] ?? 'User';
+              final role = profile['role'] ?? 'User';
+              final company = profile['company_name'] as String?;
+              final subtitle = role == 'brand' ? (company ?? 'Brand') : 'Influencer';
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                    width: 1,
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: AppAvatar(
+                    url: profile['avatar_url'],
+                    fallbackText: display,
+                    size: 44,
+                  ),
+                  title: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          display,
+                          style: GoogleFonts.inter(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (profile['is_verified'] == true) ...[
+                        const SizedBox(width: 4),
+                        const VerificationBadge(size: 13),
+                      ],
+                    ],
+                  ),
+                  subtitle: Text(
+                    subtitle,
+                    style: AppTextStyles.captionSm.copyWith(fontSize: 11),
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Iconsax.message,
+                      size: 18,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                  onTap: () {
+                    _startOneToOneChat(profile['id'] as String, role);
+                  },
+                ),
+              );
+            }),
+          ],
+        ],
       ),
     );
   }

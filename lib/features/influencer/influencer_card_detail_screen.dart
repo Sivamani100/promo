@@ -208,17 +208,20 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
               children: [
                 // Cover Image
                 if (c['cover_image_url'] != null && (c['cover_image_url'] as String).isNotEmpty) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: AppImage(
-                        url: c['cover_image_url'],
-                        fit: BoxFit.cover,
-                        fallback: Container(
-                          color: AppColors.surface2,
-                          child: Center(
-                            child: Icon(Iconsax.image, size: 48, color: AppColors.textMuted),
+                  Hero(
+                    tag: 'card_cover_${c['id']}',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: AppImage(
+                          url: c['cover_image_url'],
+                          fit: BoxFit.cover,
+                          fallback: Container(
+                            color: AppColors.surface2,
+                            child: Center(
+                              child: Icon(Iconsax.image, size: 48, color: AppColors.textMuted),
+                            ),
                           ),
                         ),
                       ),
@@ -249,6 +252,7 @@ class _InfluencerCardDetailScreenState extends ConsumerState<InfluencerCardDetai
                             url: brand['avatar_url'],
                             fallbackText: brand['display_name'] ?? 'B',
                             size: 44,
+                            heroTag: 'brand_avatar_${brand['id']}',
                             onTap: () {
                               if (brand['id'] != null) {
                                 context.push('/influencer/brands/${brand['id']}');

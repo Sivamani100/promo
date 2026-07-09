@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -410,7 +413,10 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsB
                 children: [
                   if (widget.currentStep > 1)
                     GestureDetector(
-                      onTap: () => context.go('/onboarding/${widget.currentStep - 1}'),
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        context.go('/onboarding/${widget.currentStep - 1}');
+                      },
                       child: Row(
                         children: [
                           Icon(Iconsax.arrow_left_2, size: 18, color: AppColors.textSecondary),
@@ -431,6 +437,7 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsB
                         const SizedBox(width: 16),
                         GestureDetector(
                           onTap: () {
+                            HapticFeedback.mediumImpact();
                             context.go('/onboarding/${widget.currentStep + 1}');
                           },
                           child: Container(
@@ -833,7 +840,10 @@ class _Step3Visual extends ConsumerWidget {
                 label: n,
                 selected: selected,
                 color: AppColors.getCategoryColor(n),
-                onTap: () => notifier.toggleNiche(n),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  notifier.toggleNiche(n);
+                },
               );
             }).toList(),
           ),
@@ -1383,6 +1393,69 @@ class _Step5Launch extends ConsumerWidget {
   final String role;
   const _Step5Launch({required this.role});
 
+  void _showCelebrationOverlay(BuildContext context, String role) {
+    HapticFeedback.vibrate();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        Timer(const Duration(milliseconds: 2200), () {
+          Navigator.of(dialogContext).pop();
+          context.go(role == 'brand' ? '/brand/home' : '/influencer/home');
+        });
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 180,
+                      width: 180,
+                      child: Lottie.network(
+                        'https://lottie.host/db6cf0a2-f3e4-4414-b6a1-cb9e4726e632/H3gVv8Z0Tz.json',
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Iconsax.flash, size: 80, color: AppColors.success);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Ready to Grow!',
+                      style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Redirecting to your dashboard...',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(onboardingStateProvider);
@@ -1411,7 +1484,7 @@ class _Step5Launch extends ConsumerWidget {
               try {
                 await ref.read(onboardingStateProvider.notifier).saveProfile(user.id, ref);
                 if (context.mounted) {
-                  context.go(role == 'brand' ? '/brand/home' : '/influencer/home');
+                  _showCelebrationOverlay(context, role);
                 }
               } catch (e) {
                 if (context.mounted) {

@@ -135,9 +135,10 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                           itemBuilder: (context, idx) {
                             final room = rooms[idx];
                             final isGroup = room['influencer_id'] == null;
+                            final isLookingAtInfluencer = room['brand_id'] == user.id;
                             final title = isGroup
                                 ? (room['card']?['title'] ?? 'Group')
-                                : ((role == 'brand' ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
+                                : ((isLookingAtInfluencer ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
 
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
@@ -152,7 +153,7 @@ class _ImageViewerScreenState extends ConsumerState<ImageViewerScreen> {
                                       child: Icon(Icons.group_rounded, color: AppColors.accent, size: 20),
                                     )
                                   : AppAvatar(
-                                      url: (role == 'brand' ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
+                                      url: (isLookingAtInfluencer ? room['influencer'] : room['brand'])?['avatar_url'] as String?,
                                       fallbackText: title,
                                       size: 36,
                                     ),

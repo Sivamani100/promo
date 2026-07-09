@@ -629,6 +629,8 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                       } else {
                         if (isBrand) {
                           context.push('/influencer/brands/$id');
+                        } else {
+                          context.push('/brand/influencers/$id');
                         }
                       }
                     }
@@ -649,6 +651,8 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                         } else {
                           if (isBrand) {
                             context.push('/influencer/brands/$id');
+                          } else {
+                            context.push('/brand/influencers/$id');
                           }
                         }
                       }
@@ -727,7 +731,7 @@ class _DiscoverMapViewState extends ConsumerState<DiscoverMapView> {
                           if (isBrand) {
                             context.push('/influencer/brands/$id');
                           } else {
-                            context.push('/search');
+                            context.push('/brand/influencers/$id');
                           }
                         }
                       }

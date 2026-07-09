@@ -11,7 +11,7 @@ class ChatService {
       final data = await _client
           .from('rooms')
           .select('*, brand:profiles!rooms_brand_id_fkey(*), influencer:profiles!rooms_influencer_id_fkey(*), card:cards!rooms_card_id_fkey(title)')
-          .eq('brand_id', userId)
+          .or('brand_id.eq.$userId,influencer_id.eq.$userId')
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(data);
     } else if (role == 'admin') {
@@ -22,11 +22,11 @@ class ChatService {
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(data);
     } else {
-      // Fetch 1-to-1 rooms
+      // Fetch 1-to-1 rooms where the user is either participant
       final rooms1to1 = await _client
           .from('rooms')
           .select('*, brand:profiles!rooms_brand_id_fkey(*), influencer:profiles!rooms_influencer_id_fkey(*), card:cards!rooms_card_id_fkey(title)')
-          .eq('influencer_id', userId);
+          .or('brand_id.eq.$userId,influencer_id.eq.$userId');
 
       // Fetch group rooms where the user is invited or joined
       List<Map<String, dynamic>> groupRooms = [];

@@ -360,6 +360,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
     final preferences = b['preferences'] as Map<String, dynamic>? ?? {};
     final website = b['website_url'] ?? preferences['website'] ?? '';
     final double avgRating = _reviews.isEmpty ? 0.0 : (_reviews.map((r) => (r['rating'] as num?)?.toDouble() ?? 0.0).fold(0.0, (a, b) => a + b) / _reviews.length);
+    final currentUserRole = ref.watch(authProvider).role;
 
     return Scaffold(
       body: Column(
@@ -498,6 +499,7 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
                           url: b['avatar_url'],
                           fallbackText: b['display_name'] ?? 'B',
                           size: 80,
+                          heroTag: 'brand_avatar_${b['id']}',
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -588,65 +590,67 @@ class _InfluencerBrandDetailScreenState extends ConsumerState<InfluencerBrandDet
                 const SizedBox(height: 16),
 
                 // Action buttons (Follow & Message)
-                Row(
-                  children: [
-                    Expanded(
-                      child: _following
-                          ? OutlinedButton.icon(
-                              onPressed: _togglingFollow ? null : _toggleFollow,
-                              icon: _togglingFollow
-                                  ? const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Icon(Iconsax.user_minus, size: 16),
-                              label: const Text('Following'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.accent,
-                                side: BorderSide(color: AppColors.accent),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                if (currentUserRole == 'influencer') ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _following
+                            ? OutlinedButton.icon(
+                                onPressed: _togglingFollow ? null : _toggleFollow,
+                                icon: _togglingFollow
+                                    ? const SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : const Icon(Iconsax.user_minus, size: 16),
+                                label: const Text('Following'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.accent,
+                                  side: BorderSide(color: AppColors.accent),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                  ),
+                                ),
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: _togglingFollow ? null : _toggleFollow,
+                                icon: _togglingFollow
+                                    ? const SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                                        ),
+                                      )
+                                    : const Icon(Iconsax.user_add, size: 16),
+                                label: const Text('Follow'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.accent,
+                                  foregroundColor: AppColors.accentOnDark,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                                  ),
                                 ),
                               ),
-                            )
-                          : ElevatedButton.icon(
-                              onPressed: _togglingFollow ? null : _toggleFollow,
-                              icon: _togglingFollow
-                                  ? const SizedBox(
-                                      width: 14,
-                                      height: 14,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(Colors.white),
-                                      ),
-                                    )
-                                  : const Icon(Iconsax.user_add, size: 16),
-                              label: const Text('Follow'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accent,
-                                foregroundColor: AppColors.accentOnDark,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                                ),
-                              ),
-                            ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppButton(
-                        label: 'Message',
-                        icon: Iconsax.message,
-                        isPrimary: false,
-                        onTap: _startChat,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppButton(
+                          label: 'Message',
+                          icon: Iconsax.message,
+                          isPrimary: false,
+                          onTap: _startChat,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ],
             ),
           ),

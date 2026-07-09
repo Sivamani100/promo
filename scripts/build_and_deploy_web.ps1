@@ -23,4 +23,6 @@ flutter build web --release `
   --dart-define=SENTRY_DSN=""
 
 Write-Host "`n=== Step 3: Deploying to Vercel ===" -ForegroundColor Cyan
-vercel --prod --yes
+vercel build --prod --yes
+vercel deploy --prebuilt --prod --yes
+

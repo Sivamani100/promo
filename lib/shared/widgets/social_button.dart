@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SocialButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -26,11 +27,16 @@ class SocialButton extends StatelessWidget {
     this.padding,
   });
 
+  void _handleTap() {
+    HapticFeedback.lightImpact();
+    onTap();
+  }
+
   @override
   Widget build(BuildContext context) {
     return mini
         ? ElevatedButton(
-            onPressed: onTap,
+            onPressed: _handleTap,
             style: ElevatedButton.styleFrom(
               shape: const CircleBorder(),
               backgroundColor: buttonColor,
@@ -42,7 +48,7 @@ class SocialButton extends StatelessWidget {
             padding: padding ?? const EdgeInsets.all(20.0),
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: onTap,
+              onPressed: _handleTap,
               icon: icon,
               label: showLabel
                   ? Text(

@@ -244,6 +244,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
   @override
   Widget build(BuildContext context) {
     final isDark = AppColors.isDarkMode;
+    final currentUserRole = ref.watch(authProvider).role;
 
     if (_loading) {
       return Scaffold(
@@ -352,27 +353,28 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                   ),
                 ),
                 // Archive/save to list
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  right: 56,
-                  child: GestureDetector(
-                    onTap: _showSaveToListSheet,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Iconsax.archive_add,
-                        size: 18,
-                        color: AppColors.textPrimary,
+                if (currentUserRole == 'brand')
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    right: 56,
+                    child: GestureDetector(
+                      onTap: _showSaveToListSheet,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.7),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Iconsax.archive_add,
+                          size: 18,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ),
-                ),
                 // 3-dot Actions Menu (Report/Block)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 8,
@@ -460,6 +462,7 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                           url: inf['avatar_url'],
                           fallbackText: inf['display_name'] ?? 'I',
                           size: 72,
+                          heroTag: 'influencer_avatar_${inf['id']}',
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -547,63 +550,65 @@ class _BrandInfluencerDetailScreenState extends ConsumerState<BrandInfluencerDet
                 const SizedBox(height: 16),
 
                 // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: _startChat,
-                        child: Container(
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: isDark ? Colors.white : const Color(0xFF0F0F11),
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Iconsax.message,
-                                size: 18,
-                                color: isDark ? Colors.black : Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Message',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                if (currentUserRole == 'brand') ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _startChat,
+                          child: Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white : const Color(0xFF0F0F11),
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Iconsax.message,
+                                  size: 18,
                                   color: isDark ? Colors.black : Colors.white,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Message',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? Colors.black : Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: _showSaveToListSheet,
-                      child: Container(
-                        height: 46,
-                        width: 46,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F0F11) : Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
-                            width: 1.2,
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: _showSaveToListSheet,
+                        child: Container(
+                          height: 46,
+                          width: 46,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF0F0F11) : Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFE5E7EB),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Icon(
+                            Iconsax.archive_add,
+                            size: 20,
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                        child: Icon(
-                          Iconsax.archive_add,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ],
             ),
           ),

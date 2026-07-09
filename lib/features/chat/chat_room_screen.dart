@@ -298,13 +298,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   String? roleId(Map<String, dynamic>? room) {
     if (room == null) return null;
-    final role = ref.read(authProvider).role;
     final userId = ref.read(authProvider).user?.id;
-    if (role == 'admin') {
-      final isBrandSide = room['brand_id'] == userId;
-      return (isBrandSide ? room['influencer_id'] : room['brand_id']) as String?;
-    }
-    if (role == 'brand') {
+    if (userId == null) return null;
+    if (room['brand_id'] == userId) {
       return room['influencer_id'] as String?;
     } else {
       return room['brand_id'] as String?;
@@ -499,29 +495,66 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       };
     }
 
-    try {
-      await _chatService.updateLastSeen(user.id);
-      await _chatService.sendMessage(
-        roomId: widget.roomId,
-        senderId: user.id,
-        content: text,
-        payload: payload,
-      );
+    // Trigger haptic feedback instantly on send press
+    HapticFeedback.lightImpact();
 
-      if (mounted) {
-        setState(() {
-          _replyingTo = null;
-        });
+    // 1. Construct optimistic message
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final tempMsg = {
+      'id': tempId,
+      'room_id': widget.roomId,
+      'sender_id': user.id,
+      'content': text,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+      'is_read': false,
+      'payload': {
+        if (payload != null) ...payload,
+        'is_sending': true,
+      },
+      'sender': {
+        'display_name': ref.read(authProvider).profile?['display_name'] ?? 'User',
+        'avatar_url': ref.read(authProvider).profile?['avatar_url'],
+        'is_verified': ref.read(authProvider).profile?['is_verified'] ?? false,
       }
+    };
 
-      final msgs = await _chatService.getMessages(widget.roomId, limit: 100);
-      if (mounted) {
-        setState(() => _messages = msgs);
-        _scrollToBottom();
-      }
-    } catch (e) {
-      print('Error sending message: $e');
+    // 2. Optimistically update local messages list and UI state
+    if (mounted) {
+      setState(() {
+        _messages = [..._messages, tempMsg];
+        _replyingTo = null;
+      });
+      _scrollToBottom();
     }
+
+    // 3. Perform network operations in background
+    unawaited(() async {
+      try {
+        await _chatService.updateLastSeen(user.id);
+        await _chatService.sendMessage(
+          roomId: widget.roomId,
+          senderId: user.id,
+          content: text,
+          payload: payload,
+        );
+      } catch (e) {
+        print('Error sending message in background: $e');
+        // Mark optimistic message as failed
+        if (mounted) {
+          setState(() {
+            _messages = _messages.map((m) {
+              if (m['id'] == tempId) {
+                final updatedPayload = Map<String, dynamic>.from(m['payload'] ?? {});
+                updatedPayload['is_sending'] = false;
+                updatedPayload['has_error'] = true;
+                return {...m, 'payload': updatedPayload};
+              }
+              return m;
+            }).toList();
+          });
+        }
+      }
+    }());
   }
 
 
@@ -601,6 +634,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _togglePinMessage(String messageId, bool isPinned, Map<String, dynamic> payload) async {
     try {
+      HapticFeedback.mediumImpact();
       await _chatService.pinMessage(messageId, payload, isPinned);
       final msgs = await _chatService.getMessages(widget.roomId, limit: 100);
       if (mounted) {
@@ -690,7 +724,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           itemBuilder: (context, idx) {
                              final room = rooms[idx];
                              final isGroup = room['influencer_id'] == null;
-                             final isLookingAtInfluencer = role == 'admin' ? (user.id == room['brand_id']) : (role == 'brand');
+                             final isLookingAtInfluencer = room['brand_id'] == user.id;
                              final title = isGroup
                                  ? (room['card']?['title'] ?? 'Group')
                                  : ((isLookingAtInfluencer ? room['influencer'] : room['brand'])?['display_name'] as String?) ?? 'User';
@@ -2078,18 +2112,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       ),
                       if (isMe) ...[
                         const SizedBox(width: 4),
-                        msg['is_read'] == true
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Iconsax.tick_circle, size: 14, color: Color(0xFF34B7F1)),
-                                  Transform.translate(
-                                    offset: const Offset(-8, 0),
-                                    child: const Icon(Iconsax.tick_circle, size: 14, color: Color(0xFF34B7F1)),
-                                  ),
-                                ],
-                              )
-                            : const Icon(Iconsax.tick_circle, size: 14, color: Colors.white60),
+                        if (msg['payload']?['is_sending'] == true)
+                          const SizedBox(
+                            width: 10,
+                            height: 10,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white60),
+                            ),
+                          )
+                        else if (msg['payload']?['has_error'] == true)
+                          const Icon(Icons.error_outline, size: 14, color: Colors.redAccent)
+                        else
+                          msg['is_read'] == true
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Iconsax.tick_circle, size: 14, color: const Color(0xFF34B7F1)),
+                                    Transform.translate(
+                                      offset: const Offset(-8, 0),
+                                      child: const Icon(Iconsax.tick_circle, size: 14, color: const Color(0xFF34B7F1)),
+                                    ),
+                                  ],
+                                )
+                              : const Icon(Iconsax.tick_circle, size: 14, color: Colors.white60),
                       ],
                     ],
                   ),
@@ -2363,6 +2409,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
     try {
+      HapticFeedback.selectionClick();
       final reactions = payload['reactions'] as Map<String, dynamic>? ?? {};
       final existingReaction = reactions[user.id];
       if (existingReaction == emoji) {
@@ -2387,6 +2434,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final user = ref.read(authProvider).user;
     if (user == null) return;
     try {
+      HapticFeedback.mediumImpact();
       await _chatService.starMessage(messageId, user.id, payload, isStarred);
       final msgs = await _chatService.getMessages(widget.roomId, limit: 100);
       if (mounted) setState(() => _messages = msgs);

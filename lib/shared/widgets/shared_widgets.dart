@@ -207,18 +207,18 @@ class AppTextField extends StatelessWidget {
   }
 }
 
-// ---------- AppAvatar ----------
 class AppAvatar extends StatelessWidget {
   final String? url;
   final String? fallbackText;
   final double size;
   final VoidCallback? onTap;
+  final String? heroTag;
 
-  const AppAvatar({super.key, this.url, this.fallbackText, this.size = 40, this.onTap});
+  const AppAvatar({super.key, this.url, this.fallbackText, this.size = 40, this.onTap, this.heroTag});
 
   @override
   Widget build(BuildContext context) {
-    final avatar = Container(
+    Widget avatar = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
@@ -246,6 +246,13 @@ class AppAvatar extends StatelessWidget {
             : _fallback(),
       ),
     );
+
+    if (heroTag != null) {
+      avatar = Hero(
+        tag: heroTag!,
+        child: avatar,
+      );
+    }
 
     if (onTap != null) {
       return GestureDetector(
@@ -728,128 +735,131 @@ class CampaignCardWidget extends StatelessWidget {
             // Cover image with linear gradient
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Container(
-                      color: AppColors.surface2,
-                      child: card['cover_image_url'] != null && card['cover_image_url'].toString().isNotEmpty
-                          ? CachedNetworkImage(
-                              cacheManager: AppCacheManager.instance,
-                              imageUrl: card['cover_image_url'],
-                              fit: BoxFit.cover,
-                              memCacheWidth: 800,
-                              memCacheHeight: 450,
-                              placeholder: (context, url) => const Center(
-                                child: SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+              child: Hero(
+                tag: 'card_cover_${card['id']}',
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        color: AppColors.surface2,
+                        child: card['cover_image_url'] != null && card['cover_image_url'].toString().isNotEmpty
+                            ? CachedNetworkImage(
+                                cacheManager: AppCacheManager.instance,
+                                imageUrl: card['cover_image_url'],
+                                fit: BoxFit.cover,
+                                memCacheWidth: 800,
+                                memCacheHeight: 450,
+                                placeholder: (context, url) => const Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) => Center(
+                                errorWidget: (context, url, error) => Center(
+                                  child: Icon(Iconsax.image, size: 40, color: AppColors.borderSubtle),
+                                ),
+                              )
+                            : Center(
                                 child: Icon(Iconsax.image, size: 40, color: AppColors.borderSubtle),
                               ),
-                            )
-                          : Center(
-                              child: Icon(Iconsax.image, size: 40, color: AppColors.borderSubtle),
-                            ),
+                      ),
                     ),
-                  ),
-                  // Dark sheen gradient backdrop overlay
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.black.withOpacity(0.35),
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.55),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                    // Dark sheen gradient backdrop overlay
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.35),
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.55),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: categoryColor,
-                            borderRadius: BorderRadius.circular(100),
-                            boxShadow: [
-                              BoxShadow(
-                                color: categoryColor.withOpacity(0.35),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            category.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ),
-                        if (matchScore != null && matchScore! > 0) ...[
-                          const SizedBox(width: 8),
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Row(
+                        children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: AppColors.success,
+                              color: categoryColor,
                               borderRadius: BorderRadius.circular(100),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.success.withOpacity(0.35),
+                                  color: categoryColor.withOpacity(0.35),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
                             child: Text(
-                              'Match: +$matchScore',
+                              category.toUpperCase(),
                               style: const TextStyle(
+                                color: Colors.black,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w900,
-                                color: Colors.black,
+                                letterSpacing: 0.8,
                               ),
                             ),
                           ),
+                          if (matchScore != null && matchScore! > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.success,
+                                borderRadius: BorderRadius.circular(100),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.success.withOpacity(0.35),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Match: +$matchScore',
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
                       ),
-                      child: Text(
-                        campaignType,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.2,
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+                        ),
+                        child: Text(
+                          campaignType,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Padding(

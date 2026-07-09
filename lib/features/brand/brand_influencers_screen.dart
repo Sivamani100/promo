@@ -576,6 +576,7 @@ class _BentoInfluencerCard extends StatelessWidget {
                     fallbackText: displayName.isNotEmpty ? displayName[0] : 'I',
                     size: 54,
                     onTap: onTap,
+                    heroTag: 'influencer_avatar_${influencer['id']}',
                   ),
                   const SizedBox(width: 14),
                   // Details
