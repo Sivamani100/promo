@@ -1,0 +1,6 @@
+{
+  "tables_used": [
+    "profiles",
+    "user_push_tokens"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "lib/features/promo_page/promo_analytics_screen.dart",
+    "lib/features/promo_page/promo_page_service.dart",
+    "lib/features/promo_page/promo_public_page_screen.dart"
+  ]
+}

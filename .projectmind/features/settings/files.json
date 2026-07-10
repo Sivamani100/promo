@@ -1,0 +1,18 @@
+{
+  "files": [
+    "lib/features/settings/ai_assistant_screen.dart",
+    "lib/features/settings/api_keys_settings.dart",
+    "lib/features/settings/creator_certifications_screen.dart",
+    "lib/features/settings/creator_leaderboard_screen.dart",
+    "lib/features/settings/developer_settings_screen.dart",
+    "lib/features/settings/document_viewer.dart",
+    "lib/features/settings/mcp_keys_settings_screen.dart",
+    "lib/features/settings/notification_settings.dart",
+    "lib/features/settings/platform_settings.dart",
+    "lib/features/settings/privacy_settings.dart",
+    "lib/features/settings/security_settings.dart",
+    "lib/features/settings/settings_screen.dart",
+    "lib/features/settings/verification_settings.dart",
+    "lib/features/settings/promo_page/promo_page_settings_screen.dart"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "name": "admin",
+  "description": "Feature module covering admin functionality.",
+  "layer": "features"
+}

@@ -1,0 +1,6 @@
+{
+  "endpoints": [
+    "Supabase Auth SignUp",
+    "Supabase Auth SignIn"
+  ]
+}

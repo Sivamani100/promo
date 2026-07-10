@@ -1,0 +1,4 @@
+{
+  "timeout_days": 30,
+  "cached_in": "SharedPreferences"
+}

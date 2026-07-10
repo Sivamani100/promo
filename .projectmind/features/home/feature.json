@@ -1,0 +1,5 @@
+{
+  "name": "home",
+  "description": "Feature module covering home functionality.",
+  "layer": "features"
+}

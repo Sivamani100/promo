@@ -1,0 +1,23 @@
+{
+  "core_exports": {
+    "widgets": [
+      "AppScaffold",
+      "OfflineBanner",
+      "AppPrivacyGuard",
+      "PasswordStrengthMeter",
+      "PremiumImageCropper"
+    ],
+    "services": [
+      "ChatService",
+      "AgreementService",
+      "PushNotificationManager",
+      "SecurityHardeningService",
+      "SupabaseService"
+    ],
+    "providers": [
+      "authProvider",
+      "routerProvider",
+      "themeModeProvider"
+    ]
+  }
+}

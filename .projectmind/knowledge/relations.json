@@ -1,0 +1,14 @@
+{
+  "relations": [
+    {
+      "subject": "Brand",
+      "predicate": "creates",
+      "object": "Card"
+    },
+    {
+      "subject": "Influencer",
+      "predicate": "applies_to",
+      "object": "Card"
+    }
+  ]
+}

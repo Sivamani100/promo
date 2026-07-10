@@ -1,0 +1,6 @@
+{
+  "handlers": [
+    "ErrorHandler.showSnackbar",
+    "ErrorHandler.logToSentry"
+  ]
+}

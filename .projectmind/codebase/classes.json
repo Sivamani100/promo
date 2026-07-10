@@ -1,0 +1,1752 @@
+{
+  "classes": [
+    {
+      "name": "BrandApp",
+      "file": "lib/app.dart"
+    },
+    {
+      "name": "_BrandAppState",
+      "file": "lib/app.dart"
+    },
+    {
+      "name": "DefaultFirebaseOptions",
+      "file": "lib/firebase_options.dart"
+    },
+    {
+      "name": "CacheEntry",
+      "file": "lib/core/cache/app_cache.dart"
+    },
+    {
+      "name": "AppCache",
+      "file": "lib/core/cache/app_cache.dart"
+    },
+    {
+      "name": "AppConfig",
+      "file": "lib/core/config/app_config.dart"
+    },
+    {
+      "name": "RemoteConfigService",
+      "file": "lib/core/config/remote_config_service.dart"
+    },
+    {
+      "name": "DeepLinkService",
+      "file": "lib/core/deeplink/deeplink_service.dart"
+    },
+    {
+      "name": "ShareService",
+      "file": "lib/core/deeplink/share_service.dart"
+    },
+    {
+      "name": "AppLifecycleManager",
+      "file": "lib/core/lifecycle/app_lifecycle_manager.dart"
+    },
+    {
+      "name": "DraftRecoveryService",
+      "file": "lib/core/lifecycle/draft_recovery_service.dart"
+    },
+    {
+      "name": "DraftData",
+      "file": "lib/core/lifecycle/draft_recovery_service.dart"
+    },
+    {
+      "name": "AppCacheManager",
+      "file": "lib/core/media/image_cache_config.dart"
+    },
+    {
+      "name": "ConnectivityService",
+      "file": "lib/core/network/connectivity_service.dart"
+    },
+    {
+      "name": "AuthState",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "AuthNotifier",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "UnreadNotificationCountNotifier",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "UnreadMessageCountNotifier",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "ThemeModeNotifier",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "BiometricLockNotifier",
+      "file": "lib/core/providers/app_providers.dart"
+    },
+    {
+      "name": "AppRouterRefreshListenable",
+      "file": "lib/core/router/app_router.dart"
+    },
+    {
+      "name": "AppTransitions",
+      "file": "lib/core/router/app_transitions.dart"
+    },
+    {
+      "name": "BruteForceGuard",
+      "file": "lib/core/security/brute_force_guard.dart"
+    },
+    {
+      "name": "LoginAttemptResult",
+      "file": "lib/core/security/brute_force_guard.dart"
+    },
+    {
+      "name": "ContentSanitizer",
+      "file": "lib/core/security/content_sanitizer.dart"
+    },
+    {
+      "name": "InputValidator",
+      "file": "lib/core/security/input_validator.dart"
+    },
+    {
+      "name": "ResumeAuthGate",
+      "file": "lib/core/security/resume_auth_gate.dart"
+    },
+    {
+      "name": "_ResumeAuthGateState",
+      "file": "lib/core/security/resume_auth_gate.dart"
+    },
+    {
+      "name": "SecureLocalStorage",
+      "file": "lib/core/security/secure_local_storage.dart"
+    },
+    {
+      "name": "SecurityHardeningService",
+      "file": "lib/core/security/security_hardening_service.dart"
+    },
+    {
+      "name": "PinningHttpOverrides",
+      "file": "lib/core/security/security_hardening_service.dart"
+    },
+    {
+      "name": "SessionGuard",
+      "file": "lib/core/security/session_guard.dart"
+    },
+    {
+      "name": "TotpHelper",
+      "file": "lib/core/security/totp_helper.dart"
+    },
+    {
+      "name": "AgreementService",
+      "file": "lib/core/services/agreement_service.dart"
+    },
+    {
+      "name": "ApplicationService",
+      "file": "lib/core/services/application_service.dart"
+    },
+    {
+      "name": "AppConfigState",
+      "file": "lib/core/services/app_update_service.dart"
+    },
+    {
+      "name": "AppConfigNotifier",
+      "file": "lib/core/services/app_update_service.dart"
+    },
+    {
+      "name": "AuthService",
+      "file": "lib/core/services/auth_service.dart"
+    },
+    {
+      "name": "BlockService",
+      "file": "lib/core/services/block_service.dart"
+    },
+    {
+      "name": "CardService",
+      "file": "lib/core/services/card_service.dart"
+    },
+    {
+      "name": "ChatService",
+      "file": "lib/core/services/chat_service.dart"
+    },
+    {
+      "name": "MilestoneExtension",
+      "file": "lib/core/services/chat_service.dart"
+    },
+    {
+      "name": "MilestoneHelper",
+      "file": "lib/core/services/chat_service.dart"
+    },
+    {
+      "name": "CampaignService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "PortfolioService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "SavedService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "AnalyticsService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "SearchService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "StorageService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "FollowService",
+      "file": "lib/core/services/data_services.dart"
+    },
+    {
+      "name": "DisputeService",
+      "file": "lib/core/services/dispute_service.dart"
+    },
+    {
+      "name": "ModerationService",
+      "file": "lib/core/services/moderation_service.dart"
+    },
+    {
+      "name": "ModerationResult",
+      "file": "lib/core/services/moderation_service.dart"
+    },
+    {
+      "name": "NotificationQueueService",
+      "file": "lib/core/services/notification_queue_service.dart"
+    },
+    {
+      "name": "NotificationService",
+      "file": "lib/core/services/notification_service.dart"
+    },
+    {
+      "name": "OnboardingAnalyticsService",
+      "file": "lib/core/services/onboarding_analytics_service.dart"
+    },
+    {
+      "name": "PaymentTrackingService",
+      "file": "lib/core/services/payment_tracking_service.dart"
+    },
+    {
+      "name": "ProfileService",
+      "file": "lib/core/services/profile_service.dart"
+    },
+    {
+      "name": "PushNotificationManager",
+      "file": "lib/core/services/push_notification_manager.dart"
+    },
+    {
+      "name": "RateAppService",
+      "file": "lib/core/services/rate_app_service.dart"
+    },
+    {
+      "name": "RealtimeSubscriptionManager",
+      "file": "lib/core/services/realtime_subscription_manager.dart"
+    },
+    {
+      "name": "ReportService",
+      "file": "lib/core/services/report_service.dart"
+    },
+    {
+      "name": "SocialProfileDetails",
+      "file": "lib/core/services/social_agent.dart"
+    },
+    {
+      "name": "InstagramProfileData",
+      "file": "lib/core/services/social_agent.dart"
+    },
+    {
+      "name": "SocialAgent",
+      "file": "lib/core/services/social_agent.dart"
+    },
+    {
+      "name": "SupabaseService",
+      "file": "lib/core/services/supabase_service.dart"
+    },
+    {
+      "name": "AppColors",
+      "file": "lib/core/theme/app_colors.dart"
+    },
+    {
+      "name": "AppSpacing",
+      "file": "lib/core/theme/app_spacing.dart"
+    },
+    {
+      "name": "AppTextStyles",
+      "file": "lib/core/theme/app_text_styles.dart"
+    },
+    {
+      "name": "AppTheme",
+      "file": "lib/core/theme/app_theme.dart"
+    },
+    {
+      "name": "DesignTokens",
+      "file": "lib/core/theme/design_tokens.dart"
+    },
+    {
+      "name": "UploadTask",
+      "file": "lib/core/upload/upload_manager.dart"
+    },
+    {
+      "name": "UploadManager",
+      "file": "lib/core/upload/upload_manager.dart"
+    },
+    {
+      "name": "AppErrorHandler",
+      "file": "lib/core/utils/error_handler.dart"
+    },
+    {
+      "name": "InputSanitizer",
+      "file": "lib/core/utils/input_sanitizer.dart"
+    },
+    {
+      "name": "AdminAnalyticsScreen",
+      "file": "lib/features/admin/admin_analytics_screen.dart"
+    },
+    {
+      "name": "_AdminAnalyticsScreenState",
+      "file": "lib/features/admin/admin_analytics_screen.dart"
+    },
+    {
+      "name": "AdminAuditLogsScreen",
+      "file": "lib/features/admin/admin_audit_logs_screen.dart"
+    },
+    {
+      "name": "_AdminAuditLogsScreenState",
+      "file": "lib/features/admin/admin_audit_logs_screen.dart"
+    },
+    {
+      "name": "AdminCampaignsScreen",
+      "file": "lib/features/admin/admin_campaigns_screen.dart"
+    },
+    {
+      "name": "_AdminCampaignsScreenState",
+      "file": "lib/features/admin/admin_campaigns_screen.dart"
+    },
+    {
+      "name": "AdminDeletionsScreen",
+      "file": "lib/features/admin/admin_deletions_screen.dart"
+    },
+    {
+      "name": "_AdminDeletionsScreenState",
+      "file": "lib/features/admin/admin_deletions_screen.dart"
+    },
+    {
+      "name": "AdminDisputesScreen",
+      "file": "lib/features/admin/admin_disputes_screen.dart"
+    },
+    {
+      "name": "_AdminDisputesScreenState",
+      "file": "lib/features/admin/admin_disputes_screen.dart"
+    },
+    {
+      "name": "AdminEmailsScreen",
+      "file": "lib/features/admin/admin_emails_screen.dart"
+    },
+    {
+      "name": "_AdminEmailsScreenState",
+      "file": "lib/features/admin/admin_emails_screen.dart"
+    },
+    {
+      "name": "AdminHelpArticlesScreen",
+      "file": "lib/features/admin/admin_help_articles_screen.dart"
+    },
+    {
+      "name": "_AdminHelpArticlesScreenState",
+      "file": "lib/features/admin/admin_help_articles_screen.dart"
+    },
+    {
+      "name": "AdminHomeScreen",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_AdminHomeScreenState",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_BentoBox",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_FeatureFlagsSheet",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_FeatureFlagsSheetState",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_PlatformConfigSheet",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "_PlatformConfigSheetState",
+      "file": "lib/features/admin/admin_home_screen.dart"
+    },
+    {
+      "name": "AdminNotificationsScreen",
+      "file": "lib/features/admin/admin_notifications_screen.dart"
+    },
+    {
+      "name": "_AdminNotificationsScreenState",
+      "file": "lib/features/admin/admin_notifications_screen.dart"
+    },
+    {
+      "name": "AdminReportsScreen",
+      "file": "lib/features/admin/admin_reports_screen.dart"
+    },
+    {
+      "name": "_AdminReportsScreenState",
+      "file": "lib/features/admin/admin_reports_screen.dart"
+    },
+    {
+      "name": "AdminSettingsScreen",
+      "file": "lib/features/admin/admin_settings_screen.dart"
+    },
+    {
+      "name": "_SettingsSection",
+      "file": "lib/features/admin/admin_settings_screen.dart"
+    },
+    {
+      "name": "_SettingsItem",
+      "file": "lib/features/admin/admin_settings_screen.dart"
+    },
+    {
+      "name": "AdminUsersScreen",
+      "file": "lib/features/admin/admin_users_screen.dart"
+    },
+    {
+      "name": "_AdminUsersScreenState",
+      "file": "lib/features/admin/admin_users_screen.dart"
+    },
+    {
+      "name": "AdminUserLogsScreen",
+      "file": "lib/features/admin/admin_user_logs_screen.dart"
+    },
+    {
+      "name": "_AdminUserLogsScreenState",
+      "file": "lib/features/admin/admin_user_logs_screen.dart"
+    },
+    {
+      "name": "AdminVerificationRequestsScreen",
+      "file": "lib/features/admin/admin_verification_requests_screen.dart"
+    },
+    {
+      "name": "_AdminVerificationRequestsScreenState",
+      "file": "lib/features/admin/admin_verification_requests_screen.dart"
+    },
+    {
+      "name": "AgreementBuilderScreen",
+      "file": "lib/features/agreements/agreement_builder_screen.dart"
+    },
+    {
+      "name": "_AgreementBuilderScreenState",
+      "file": "lib/features/agreements/agreement_builder_screen.dart"
+    },
+    {
+      "name": "AgreementReviewScreen",
+      "file": "lib/features/agreements/agreement_review_screen.dart"
+    },
+    {
+      "name": "_AgreementReviewScreenState",
+      "file": "lib/features/agreements/agreement_review_screen.dart"
+    },
+    {
+      "name": "AgreementStatusWidget",
+      "file": "lib/features/agreements/agreement_status_widget.dart"
+    },
+    {
+      "name": "_AgreementStatusWidgetState",
+      "file": "lib/features/agreements/agreement_status_widget.dart"
+    },
+    {
+      "name": "PaymentTrackerScreen",
+      "file": "lib/features/agreements/payment_tracker_screen.dart"
+    },
+    {
+      "name": "_PaymentTrackerScreenState",
+      "file": "lib/features/agreements/payment_tracker_screen.dart"
+    },
+    {
+      "name": "RaiseDisputeScreen",
+      "file": "lib/features/agreements/raise_dispute_screen.dart"
+    },
+    {
+      "name": "_RaiseDisputeScreenState",
+      "file": "lib/features/agreements/raise_dispute_screen.dart"
+    },
+    {
+      "name": "ConsentScreen",
+      "file": "lib/features/auth/consent_screen.dart"
+    },
+    {
+      "name": "_ConsentScreenState",
+      "file": "lib/features/auth/consent_screen.dart"
+    },
+    {
+      "name": "LoginScreen",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "_LoginScreenState",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "PremiumInputField",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "_PremiumInputFieldState",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "HoverablePasswordEye",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "_HoverablePasswordEyeState",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "HoverableTextButton",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "_HoverableTextButtonState",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "PrimaryCtaButton",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "_PrimaryCtaButtonState",
+      "file": "lib/features/auth/login_screen.dart"
+    },
+    {
+      "name": "ResetPasswordScreen",
+      "file": "lib/features/auth/reset_password_screen.dart"
+    },
+    {
+      "name": "_ResetPasswordScreenState",
+      "file": "lib/features/auth/reset_password_screen.dart"
+    },
+    {
+      "name": "SetNewPasswordScreen",
+      "file": "lib/features/auth/set_new_password_screen.dart"
+    },
+    {
+      "name": "_SetNewPasswordScreenState",
+      "file": "lib/features/auth/set_new_password_screen.dart"
+    },
+    {
+      "name": "SignupScreen",
+      "file": "lib/features/auth/signup_screen.dart"
+    },
+    {
+      "name": "_SignupScreenState",
+      "file": "lib/features/auth/signup_screen.dart"
+    },
+    {
+      "name": "TermsGateScreen",
+      "file": "lib/features/auth/terms_gate_screen.dart"
+    },
+    {
+      "name": "_TermsGateScreenState",
+      "file": "lib/features/auth/terms_gate_screen.dart"
+    },
+    {
+      "name": "TwoFactorVerificationScreen",
+      "file": "lib/features/auth/two_factor_verification_screen.dart"
+    },
+    {
+      "name": "_TwoFactorVerificationScreenState",
+      "file": "lib/features/auth/two_factor_verification_screen.dart"
+    },
+    {
+      "name": "AuthBackground",
+      "file": "lib/features/auth/widgets/auth_background.dart"
+    },
+    {
+      "name": "_AuthBackgroundState",
+      "file": "lib/features/auth/widgets/auth_background.dart"
+    },
+    {
+      "name": "BlobPainter",
+      "file": "lib/features/auth/widgets/auth_background.dart"
+    },
+    {
+      "name": "GlassContainer",
+      "file": "lib/features/auth/widgets/glass_container.dart"
+    },
+    {
+      "name": "GoogleSignInButton",
+      "file": "lib/features/auth/widgets/google_sign_in_button.dart"
+    },
+    {
+      "name": "_GoogleSignInButtonState",
+      "file": "lib/features/auth/widgets/google_sign_in_button.dart"
+    },
+    {
+      "name": "BrandApplicationsScreen",
+      "file": "lib/features/brand/brand_applications_screen.dart"
+    },
+    {
+      "name": "_BrandApplicationsScreenState",
+      "file": "lib/features/brand/brand_applications_screen.dart"
+    },
+    {
+      "name": "BrandMilestoneTrackerWidget",
+      "file": "lib/features/brand/brand_applications_screen.dart"
+    },
+    {
+      "name": "_BrandMilestoneTrackerWidgetState",
+      "file": "lib/features/brand/brand_applications_screen.dart"
+    },
+    {
+      "name": "BrandCardsScreen",
+      "file": "lib/features/brand/brand_cards_screen.dart"
+    },
+    {
+      "name": "_BrandCardsScreenState",
+      "file": "lib/features/brand/brand_cards_screen.dart"
+    },
+    {
+      "name": "_BentoBrandCard",
+      "file": "lib/features/brand/brand_cards_screen.dart"
+    },
+    {
+      "name": "BrandCardCreateScreen",
+      "file": "lib/features/brand/brand_card_create_screen.dart"
+    },
+    {
+      "name": "_BrandCardCreateScreenState",
+      "file": "lib/features/brand/brand_card_create_screen.dart"
+    },
+    {
+      "name": "BrandCardDetailScreen",
+      "file": "lib/features/brand/brand_card_detail_screen.dart"
+    },
+    {
+      "name": "_BrandCardDetailScreenState",
+      "file": "lib/features/brand/brand_card_detail_screen.dart"
+    },
+    {
+      "name": "BrandHomeScreen",
+      "file": "lib/features/brand/brand_home_screen.dart"
+    },
+    {
+      "name": "_BrandHomeScreenState",
+      "file": "lib/features/brand/brand_home_screen.dart"
+    },
+    {
+      "name": "_BentoBox",
+      "file": "lib/features/brand/brand_home_screen.dart"
+    },
+    {
+      "name": "BrandInfluencersScreen",
+      "file": "lib/features/brand/brand_influencers_screen.dart"
+    },
+    {
+      "name": "_BrandInfluencersScreenState",
+      "file": "lib/features/brand/brand_influencers_screen.dart"
+    },
+    {
+      "name": "_BentoInfluencerCard",
+      "file": "lib/features/brand/brand_influencers_screen.dart"
+    },
+    {
+      "name": "BrandInfluencerDetailScreen",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_BrandInfluencerDetailScreenState",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_SliverTabHeaderDelegate",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_SaveToListSheet",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_SaveToListSheetState",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_WriteReviewSheet",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "_WriteReviewSheetState",
+      "file": "lib/features/brand/brand_influencer_detail_screen.dart"
+    },
+    {
+      "name": "BrandSavedListsScreen",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "_BrandSavedListsScreenState",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "BrandCampaignsScreen",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "_BrandCampaignsScreenState",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "BrandAnalyticsScreen",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "_BrandAnalyticsScreenState",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "BrandProfileScreen",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "_BrandProfileScreenState",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "BrandSavedListDetailScreen",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "_BrandSavedListDetailScreenState",
+      "file": "lib/features/brand/brand_remaining_screens.dart"
+    },
+    {
+      "name": "ChatsListScreen",
+      "file": "lib/features/chat/chats_list_screen.dart"
+    },
+    {
+      "name": "_ChatsListScreenState",
+      "file": "lib/features/chat/chats_list_screen.dart"
+    },
+    {
+      "name": "ChatRoomScreen",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "_ChatRoomScreenState",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "VoiceNotePlayerWidget",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "_VoiceNotePlayerWidgetState",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "WaveformPainter",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "_SimulatedCallScreen",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "_SimulatedCallScreenState",
+      "file": "lib/features/chat/chat_room_screen.dart"
+    },
+    {
+      "name": "ImageViewerScreen",
+      "file": "lib/features/chat/image_viewer_screen.dart"
+    },
+    {
+      "name": "_ImageViewerScreenState",
+      "file": "lib/features/chat/image_viewer_screen.dart"
+    },
+    {
+      "name": "InviteGroupMembersScreen",
+      "file": "lib/features/chat/invite_group_members_screen.dart"
+    },
+    {
+      "name": "_InviteGroupMembersScreenState",
+      "file": "lib/features/chat/invite_group_members_screen.dart"
+    },
+    {
+      "name": "ChatInputBar",
+      "file": "lib/features/chat/widgets/chat_input_bar.dart"
+    },
+    {
+      "name": "_ChatInputBarState",
+      "file": "lib/features/chat/widgets/chat_input_bar.dart"
+    },
+    {
+      "name": "NudgeItem",
+      "file": "lib/features/home/profile_nudge_service.dart"
+    },
+    {
+      "name": "ProfileNudgeService",
+      "file": "lib/features/home/profile_nudge_service.dart"
+    },
+    {
+      "name": "DiscoverMapScreen",
+      "file": "lib/features/influencer/discover_map_screen.dart"
+    },
+    {
+      "name": "DiscoverMapView",
+      "file": "lib/features/influencer/discover_map_view.dart"
+    },
+    {
+      "name": "_DiscoverMapViewState",
+      "file": "lib/features/influencer/discover_map_view.dart"
+    },
+    {
+      "name": "_UserLocationDot",
+      "file": "lib/features/influencer/discover_map_view.dart"
+    },
+    {
+      "name": "_UserLocationDotState",
+      "file": "lib/features/influencer/discover_map_view.dart"
+    },
+    {
+      "name": "InfluencerApplicationsScreen",
+      "file": "lib/features/influencer/influencer_applications_screen.dart"
+    },
+    {
+      "name": "_InfluencerApplicationsScreenState",
+      "file": "lib/features/influencer/influencer_applications_screen.dart"
+    },
+    {
+      "name": "_MilestoneTrackerWidget",
+      "file": "lib/features/influencer/influencer_applications_screen.dart"
+    },
+    {
+      "name": "_MilestoneTrackerWidgetState",
+      "file": "lib/features/influencer/influencer_applications_screen.dart"
+    },
+    {
+      "name": "_BentoApplicationCard",
+      "file": "lib/features/influencer/influencer_applications_screen.dart"
+    },
+    {
+      "name": "InfluencerBrandDetailScreen",
+      "file": "lib/features/influencer/influencer_brand_detail_screen.dart"
+    },
+    {
+      "name": "_InfluencerBrandDetailScreenState",
+      "file": "lib/features/influencer/influencer_brand_detail_screen.dart"
+    },
+    {
+      "name": "_SliverTabHeaderDelegate",
+      "file": "lib/features/influencer/influencer_brand_detail_screen.dart"
+    },
+    {
+      "name": "_WriteReviewSheet",
+      "file": "lib/features/influencer/influencer_brand_detail_screen.dart"
+    },
+    {
+      "name": "_WriteReviewSheetState",
+      "file": "lib/features/influencer/influencer_brand_detail_screen.dart"
+    },
+    {
+      "name": "InfluencerCardDetailScreen",
+      "file": "lib/features/influencer/influencer_card_detail_screen.dart"
+    },
+    {
+      "name": "_InfluencerCardDetailScreenState",
+      "file": "lib/features/influencer/influencer_card_detail_screen.dart"
+    },
+    {
+      "name": "InfluencerDiscoverScreen",
+      "file": "lib/features/influencer/influencer_discover_screen.dart"
+    },
+    {
+      "name": "_InfluencerDiscoverScreenState",
+      "file": "lib/features/influencer/influencer_discover_screen.dart"
+    },
+    {
+      "name": "_BentoCampaignListCard",
+      "file": "lib/features/influencer/influencer_discover_screen.dart"
+    },
+    {
+      "name": "InfluencerHomeScreen",
+      "file": "lib/features/influencer/influencer_home_screen.dart"
+    },
+    {
+      "name": "_InfluencerHomeScreenState",
+      "file": "lib/features/influencer/influencer_home_screen.dart"
+    },
+    {
+      "name": "_BentoBox",
+      "file": "lib/features/influencer/influencer_home_screen.dart"
+    },
+    {
+      "name": "InfluencerBrandsScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerBrandsScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerSavedScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerSavedScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerPortfolioScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerPortfolioScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerAnalyticsScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerAnalyticsScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerProfileScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerProfileScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerNichesScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerPlatformsScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "ProfileViewsScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_ProfileViewsScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "EngagementRateScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "InfluencerMilestonesScreen",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "_InfluencerMilestonesScreenState",
+      "file": "lib/features/influencer/influencer_remaining_screens.dart"
+    },
+    {
+      "name": "NotificationsScreen",
+      "file": "lib/features/notifications/notifications_screen.dart"
+    },
+    {
+      "name": "_NotificationsScreenState",
+      "file": "lib/features/notifications/notifications_screen.dart"
+    },
+    {
+      "name": "TourStep",
+      "file": "lib/features/onboarding/dashboard_tour_screen.dart"
+    },
+    {
+      "name": "DashboardTourScreen",
+      "file": "lib/features/onboarding/dashboard_tour_screen.dart"
+    },
+    {
+      "name": "_DashboardTourScreenState",
+      "file": "lib/features/onboarding/dashboard_tour_screen.dart"
+    },
+    {
+      "name": "OnboardingState",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "OnboardingStateNotifier",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "OnboardingShell",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_OnboardingShellState",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step1Welcome",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step1WelcomeState",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step2Identity",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step2IdentityState",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step3Visual",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step4Details",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step4DetailsState",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "_Step5Launch",
+      "file": "lib/features/onboarding/onboarding_shell.dart"
+    },
+    {
+      "name": "PromoAnalyticsDashboard",
+      "file": "lib/features/promo_page/promo_analytics_screen.dart"
+    },
+    {
+      "name": "_PromoAnalyticsDashboardState",
+      "file": "lib/features/promo_page/promo_analytics_screen.dart"
+    },
+    {
+      "name": "PromoAnalyticsScreen",
+      "file": "lib/features/promo_page/promo_analytics_screen.dart"
+    },
+    {
+      "name": "PromoPage",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoPageLink",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoPageService",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoAnalyticsSummary",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "ReferrerData",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "DailyViewData",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoLinkAnalytics",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoPageView",
+      "file": "lib/features/promo_page/promo_page_service.dart"
+    },
+    {
+      "name": "PromoPublicPageScreen",
+      "file": "lib/features/promo_page/promo_public_page_screen.dart"
+    },
+    {
+      "name": "_PromoPublicPageScreenState",
+      "file": "lib/features/promo_page/promo_public_page_screen.dart"
+    },
+    {
+      "name": "SearchScreen",
+      "file": "lib/features/search/search_screen.dart"
+    },
+    {
+      "name": "_SearchScreenState",
+      "file": "lib/features/search/search_screen.dart"
+    },
+    {
+      "name": "_BentoSearchProfileCard",
+      "file": "lib/features/search/search_screen.dart"
+    },
+    {
+      "name": "_BentoCampaignSearchCard",
+      "file": "lib/features/search/search_screen.dart"
+    },
+    {
+      "name": "_ChipTabBar",
+      "file": "lib/features/search/search_screen.dart"
+    },
+    {
+      "name": "AiAssistantScreen",
+      "file": "lib/features/settings/ai_assistant_screen.dart"
+    },
+    {
+      "name": "_ChatMessage",
+      "file": "lib/features/settings/ai_assistant_screen.dart"
+    },
+    {
+      "name": "_AiAssistantScreenState",
+      "file": "lib/features/settings/ai_assistant_screen.dart"
+    },
+    {
+      "name": "ApiKeysSettingsScreen",
+      "file": "lib/features/settings/api_keys_settings.dart"
+    },
+    {
+      "name": "_ApiKeysSettingsScreenState",
+      "file": "lib/features/settings/api_keys_settings.dart"
+    },
+    {
+      "name": "CreatorCertificationsScreen",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "_CreatorCertificationsScreenState",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "QuizQuestion",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "QuizActiveScreen",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "_QuizActiveScreenState",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "QuizResultScreen",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "CertificateIllustration",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "MegaphonePainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "CollaboratorsPainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "HexagonPainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "SparksPainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "LaurelWreathPainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "SealPainter",
+      "file": "lib/features/settings/creator_certifications_screen.dart"
+    },
+    {
+      "name": "CreatorLeaderboardScreen",
+      "file": "lib/features/settings/creator_leaderboard_screen.dart"
+    },
+    {
+      "name": "_CreatorLeaderboardScreenState",
+      "file": "lib/features/settings/creator_leaderboard_screen.dart"
+    },
+    {
+      "name": "DeveloperSettingsScreen",
+      "file": "lib/features/settings/developer_settings_screen.dart"
+    },
+    {
+      "name": "AutoScrollingRolesList",
+      "file": "lib/features/settings/developer_settings_screen.dart"
+    },
+    {
+      "name": "_AutoScrollingRolesListState",
+      "file": "lib/features/settings/developer_settings_screen.dart"
+    },
+    {
+      "name": "DocumentViewerScreen",
+      "file": "lib/features/settings/document_viewer.dart"
+    },
+    {
+      "name": "McpKeysSettingsScreen",
+      "file": "lib/features/settings/mcp_keys_settings_screen.dart"
+    },
+    {
+      "name": "_McpKeysSettingsScreenState",
+      "file": "lib/features/settings/mcp_keys_settings_screen.dart"
+    },
+    {
+      "name": "NotificationSettingsScreen",
+      "file": "lib/features/settings/notification_settings.dart"
+    },
+    {
+      "name": "_NotificationSettingsScreenState",
+      "file": "lib/features/settings/notification_settings.dart"
+    },
+    {
+      "name": "PlatformSettingsScreen",
+      "file": "lib/features/settings/platform_settings.dart"
+    },
+    {
+      "name": "_PlatformSettingsScreenState",
+      "file": "lib/features/settings/platform_settings.dart"
+    },
+    {
+      "name": "PrivacySettingsScreen",
+      "file": "lib/features/settings/privacy_settings.dart"
+    },
+    {
+      "name": "_PrivacySettingsScreenState",
+      "file": "lib/features/settings/privacy_settings.dart"
+    },
+    {
+      "name": "SecuritySettingsScreen",
+      "file": "lib/features/settings/security_settings.dart"
+    },
+    {
+      "name": "_SecuritySettingsScreenState",
+      "file": "lib/features/settings/security_settings.dart"
+    },
+    {
+      "name": "SettingsScreen",
+      "file": "lib/features/settings/settings_screen.dart"
+    },
+    {
+      "name": "_SettingsSection",
+      "file": "lib/features/settings/settings_screen.dart"
+    },
+    {
+      "name": "_SettingsItem",
+      "file": "lib/features/settings/settings_screen.dart"
+    },
+    {
+      "name": "VerificationSettingsScreen",
+      "file": "lib/features/settings/verification_settings.dart"
+    },
+    {
+      "name": "_VerificationSettingsScreenState",
+      "file": "lib/features/settings/verification_settings.dart"
+    },
+    {
+      "name": "PromoPageSettingsScreen",
+      "file": "lib/features/settings/promo_page/promo_page_settings_screen.dart"
+    },
+    {
+      "name": "_PromoPageSettingsScreenState",
+      "file": "lib/features/settings/promo_page/promo_page_settings_screen.dart"
+    },
+    {
+      "name": "_SubNavItem",
+      "file": "lib/features/settings/promo_page/promo_page_settings_screen.dart"
+    },
+    {
+      "name": "_FullScreenPreview",
+      "file": "lib/features/settings/promo_page/promo_page_settings_screen.dart"
+    },
+    {
+      "name": "SplashScreen",
+      "file": "lib/features/splash/splash_screen.dart"
+    },
+    {
+      "name": "_SplashScreenState",
+      "file": "lib/features/splash/splash_screen.dart"
+    },
+    {
+      "name": "FeedbackService",
+      "file": "lib/features/support/feedback_service.dart"
+    },
+    {
+      "name": "_NPSSurveyWidget",
+      "file": "lib/features/support/feedback_service.dart"
+    },
+    {
+      "name": "_NPSSurveyWidgetState",
+      "file": "lib/features/support/feedback_service.dart"
+    },
+    {
+      "name": "HelpArticleDetailScreen",
+      "file": "lib/features/support/help_article_detail_screen.dart"
+    },
+    {
+      "name": "_HelpArticleDetailScreenState",
+      "file": "lib/features/support/help_article_detail_screen.dart"
+    },
+    {
+      "name": "SupportScreen",
+      "file": "lib/features/support/support_screen.dart"
+    },
+    {
+      "name": "_SupportScreenState",
+      "file": "lib/features/support/support_screen.dart"
+    },
+    {
+      "name": "BannedScreen",
+      "file": "lib/features/trust/account_status_screens.dart"
+    },
+    {
+      "name": "SuspendedScreen",
+      "file": "lib/features/trust/account_status_screens.dart"
+    },
+    {
+      "name": "WarningBanner",
+      "file": "lib/features/trust/account_status_screens.dart"
+    },
+    {
+      "name": "_WarningBannerState",
+      "file": "lib/features/trust/account_status_screens.dart"
+    },
+    {
+      "name": "BlockedUsersScreen",
+      "file": "lib/features/trust/blocked_users_screen.dart"
+    },
+    {
+      "name": "_BlockedUsersScreenState",
+      "file": "lib/features/trust/blocked_users_screen.dart"
+    },
+    {
+      "name": "ReportSheet",
+      "file": "lib/features/trust/report_sheet.dart"
+    },
+    {
+      "name": "_ReportSheetState",
+      "file": "lib/features/trust/report_sheet.dart"
+    },
+    {
+      "name": "AnalyticsConsentDialog",
+      "file": "lib/shared/widgets/analytics_consent_dialog.dart"
+    },
+    {
+      "name": "_AnalyticsConsentDialogState",
+      "file": "lib/shared/widgets/analytics_consent_dialog.dart"
+    },
+    {
+      "name": "AnimatedIconButton",
+      "file": "lib/shared/widgets/animated_icon_button.dart"
+    },
+    {
+      "name": "_AnimatedIconButtonState",
+      "file": "lib/shared/widgets/animated_icon_button.dart"
+    },
+    {
+      "name": "AppCard",
+      "file": "lib/shared/widgets/app_card.dart"
+    },
+    {
+      "name": "AppRefreshIndicator",
+      "file": "lib/shared/widgets/app_refresh_indicator.dart"
+    },
+    {
+      "name": "_AppRefreshIndicatorState",
+      "file": "lib/shared/widgets/app_refresh_indicator.dart"
+    },
+    {
+      "name": "AppScaffold",
+      "file": "lib/shared/widgets/app_scaffold.dart"
+    },
+    {
+      "name": "_AppScaffoldState",
+      "file": "lib/shared/widgets/app_scaffold.dart"
+    },
+    {
+      "name": "_NavItem",
+      "file": "lib/shared/widgets/app_scaffold.dart"
+    },
+    {
+      "name": "SkeletonShimmer",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "_SkeletonShimmerState",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonBox",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonCircle",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonText",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonParagraph",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonButton",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonImage",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "SkeletonCard",
+      "file": "lib/shared/widgets/app_skeleton.dart"
+    },
+    {
+      "name": "AppSnackbar",
+      "file": "lib/shared/widgets/app_snackbar.dart"
+    },
+    {
+      "name": "_PremiumSnackbarContent",
+      "file": "lib/shared/widgets/app_snackbar.dart"
+    },
+    {
+      "name": "MaintenanceBlockerScreen",
+      "file": "lib/shared/widgets/blocker_screens.dart"
+    },
+    {
+      "name": "ForceUpdateBlockerScreen",
+      "file": "lib/shared/widgets/blocker_screens.dart"
+    },
+    {
+      "name": "FeedbackDialog",
+      "file": "lib/shared/widgets/feedback_dialog.dart"
+    },
+    {
+      "name": "_FeedbackDialogState",
+      "file": "lib/shared/widgets/feedback_dialog.dart"
+    },
+    {
+      "name": "HelpTooltipButton",
+      "file": "lib/shared/widgets/help_tooltip_button.dart"
+    },
+    {
+      "name": "OfflineBanner",
+      "file": "lib/shared/widgets/offline_banner.dart"
+    },
+    {
+      "name": "PasswordStrengthMeter",
+      "file": "lib/shared/widgets/password_strength_meter.dart"
+    },
+    {
+      "name": "PremiumImageCropper",
+      "file": "lib/shared/widgets/premium_image_cropper.dart"
+    },
+    {
+      "name": "_PremiumImageCropperState",
+      "file": "lib/shared/widgets/premium_image_cropper.dart"
+    },
+    {
+      "name": "CropMaskPainter",
+      "file": "lib/shared/widgets/premium_image_cropper.dart"
+    },
+    {
+      "name": "AppPrivacyGuard",
+      "file": "lib/shared/widgets/privacy_guard.dart"
+    },
+    {
+      "name": "_AppPrivacyGuardState",
+      "file": "lib/shared/widgets/privacy_guard.dart"
+    },
+    {
+      "name": "InfluencerHomeBodySkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerDiscoverSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerWelcomeCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerStatCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerDeliverablesSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerFeaturedPartnersSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerCampaignMatchesSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandHomeBodySkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandWelcomeCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandStatCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandQuickActionsSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandFeaturedCreatorsSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandTipCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandRecentActivitySkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BentoListCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BentoApplicationCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "CampaignCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BentoBrandCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BrandTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "NotificationTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "ApplicationCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "ChatTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "StatGridSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "ProfileDetailSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BentoGridCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "SearchResultsSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "_SearchBrandTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "_SearchInfluencerTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "SettingsListSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "BentoInfluencerCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "GenericListTileSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "CardDetailSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "InfluencerGridSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "AnalyticsScreenSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "ChatRoomSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "AcceptedDealCardSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "CreatorBrandDetailSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "CreateCampaignSkeleton",
+      "file": "lib/shared/widgets/screen_skeletons.dart"
+    },
+    {
+      "name": "AppButton",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "_AppButtonState",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppTextField",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppAvatar",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppChip",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "StatCard",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "_StatCardState",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "SectionHeader",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppEmptyState",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "CampaignCardWidget",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppShimmer",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerBox",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerCampaignCard",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerBrandTile",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "VerificationBadge",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerNotificationTile",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerApplicationCard",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerChatTile",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerStatGrid",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerProfileDetail",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerSearchResults",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "_ShimmerProfileTile",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerSettingsList",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerGenericListTile",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerCardDetail",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerInfluencerGrid",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerAnalyticsScreen",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "ShimmerChatRoom",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "AppImage",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "PortfolioItemDetailSheet",
+      "file": "lib/shared/widgets/shared_widgets.dart"
+    },
+    {
+      "name": "SocialButton",
+      "file": "lib/shared/widgets/social_button.dart"
+    },
+    {
+      "name": "StaggeredListItem",
+      "file": "lib/shared/widgets/staggered_list_item.dart"
+    },
+    {
+      "name": "_StaggeredListItemState",
+      "file": "lib/shared/widgets/staggered_list_item.dart"
+    }
+  ]
+}

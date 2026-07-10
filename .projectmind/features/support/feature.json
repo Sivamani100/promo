@@ -1,0 +1,5 @@
+{
+  "name": "support",
+  "description": "Feature module covering support functionality.",
+  "layer": "features"
+}

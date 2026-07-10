@@ -1,0 +1,12 @@
+{
+  "files": [
+    "lib/features/influencer/discover_map_screen.dart",
+    "lib/features/influencer/discover_map_view.dart",
+    "lib/features/influencer/influencer_applications_screen.dart",
+    "lib/features/influencer/influencer_brand_detail_screen.dart",
+    "lib/features/influencer/influencer_card_detail_screen.dart",
+    "lib/features/influencer/influencer_discover_screen.dart",
+    "lib/features/influencer/influencer_home_screen.dart",
+    "lib/features/influencer/influencer_remaining_screens.dart"
+  ]
+}

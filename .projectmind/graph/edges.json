@@ -1,0 +1,14 @@
+{
+  "edges": [
+    {
+      "source": "feat_auth",
+      "target": "table_profiles",
+      "relation": "reads_writes"
+    },
+    {
+      "source": "feat_chat",
+      "target": "table_messages",
+      "relation": "subscribes_to"
+    }
+  ]
+}

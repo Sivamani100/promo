@@ -1,0 +1,5 @@
+{
+  "name": "settings",
+  "description": "Feature module covering settings functionality.",
+  "layer": "features"
+}

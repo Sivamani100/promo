@@ -1,0 +1,24 @@
+{
+  "cocoapods": {
+    "platform": "ios '13.0'",
+    "use_frameworks": true,
+    "pods": [
+      {
+        "name": "Sentry",
+        "version": "~> 8.9.0"
+      },
+      {
+        "name": "Firebase/Messaging",
+        "version": "~> 10.0"
+      },
+      {
+        "name": "GoogleSignIn",
+        "version": "~> 7.0"
+      },
+      {
+        "name": "flutter_secure_storage",
+        "path": ".symlinks/plugins/flutter_secure_storage/ios"
+      }
+    ]
+  }
+}

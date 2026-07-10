@@ -1,0 +1,7 @@
+{
+  "tables_used": [
+    "collaboration_agreements",
+    "payment_records",
+    "disputes"
+  ]
+}

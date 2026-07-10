@@ -1,0 +1,14 @@
+{
+  "long_term_memories": [
+    {
+      "key": "totp_implementation",
+      "context": "TOTP is verified via client-side SHA1 helper calculations and validated on session loading gates within the GoRouter redirect callbacks.",
+      "timestamp": "2026-07-10T09:40:00Z"
+    },
+    {
+      "key": "file_upload_integrity",
+      "context": "Avoid executing unverified files by scanning magic bytes for PNG/JPEG/WebP and analyzing headers to prevent Path Traversal or script injections.",
+      "timestamp": "2026-07-10T09:40:00Z"
+    }
+  ]
+}

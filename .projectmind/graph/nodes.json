@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    {
+      "id": "feat_auth",
+      "label": "Authentication Feature",
+      "type": "feature"
+    },
+    {
+      "id": "feat_chat",
+      "label": "Chat Feature",
+      "type": "feature"
+    },
+    {
+      "id": "table_profiles",
+      "label": "Profiles Table",
+      "type": "database_table"
+    },
+    {
+      "id": "table_messages",
+      "label": "Messages Table",
+      "type": "database_table"
+    }
+  ]
+}

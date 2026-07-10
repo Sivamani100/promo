@@ -1,0 +1,62 @@
+{
+  "profiles": {
+    "description": "App users containing role, active state, status, preferences, and verified badges."
+  },
+  "cards": {
+    "description": "Campaign ads published by brands containing category, payout info, status, and details."
+  },
+  "rooms": {
+    "description": "Chat rooms connecting brand, influencer, and link to campaign cards / group structures."
+  },
+  "messages": {
+    "description": "Messaging logs supporting replies, stars, pins, attachment URLs, and reaction emojis."
+  },
+  "group_members": {
+    "description": "Group participants mapping roles and join requests states."
+  },
+  "milestones": {
+    "description": "Milestone deliverables in a contract supporting dates and [EXT:... status] extensions."
+  },
+  "collaboration_agreements": {
+    "description": "Legal contract outlines, details, statuses, and signatures."
+  },
+  "payment_records": {
+    "description": "Financial ledger tracking escrow, transfer, and payout logs."
+  },
+  "disputes": {
+    "description": "Escalation cases raised when contracts are not fulfilled or delayed."
+  },
+  "user_reports": {
+    "description": "Moderation reports made by users on profile violations."
+  },
+  "user_blocks": {
+    "description": "Blocks log tracking user-to-user blocking configurations."
+  },
+  "follows": {
+    "description": "Follower-following mappings."
+  },
+  "onboarding_events": {
+    "description": "Tracks onboarding steps progression."
+  },
+  "notification_queue": {
+    "description": "Queued push notifications before delivery."
+  },
+  "mcp_keys": {
+    "description": "Secure storage for developer API configuration."
+  },
+  "user_push_tokens": {
+    "description": "Push notification token registries."
+  },
+  "promo_pages": {
+    "description": "Link-in-bio user profiles."
+  },
+  "promo_page_links": {
+    "description": "Sub-links inside promo profiles."
+  },
+  "promo_page_views": {
+    "description": "Analytic tracking views."
+  },
+  "promo_page_link_clicks": {
+    "description": "Analytic tracking clicks."
+  }
+}

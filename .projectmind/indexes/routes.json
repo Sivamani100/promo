@@ -1,0 +1,9 @@
+[
+  "/splash",
+  "/login",
+  "/signup",
+  "/verify-2fa",
+  "/brand/home",
+  "/influencer/home",
+  "/@:username"
+]

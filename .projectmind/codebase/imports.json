@@ -1,0 +1,24 @@
+{
+  "core_imports": {
+    "flutter_framework": [
+      "package:flutter/material.dart",
+      "package:flutter/foundation.dart",
+      "package:flutter/cupertino.dart"
+    ],
+    "state_management": [
+      "package:flutter_riverpod/flutter_riverpod.dart"
+    ],
+    "routing": [
+      "package:go_router/go_router.dart"
+    ],
+    "database_client": [
+      "package:supabase_flutter/supabase_flutter.dart"
+    ],
+    "web_landing_page": [
+      "next/link",
+      "react",
+      "react-dom",
+      "@supabase/supabase-js"
+    ]
+  }
+}

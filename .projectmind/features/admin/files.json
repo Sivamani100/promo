@@ -1,0 +1,18 @@
+{
+  "files": [
+    "lib/features/admin/admin_analytics_screen.dart",
+    "lib/features/admin/admin_audit_logs_screen.dart",
+    "lib/features/admin/admin_campaigns_screen.dart",
+    "lib/features/admin/admin_deletions_screen.dart",
+    "lib/features/admin/admin_disputes_screen.dart",
+    "lib/features/admin/admin_emails_screen.dart",
+    "lib/features/admin/admin_help_articles_screen.dart",
+    "lib/features/admin/admin_home_screen.dart",
+    "lib/features/admin/admin_notifications_screen.dart",
+    "lib/features/admin/admin_reports_screen.dart",
+    "lib/features/admin/admin_settings_screen.dart",
+    "lib/features/admin/admin_users_screen.dart",
+    "lib/features/admin/admin_user_logs_screen.dart",
+    "lib/features/admin/admin_verification_requests_screen.dart"
+  ]
+}

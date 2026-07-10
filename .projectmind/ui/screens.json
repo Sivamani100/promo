@@ -1,0 +1,28 @@
+{
+  "screens": [
+    {
+      "path": "/login",
+      "class": "LoginScreen"
+    },
+    {
+      "path": "/signup",
+      "class": "SignupScreen"
+    },
+    {
+      "path": "/brand/home",
+      "class": "BrandHomeScreen"
+    },
+    {
+      "path": "/influencer/home",
+      "class": "InfluencerHomeScreen"
+    },
+    {
+      "path": "/brand/chats/:roomId",
+      "class": "ChatRoomScreen"
+    },
+    {
+      "path": "/@:username",
+      "class": "PromoPublicPageScreen"
+    }
+  ]
+}

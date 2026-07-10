@@ -1,0 +1,5 @@
+{
+  "name": "splash",
+  "description": "Feature module covering splash functionality.",
+  "layer": "features"
+}

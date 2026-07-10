@@ -1,0 +1,4 @@
+{
+  "status": "production",
+  "service": "Database/Auth/Edge Functions"
+}

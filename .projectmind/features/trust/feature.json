@@ -1,0 +1,5 @@
+{
+  "name": "trust",
+  "description": "Feature module covering trust functionality.",
+  "layer": "features"
+}

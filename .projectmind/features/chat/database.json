@@ -1,0 +1,8 @@
+{
+  "tables_used": [
+    "rooms",
+    "messages",
+    "milestones",
+    "group_members"
+  ]
+}

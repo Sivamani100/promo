@@ -1,0 +1,9 @@
+{
+  "files": [
+    "lib/features/agreements/agreement_builder_screen.dart",
+    "lib/features/agreements/agreement_review_screen.dart",
+    "lib/features/agreements/agreement_status_widget.dart",
+    "lib/features/agreements/payment_tracker_screen.dart",
+    "lib/features/agreements/raise_dispute_screen.dart"
+  ]
+}

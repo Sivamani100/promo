@@ -1,0 +1,12 @@
+{
+  "files": [
+    "lib/features/brand/brand_applications_screen.dart",
+    "lib/features/brand/brand_cards_screen.dart",
+    "lib/features/brand/brand_card_create_screen.dart",
+    "lib/features/brand/brand_card_detail_screen.dart",
+    "lib/features/brand/brand_home_screen.dart",
+    "lib/features/brand/brand_influencers_screen.dart",
+    "lib/features/brand/brand_influencer_detail_screen.dart",
+    "lib/features/brand/brand_remaining_screens.dart"
+  ]
+}

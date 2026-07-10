@@ -1,0 +1,22 @@
+{
+  "migrations": [
+    "20260624000000_harden_rls.sql",
+    "20260624000100_storage_verification.sql",
+    "20260625000000_chat_read_status_rls.sql",
+    "20260625000100_sync_message_notifications.sql",
+    "20260626000000_v2_trust_and_agreements.sql",
+    "20260626000100_card_recommendation_rpc.sql",
+    "20260626000200_v3_support_and_feedback.sql",
+    "20260627000000_fix_push_token_rls.sql",
+    "20260627000100_account_deletion_rpc.sql",
+    "20260630000000_admin_consoles_rls.sql",
+    "20260630000100_mcp_api_keys.sql",
+    "20260630000200_ai_chat_persistence.sql",
+    "20260701000100_promo_pages.sql",
+    "20260701000200_promo_analytics.sql",
+    "20260702000100_research_campaign.sql",
+    "20260703000100_user_warnings.sql",
+    "20260709000100_launch_readiness.sql",
+    "20260710000100_fix_audit_logs_constraint.sql"
+  ]
+}

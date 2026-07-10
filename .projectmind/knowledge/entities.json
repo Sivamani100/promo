@@ -1,0 +1,16 @@
+{
+  "entities": [
+    {
+      "name": "Brand",
+      "description": "Profile posting campaign cards and saved lists."
+    },
+    {
+      "name": "Influencer",
+      "description": "Profile applying to cards, managing milestones."
+    },
+    {
+      "name": "Agreement",
+      "description": "Collaboration contract between brand and influencer."
+    }
+  ]
+}

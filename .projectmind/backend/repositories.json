@@ -1,0 +1,34 @@
+{
+  "repositories": [
+    {
+      "name": "CampaignRepository",
+      "class": "CampaignService",
+      "file": "lib/core/services/data_services.dart",
+      "description": "Database queries for 'brand_campaigns' table."
+    },
+    {
+      "name": "PortfolioRepository",
+      "class": "PortfolioService",
+      "file": "lib/core/services/data_services.dart",
+      "description": "Database queries for 'portfolio_items' table."
+    },
+    {
+      "name": "SavedRepository",
+      "class": "SavedService",
+      "file": "lib/core/services/data_services.dart",
+      "description": "Database queries for 'saved_cards', 'influencer_lists' and 'influencer_list_items' tables."
+    },
+    {
+      "name": "AnalyticsRepository",
+      "class": "AnalyticsService",
+      "file": "lib/core/services/data_services.dart",
+      "description": "Database queries for 'profile_views' and 'reviews' tables."
+    },
+    {
+      "name": "FollowRepository",
+      "class": "FollowService",
+      "file": "lib/core/services/data_services.dart",
+      "description": "Database queries for 'follows' table."
+    }
+  ]
+}

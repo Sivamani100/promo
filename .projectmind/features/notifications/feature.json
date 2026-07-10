@@ -1,0 +1,5 @@
+{
+  "name": "notifications",
+  "description": "Feature module covering notifications functionality.",
+  "layer": "features"
+}

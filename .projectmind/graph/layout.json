@@ -1,0 +1,10 @@
+{
+  "layout_algorithm": "force-directed",
+  "parameters": {
+    "stiffness": 400,
+    "repulsion": 1000,
+    "damping": 0.5,
+    "gravity": 0.1,
+    "iterations": 200
+  }
+}
