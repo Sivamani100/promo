@@ -66,17 +66,30 @@ class DeepLinkService {
     final segments = uri.pathSegments;
     if (segments.isEmpty) return;
 
+    // Handle @username public profile links
+    if (segments[0].startsWith('@')) {
+      ref.read(routerProvider).go('/${segments[0]}');
+      return;
+    }
+
     String? destination;
     switch (segments[0]) {
       case 'leaderboard':
         ref.read(routerProvider).go('/leaderboard');
         return;
+      case 'beta':
+        ref.read(routerProvider).go('/brand/home');
+        return;
       case 'card':
+      case 'cards':
         if (segments.length > 1) {
-          destination = '/card/${segments[1]}';
+          final cardId = segments[1];
+          final role = ref.read(authProvider).role ?? 'brand';
+          destination = role == 'brand' ? '/brand/cards/$cardId' : '/influencer/discover/$cardId';
         }
         break;
       case 'brand':
+      case 'brands':
         if (segments.length > 1) {
           final sub = segments[1];
           const brandAppRoutes = {
@@ -90,6 +103,7 @@ class DeepLinkService {
         }
         break;
       case 'influencer':
+      case 'influencers':
         if (segments.length > 1) {
           final sub = segments[1];
           const influencerAppRoutes = {
@@ -107,9 +121,14 @@ class DeepLinkService {
           destination = '/chat/room/${segments[1]}';
         }
         break;
+      case 'auth':
+        if (segments.length > 1 && segments[1] == 'reset') {
+          destination = '/set-new-password';
+        }
+        break;
       case 'invite':
         // Referral link — store ref param for after signup
-        final refId = uri.queryParameters['ref'];
+        final refId = segments.length > 1 ? segments[1] : uri.queryParameters['ref'];
         if (refId != null && refId.isNotEmpty) {
           ref.read(pendingDeepLinkProvider.notifier).state = 'ref:$refId';
         }

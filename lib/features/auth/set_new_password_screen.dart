@@ -15,6 +15,7 @@ import '../../shared/widgets/shared_widgets.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
 import 'widgets/auth_background.dart';
+import '../../shared/widgets/password_strength_meter.dart';
 
 class SetNewPasswordScreen extends ConsumerStatefulWidget {
   const SetNewPasswordScreen({super.key});
@@ -43,12 +44,16 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
       _showSnack('Password must be at least 8 characters.');
       return;
     }
-    // Simple check for at least a letter and a number to align with figma spec description:
-    // "At least 8 characters, containing a letter and a number"
-    final hasLetter = password.contains(RegExp(r'[a-zA-Z]'));
-    final hasNumber = password.contains(RegExp(r'[0-9]'));
-    if (!hasLetter || !hasNumber) {
-      _showSnack('Password must contain at least one letter and one number.');
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      _showSnack('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      _showSnack('Password must contain at least one number.');
+      return;
+    }
+    if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(password)) {
+      _showSnack('Password must contain at least one special character.');
       return;
     }
     if (password != confirm) {
@@ -301,6 +306,14 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
                       color: AppColors.textMuted,
                     ),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                // SECURITY: Live password strength meter
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                  child: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _passwordCtrl,
+                    builder: (_, value, __) => PasswordStrengthMeter(password: value.text),
                   ),
                 ),
                 const SizedBox(height: 16),

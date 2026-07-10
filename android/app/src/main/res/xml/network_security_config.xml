@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CERTIFICATE PINNING CONFIGURATION
+  ==================================
+  To get your real pin hashes, run this command:
+    openssl s_client -connect lokoxgwymvvnxhmavuyv.supabase.co:443 2>/dev/null | \
+      openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | \
+      openssl dgst -sha256 -binary | base64
+  Replace the placeholder values below with real SHA-256 pin hashes.
+  ALWAYS add a backup pin (from another cert in the chain) to avoid lockout.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">supabase.co</domain>
+        <domain includeSubdomains="true">arkio.in</domain>
+        <!-- IMPORTANT: Replace pin hashes below with real values before production release -->
+        <pin-set expiration="2027-01-01">
+            <!-- Primary leaf cert pin — replace with real hash -->
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <!-- Backup intermediate cert pin — replace with real hash from chain -->
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+    </domain-config>
+</network-security-config>

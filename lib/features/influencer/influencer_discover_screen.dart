@@ -797,21 +797,14 @@ class _BentoCampaignListCard extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Container(
+                        child: AppImage(
+                          url: card['cover_image_url'],
                           width: 88,
                           height: 88,
-                          color: AppColors.surface2,
-                          child: isValidImageUrl(card['cover_image_url'])
-                              ? CachedNetworkImage(
-                                  cacheManager: AppCacheManager.instance,
-                                  imageUrl: card['cover_image_url'],
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 176,
-                                  memCacheHeight: 176,
-                                )
-                              : Center(
-                                  child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
-                                ),
+                          fit: BoxFit.cover,
+                          fallback: Center(
+                            child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
+                          ),
                         ),
                       ),
                       if (isApplied)

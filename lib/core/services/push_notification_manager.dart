@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -205,21 +206,7 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
   if (response.payload == null) return;
 
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    try {
-      await SupabaseService.initialize();
-    } catch (_) {}
-
-    final client = SupabaseService.client;
-
-    // Wait up to 1.5 seconds for the auth session to be restored from persistence
-    int attempts = 0;
-    while (client.auth.currentSession == null && attempts < 15) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
-    }
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
     final Map<String, dynamic> data = Map<String, dynamic>.from(json.decode(response.payload!));
     final roomId = data['reference_id'] as String?;
@@ -228,48 +215,81 @@ void localNotificationTapBackgroundHandler(NotificationResponse response) async 
     final String? body = data['body'];
     final int notifId = response.id ?? (title?.hashCode ?? 0) ^ (body?.hashCode ?? 0);
 
-    final currentUser = client.auth.currentUser;
-    // Fallback to recipientId (recipient of notification) if currentSession is not loaded
-    final senderId = currentUser?.id ?? recipientId;
+    if (roomId == null) return;
+
+    // -----------------------------------------------------------------------
+    // IMPORTANT: In a background isolate, flutter_secure_storage (used by
+    // SecureLocalStorage) cannot restore the Supabase auth session.
+    // Instead, we cache the JWT in SharedPreferences (accessible in background)
+    // and use it to make a raw authenticated HTTP request to the Supabase REST API.
+    // -----------------------------------------------------------------------
+    final prefs = await SharedPreferences.getInstance();
+    final cachedToken = prefs.getString('bg_access_token');
+    final cachedUserId = prefs.getString('bg_user_id');
+
+    // The recipient of the notification is the person who is replying
+    final senderId = cachedUserId ?? recipientId;
     if (senderId == null) {
-      debugPrint('[PUSH BACKGROUND ACTION ERROR] No sender ID available (currentUser and recipientId are both null).');
+      debugPrint('[PUSH BACKGROUND ACTION ERROR] No sender ID available.');
       return;
     }
 
-    if (roomId != null) {
-      if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
-        debugPrint('[PUSH BACKGROUND REPLY] Sending reply to room $roomId from sender $senderId: ${response.input}');
+    final supabaseUrl = SupabaseService.supabaseUrl;
+    final anonKey = SupabaseService.supabaseAnonKey;
+    final authHeader = cachedToken != null ? 'Bearer $cachedToken' : 'Bearer $anonKey';
 
-        // Send message using Supabase directly
-        await client.from('messages').insert({
-          'room_id': roomId,
-          'sender_id': senderId,
-          'content': response.input!,
-        });
+    if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
+      debugPrint('[PUSH BACKGROUND REPLY] Sending reply to room $roomId from sender $senderId');
 
-        debugPrint('[PUSH BACKGROUND REPLY SUCCESS] Reply sent.');
+      // POST directly to Supabase REST API with JWT
+      final uri = Uri.parse('$supabaseUrl/rest/v1/messages');
+      final httpClient = HttpClient();
+      final request = await httpClient.postUrl(uri);
+      request.headers.set('Content-Type', 'application/json');
+      request.headers.set('apikey', anonKey);
+      request.headers.set('Authorization', authHeader);
+      request.headers.set('Prefer', 'return=minimal');
+      request.add(utf8.encode(json.encode({
+        'room_id': roomId,
+        'sender_id': senderId,
+        'content': response.input!.trim().substring(0, response.input!.trim().length.clamp(0, 2000)),
+      })));
+      final httpResponse = await request.close();
+      final statusCode = httpResponse.statusCode;
+      httpClient.close();
 
-        // Cancel the notification to clear it from shade
-        final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
-        await localNotifications.cancel(id: notifId);
-
-      } else if (response.actionId == 'action_mark_read') {
-        debugPrint('[PUSH BACKGROUND MARK READ] Marking messages read in room $roomId');
-
-        // Update all messages in the room not sent by the recipient/current user to is_read = true
-        await client
-            .from('messages')
-            .update({'is_read': true})
-            .eq('room_id', roomId)
-            .neq('sender_id', senderId)
-            .eq('is_read', false);
-
-        debugPrint('[PUSH BACKGROUND MARK READ SUCCESS] Messages marked read.');
-
-        // Cancel the notification
-        final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
-        await localNotifications.cancel(id: notifId);
+      if (statusCode == 201 || statusCode == 200) {
+        debugPrint('[PUSH BACKGROUND REPLY SUCCESS] Reply sent (HTTP $statusCode).');
+      } else {
+        final respBody = await httpResponse.transform(utf8.decoder).join();
+        debugPrint('[PUSH BACKGROUND REPLY ERROR] HTTP $statusCode: $respBody');
       }
+
+      // Dismiss the notification from the shade
+      final localNotifications = FlutterLocalNotificationsPlugin();
+      await localNotifications.cancel(id: notifId);
+
+    } else if (response.actionId == 'action_mark_read') {
+      debugPrint('[PUSH BACKGROUND MARK READ] Marking messages read in room $roomId for user $senderId');
+
+      // PATCH directly to Supabase REST API with JWT
+      final uri = Uri.parse(
+        '$supabaseUrl/rest/v1/messages?room_id=eq.$roomId&sender_id=neq.$senderId&is_read=eq.false',
+      );
+      final httpClient = HttpClient();
+      final request = await httpClient.patchUrl(uri);
+      request.headers.set('Content-Type', 'application/json');
+      request.headers.set('apikey', anonKey);
+      request.headers.set('Authorization', authHeader);
+      request.headers.set('Prefer', 'return=minimal');
+      request.add(utf8.encode(json.encode({'is_read': true})));
+      final httpResponse = await request.close();
+      httpClient.close();
+      debugPrint('[PUSH BACKGROUND MARK READ] HTTP ${httpResponse.statusCode}');
+
+      // Dismiss the notification
+      final localNotifications = FlutterLocalNotificationsPlugin();
+      await localNotifications.cancel(id: notifId);
     }
   } catch (e, stack) {
     debugPrint('[PUSH BACKGROUND ACTION CRITICAL ERROR] $e\n$stack');
@@ -770,13 +790,15 @@ class PushNotificationManager {
       final roomId = data['reference_id'] as String?;
 
       if (roomId != null) {
-        if (response.actionId == 'action_reply' && response.input != null) {
+        if (response.actionId == 'action_reply' && response.input != null && response.input!.isNotEmpty) {
           debugPrint('[PUSH FOREGROUND REPLY] Sending reply to room $roomId: ${response.input}');
+          // App is in foreground — Supabase session is active, direct insert works fine
           await SupabaseService.client.from('messages').insert({
             'room_id': roomId,
             'sender_id': user.id,
-            'content': response.input!,
+            'content': response.input!.trim(),
           });
+          debugPrint('[PUSH FOREGROUND REPLY SUCCESS] Reply sent.');
         } else if (response.actionId == 'action_mark_read') {
           debugPrint('[PUSH FOREGROUND MARK READ] Marking messages read in room $roomId');
           await SupabaseService.client
@@ -787,12 +809,17 @@ class PushNotificationManager {
               .eq('is_read', false);
         }
 
-        if (response.id != null) {
-          await _localNotifications.cancel(id: response.id!);
+        // Always dismiss the notification after any action
+        final notifId = response.id;
+        if (notifId != null) {
+          await _localNotifications.cancel(id: notifId);
+        } else {
+          // If response.id is null, cancel all notifications for this group
+          await _localNotifications.cancelAll();
         }
       }
-    } catch (e) {
-      debugPrint('[PUSH FOREGROUND ACTION ERROR] Failed to execute action: $e');
+    } catch (e, stack) {
+      debugPrint('[PUSH FOREGROUND ACTION ERROR] Failed to execute action: $e\n$stack');
     }
   }
 

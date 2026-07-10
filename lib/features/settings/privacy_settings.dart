@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../shared/widgets/app_snackbar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
@@ -51,8 +53,100 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
     try {
       await ref.read(authProvider.notifier).updatePreferences(currentPrefs);
     } catch (e) {
+      if (mounted) AppSnackbar.show(context, 'Failed to update preference: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _exportData() async {
+    final user = ref.read(authProvider).user;
+    final profile = ref.read(authProvider).profile;
+    if (user == null || profile == null) return;
+
+    setState(() => _saving = true);
+    try {
+      // 1. Record the request in the database for auditing
+      await SupabaseService.client.from('data_export_requests').insert({
+        'user_id': user.id,
+        'status': 'completed',
+        'expires_at': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
+      });
+
+      // 2. Build the export payload
+      final exportPayload = {
+        'exported_at': DateTime.now().toIso8601String(),
+        'user_info': {
+          'id': user.id,
+          'email': user.email,
+          'created_at': user.createdAt,
+        },
+        'profile': profile,
+      };
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert(exportPayload);
+
+      // 3. Share/download the exported data as JSON
+      await Share.share(
+        jsonString,
+        subject: 'Promo_MyDataExport.json',
+      );
+
       if (mounted) {
-        AppSnackbar.show(context, 'Failed to update preference: $e');
+        AppSnackbar.show(context, 'Data exported successfully.');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to export data: $e');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Your Account?'),
+        content: const Text(
+          'WARNING: This is permanent. All your cards, applications, messages, and profile information will be deleted immediately. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Permanently'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _saving = true);
+    try {
+      // Call RPC delete_user_account
+      await SupabaseService.client.rpc('delete_user_account', params: {
+        'p_user_id': user.id,
+      });
+
+      // Log out
+      await ref.read(authProvider.notifier).signOut();
+      
+      if (mounted) {
+        AppSnackbar.show(context, 'Account deleted successfully.');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to delete account: $e');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -130,6 +224,26 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 final role = ref.read(authProvider).role;
                 context.push('/$role/settings/privacy/blocked-users');
               },
+            ),
+          ]),
+          const SizedBox(height: 20),
+          Text('Data & Privacy (GDPR)', style: AppTextStyles.overline),
+          const SizedBox(height: 8),
+          _buildCard([
+            ListTile(
+              leading: Icon(Iconsax.document_download, color: AppColors.accent, size: 22),
+              title: Text('Export My Data', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text('Download all your personal data as a JSON file', style: AppTextStyles.captionSm),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _saving ? null : _exportData,
+            ),
+            _buildDivider(),
+            ListTile(
+              leading: Icon(Iconsax.trash, color: AppColors.error, size: 22),
+              title: Text('Delete My Account', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
+              subtitle: Text('Permanently delete your profile and account', style: AppTextStyles.captionSm),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _saving ? null : _deleteAccount,
             ),
           ]),
         ],

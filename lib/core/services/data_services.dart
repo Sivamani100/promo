@@ -277,6 +277,34 @@ class StorageService {
       throw Exception('Unsupported file type. Allowed: ${allowedMime[bucket]!.join(", ")}');
     }
 
+    // 2.1 Magic byte validation to prevent spoofing extensions
+    if (contentType == 'image/jpeg') {
+      if (bytes.length < 3 || bytes[0] != 0xFF || bytes[1] != 0xD8 || bytes[2] != 0xFF) {
+        throw Exception('Invalid JPEG file signature.');
+      }
+    } else if (contentType == 'image/png') {
+      if (bytes.length < 4 || bytes[0] != 0x89 || bytes[1] != 0x50 || bytes[2] != 0x4E || bytes[3] != 0x47) {
+        throw Exception('Invalid PNG file signature.');
+      }
+    } else if (contentType == 'image/webp') {
+      if (bytes.length < 4 || bytes[0] != 0x52 || bytes[1] != 0x49 || bytes[2] != 0x46 || bytes[3] != 0x46) {
+        throw Exception('Invalid WebP file signature.');
+      }
+    }
+
+    // 2.2 Scan for embedded malicious scripts
+    try {
+      final textContent = String.fromCharCodes(bytes.take(2000));
+      final lowerText = textContent.toLowerCase();
+      if (lowerText.contains('<?php') || 
+          lowerText.contains('<script') || 
+          lowerText.contains('javascript:')) {
+        throw Exception('File contains disallowed embedded executable content.');
+      }
+    } catch (_) {
+      // Ignore conversion failures on binary blobs
+    }
+
     // 3. User-scoped paths and UUID filename generation to prevent path traversal
     final user = _client.auth.currentUser;
     final userId = user?.id ?? 'anonymous';

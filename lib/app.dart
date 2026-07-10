@@ -6,7 +6,12 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/providers/app_providers.dart';
 import 'core/services/push_notification_manager.dart';
+import 'core/services/app_update_service.dart';
 import 'shared/widgets/offline_banner.dart';
+import 'shared/widgets/blocker_screens.dart';
+import 'shared/widgets/privacy_guard.dart';
+import 'core/security/resume_auth_gate.dart';
+import 'core/security/security_hardening_service.dart';
 import 'core/deeplink/deeplink_service.dart';
 import 'core/config/app_config.dart';
 
@@ -21,6 +26,7 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
   @override
   void initState() {
     super.initState();
+    SecurityHardeningService.initialize();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -80,8 +86,19 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
       routerConfig: router,
       locale: DevicePreview.locale(context),
       builder: (context, child) {
+        final config = ref.watch(appConfigCheckerProvider);
+        if (config.isInMaintenance) {
+          return const MaintenanceBlockerScreen();
+        }
+        if (config.needsForceUpdate) {
+          return const ForceUpdateBlockerScreen();
+        }
         final previewChild = DevicePreview.appBuilder(context, child);
-        return OfflineBanner(child: previewChild);
+        return AppPrivacyGuard(
+          child: ResumeAuthGate(
+            child: OfflineBanner(child: previewChild),
+          ),
+        );
       },
     );
   }

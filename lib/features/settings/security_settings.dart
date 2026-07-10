@@ -10,6 +10,8 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/supabase_service.dart';
 
+import 'package:flutter/services.dart';
+import '../../core/security/totp_helper.dart';
 import '../../core/services/auth_service.dart';
 
 class SecuritySettingsScreen extends ConsumerStatefulWidget {
@@ -66,6 +68,192 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
     }
   }
 
+  Future<void> _toggle2FA(bool enable) async {
+    final user = ref.read(authProvider).user;
+    if (user == null) return;
+
+    if (enable) {
+      // 1. Generate standard secret key
+      final secret = TotpHelper.generateSecret();
+      
+      // 2. Open setup dialog
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          final codeCtrl = TextEditingController();
+          String? dialogError;
+          int step = 1;
+
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Text(step == 1 ? 'Setup Two-Factor (2FA)' : 'Verify Verification Code'),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (step == 1) ...[
+                        const Text(
+                          'Configure 2FA by adding this secret key to your Authenticator App (Google Authenticator, Authy, etc.):',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SelectableText(
+                                  secret,
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Iconsax.copy),
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: secret));
+                                  AppSnackbar.show(ctx, 'Secret copied to clipboard.');
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Make sure to backup this key securely. If you lose access, you will need recovery codes.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ] else ...[
+                        const Text(
+                          'Enter the 6-digit verification code from your authenticator app to confirm:',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: codeCtrl,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 8,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '000000',
+                            errorText: dialogError,
+                            counterText: '',
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (step == 1) {
+                        setDialogState(() {
+                          step = 2;
+                        });
+                      } else {
+                        final code = codeCtrl.text.trim();
+                        final isValid = TotpHelper.verifyCode(secret, code);
+                        if (isValid) {
+                          try {
+                            await SupabaseService.client.from('profiles').update({
+                              'totp_secret': secret,
+                              'totp_enabled': true,
+                              'totp_backup_codes': List.generate(8, (_) => TotpHelper.generateSecret().substring(0, 10)),
+                            }).eq('id', user.id);
+                            
+                            Navigator.pop(ctx, true);
+                          } catch (e) {
+                            setDialogState(() {
+                              dialogError = 'Database update failed: $e';
+                            });
+                          }
+                        } else {
+                          setDialogState(() {
+                            dialogError = 'Invalid code. Please try again.';
+                          });
+                        }
+                      }
+                    },
+                    child: Text(step == 1 ? 'Next' : 'Verify & Enable'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (result == true) {
+        await ref.read(authProvider.notifier).refreshProfile();
+        if (mounted) {
+          AppSnackbar.show(context, 'Two-factor authentication enabled successfully.');
+        }
+      }
+    } else {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Disable Two-Factor Authentication?'),
+          content: const Text(
+            'This will lower the security level of your account. You will no longer be prompted for a 2FA code during login.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Disable'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        try {
+          await SupabaseService.client.from('profiles').update({
+            'totp_secret': null,
+            'totp_enabled': false,
+            'totp_backup_codes': null,
+          }).eq('id', user.id);
+          
+          await ref.read(authProvider.notifier).refreshProfile();
+          if (mounted) {
+            AppSnackbar.show(context, '2FA has been disabled.');
+          }
+        } catch (e) {
+          if (mounted) {
+            AppSnackbar.show(context, 'Failed to disable 2FA: $e');
+          }
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(authProvider).profile;
@@ -113,7 +301,23 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                       ),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Required';
-                        if (v.length < 6) return 'Password must be at least 6 characters';
+                        if (v.length < 8) return 'Password must be at least 8 characters';
+                        if (!RegExp(r'[A-Z]').hasMatch(v)) {
+                          return 'At least one uppercase letter required';
+                        }
+                        if (!RegExp(r'[0-9]').hasMatch(v)) {
+                          return 'At least one number required';
+                        }
+                        if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(v)) {
+                          return 'At least one special character required';
+                        }
+                        final email = ref.read(authProvider).user?.email;
+                        if (email != null) {
+                          final emailPrefix = email.split('@').first.toLowerCase();
+                          if (emailPrefix.length >= 3 && v.toLowerCase().contains(emailPrefix)) {
+                            return 'Password cannot contain your email username';
+                          }
+                        }
                         return null;
                       },
                     ),
@@ -173,9 +377,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
               trailing: Switch.adaptive(
                 value: totpEnabled,
                 activeThumbColor: AppColors.accent,
-                onChanged: (val) {
-                  AppSnackbar.show(context, 'Please contact support to configure Authenticator App credentials.');
-                },
+                onChanged: _loading ? null : _toggle2FA,
               ),
             ),
           ),
@@ -260,6 +462,55 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                     ],
                   );
                 }
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Sign Out All Devices
+          Text('Danger Zone', style: AppTextStyles.overline),
+          const SizedBox(height: 8),
+          Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            clipBehavior: Clip.antiAlias,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: ListTile(
+                leading: Icon(Iconsax.logout, color: AppColors.error, size: 22),
+                title: Text('Sign Out All Devices',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.error)),
+                subtitle: const Text('Revoke all active sessions across every device instantly.'),
+                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                onTap: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Sign Out All Devices?'),
+                      content: const Text(
+                        'This will immediately revoke all active sessions across every device and browser. '
+                        'You will be signed out of this device as well.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Sign Out All'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true && mounted) {
+                    await ref.read(authProvider.notifier).signOut();
+                  }
+                },
               ),
             ),
           ),

@@ -15,6 +15,7 @@ import 'package:iconsax/iconsax.dart';
 import 'widgets/auth_background.dart';
 import 'widgets/glass_container.dart';
 import 'widgets/google_sign_in_button.dart';
+import '../../shared/widgets/password_strength_meter.dart';
 
 const _niches = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
@@ -473,6 +474,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
+      // SECURITY: Live password strength meter
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _passwordCtrl,
+          builder: (_, value, __) => PasswordStrengthMeter(password: value.text),
+        ),
+      ),
       const SizedBox(height: 20),
 
       _buildInputField(
@@ -490,8 +499,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             _showSnack('Please fill in all fields.');
             return;
           }
-          if (pass.length < 6) {
-            _showSnack('Password must be at least 6 characters.');
+          if (pass.length < 8) {
+            _showSnack('Password must be at least 8 characters.');
+            return;
+          }
+          if (!RegExp(r'[A-Z]').hasMatch(pass)) {
+            _showSnack('Password must contain at least one uppercase letter.');
+            return;
+          }
+          if (!RegExp(r'[0-9]').hasMatch(pass)) {
+            _showSnack('Password must contain at least one number.');
+            return;
+          }
+          if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(pass)) {
+            _showSnack('Password must contain at least one special character.');
+            return;
+          }
+          final emailPrefix = email.split('@').first.toLowerCase();
+          if (emailPrefix.length >= 3 && pass.toLowerCase().contains(emailPrefix)) {
+            _showSnack('Password cannot contain your email username.');
             return;
           }
           if (pass != confirm) {
@@ -522,8 +548,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               _showSnack('Please fill in all fields.');
               return;
             }
-            if (pass.length < 6) {
-              _showSnack('Password must be at least 6 characters.');
+            if (pass.length < 8) {
+              _showSnack('Password must be at least 8 characters.');
+              return;
+            }
+            if (!RegExp(r'[A-Z]').hasMatch(pass)) {
+              _showSnack('Password must contain at least one uppercase letter.');
+              return;
+            }
+            if (!RegExp(r'[0-9]').hasMatch(pass)) {
+              _showSnack('Password must contain at least one number.');
+              return;
+            }
+            if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(pass)) {
+              _showSnack('Password must contain at least one special character.');
+              return;
+            }
+            final emailPrefix = email.split('@').first.toLowerCase();
+            if (emailPrefix.length >= 3 && pass.toLowerCase().contains(emailPrefix)) {
+              _showSnack('Password cannot contain your email username.');
               return;
             }
             if (pass != confirm) {

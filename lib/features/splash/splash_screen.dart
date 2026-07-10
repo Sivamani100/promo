@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:local_auth/local_auth.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_colors.dart';
@@ -119,6 +120,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<bool> _authenticateWithBiometrics() async {
+    // local_auth is not supported on Web
+    if (kIsWeb) return true;
     final LocalAuthentication auth = LocalAuthentication();
     try {
       final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;

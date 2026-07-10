@@ -127,6 +127,8 @@ export default function RootLayout({
         {/* ── Structured Data (JSON-LD) ── */}
         <OrganizationJsonLd />
         <WebSiteJsonLd />
+        {/* ── iOS Smart App Banner ── */}
+        <meta name="apple-itunes-app" content="app-id=647384950, app-argument=https://promo.arkio.in" />
       </head>
       <body className={`${inter.className} min-h-screen antialiased selection:bg-brand-primary/30`}>
 

@@ -1235,21 +1235,14 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Container(
+                child: AppImage(
+                  url: card['cover_image_url'],
                   width: 72,
                   height: 72,
-                  color: AppColors.surface2,
-                  child: isValidImageUrl(card['cover_image_url'])
-                      ? CachedNetworkImage(
-                          cacheManager: AppCacheManager.instance,
-                          imageUrl: card['cover_image_url'],
-                          fit: BoxFit.cover,
-                          memCacheWidth: 144,
-                          memCacheHeight: 144,
-                        )
-                      : Center(
-                          child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
-                        ),
+                  fit: BoxFit.cover,
+                  fallback: Center(
+                    child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
+                  ),
                 ),
               ),
               if (matchScore > 0)
@@ -1527,23 +1520,14 @@ class _InfluencerHomeScreenState extends ConsumerState<InfluencerHomeScreen> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Container(
+                  child: AppImage(
+                    url: card['cover_image_url'],
                     width: 84,
                     height: 90,
-                    color: AppColors.surface2,
-                    child: isValidImageUrl(card['cover_image_url'])
-                        ? CachedNetworkImage(
-                            cacheManager: AppCacheManager.instance,
-                            imageUrl: card['cover_image_url'],
-                            fit: BoxFit.cover,
-                            width: 84,
-                            height: 90,
-                            memCacheWidth: 168,
-                            memCacheHeight: 180,
-                          )
-                        : Center(
-                            child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
-                          ),
+                    fit: BoxFit.cover,
+                    fallback: Center(
+                      child: Icon(Iconsax.image, size: 24, color: AppColors.textMuted),
+                    ),
                   ),
                 ),
                 // Match badge

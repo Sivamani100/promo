@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "93A49GL36X.com.brand.brandMobileApp",
+        "paths": [
+          "*"
+        ]
+      }
+    ]
+  }
+}

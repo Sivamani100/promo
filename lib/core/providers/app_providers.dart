@@ -14,6 +14,7 @@ import '../services/social_agent.dart';
 import '../services/notification_service.dart';
 import '../services/realtime_subscription_manager.dart';
 import '../security/session_guard.dart';
+import '../security/totp_helper.dart';
 import '../utils/error_handler.dart';
 
 // ---------- Auth Provider ----------
@@ -26,6 +27,7 @@ class AuthState {
   final String? error;
   final bool isRecoveryMode;
   final bool isOnboardingComplete;
+  final bool isTwoFactorVerified;
 
   const AuthState({
     this.user,
@@ -35,6 +37,7 @@ class AuthState {
     this.error,
     this.isRecoveryMode = false,
     this.isOnboardingComplete = false,
+    this.isTwoFactorVerified = false,
   });
 
   AuthState copyWith({
@@ -45,6 +48,7 @@ class AuthState {
     String? error,
     bool? isRecoveryMode,
     bool? isOnboardingComplete,
+    bool? isTwoFactorVerified,
   }) {
     return AuthState(
       user: user ?? this.user,
@@ -54,6 +58,7 @@ class AuthState {
       error: error,
       isRecoveryMode: isRecoveryMode ?? this.isRecoveryMode,
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
+      isTwoFactorVerified: isTwoFactorVerified ?? this.isTwoFactorVerified,
     );
   }
 
@@ -139,6 +144,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
                   role: cachedRole,
                   isLoading: false,
                   isOnboardingComplete: cachedOnboarding,
+                  isTwoFactorVerified: !(cachedProfile['totp_enabled'] == true),
                 );
               }
             } catch (e) {
@@ -273,6 +279,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
             role: cachedRole,
             isLoading: false,
             isOnboardingComplete: cachedOnboarding,
+            isTwoFactorVerified: !(cachedProfile['totp_enabled'] == true),
           );
         }
       } catch (e) {
@@ -312,6 +319,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (activeProfile != null) {
         await prefs.setString('cached_profile_${user.id}', jsonEncode(activeProfile));
       }
+      // Cache the access token in SharedPreferences so the background notification
+      // reply isolate can authenticate (SecureLocalStorage doesn't work in background isolates)
+      final session = SupabaseService.client.auth.currentSession;
+      if (session != null) {
+        await prefs.setString('bg_access_token', session.accessToken);
+        await prefs.setString('bg_user_id', user.id);
+      }
       final localComplete = prefs.getBool('onboarding_complete_${user.id}') ?? false;
       final bio = activeProfile?['bio']?.toString().trim();
       final hasBio = bio != null && bio.isNotEmpty;
@@ -322,6 +336,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await prefs.setBool('onboarding_complete_${user.id}', true);
       }
 
+      final totpEnabled = activeProfile?['totp_enabled'] == true;
       state = AuthState(
         user: user,
         profile: activeProfile,
@@ -329,6 +344,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         isRecoveryMode: isRecoveryMode,
         isOnboardingComplete: isComplete,
+        isTwoFactorVerified: !totpEnabled,
       );
 
       if (activeProfile != null && activeProfile['role'] == 'influencer') {
@@ -439,6 +455,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('cached_profile_$userId');
         await prefs.remove('onboarding_complete_$userId');
+        await prefs.remove('bg_access_token');
+        await prefs.remove('bg_user_id');
       } catch (e) {
         print('[AUTH] Error clearing cache on signOut: $e');
       }
@@ -572,6 +590,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   void dispose() {
     _authSub?.cancel();
     super.dispose();
+  }
+  bool verifyTwoFactorCode(String code) {
+    final secret = state.profile?['totp_secret'] as String?;
+    if (secret == null) {
+      state = state.copyWith(isTwoFactorVerified: true);
+      return true;
+    }
+
+    final isValid = TotpHelper.verifyCode(secret, code);
+    if (isValid) {
+      state = state.copyWith(isTwoFactorVerified: true);
+      return true;
+    }
+    return false;
   }
 }
 

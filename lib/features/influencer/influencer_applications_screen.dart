@@ -1103,17 +1103,15 @@ class _BentoApplicationCard extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(13),
-                      child: isValidImageUrl(card?['cover_image_url'])
-                          ? CachedNetworkImage(
-                              cacheManager: AppCacheManager.instance,
-                              imageUrl: card?['cover_image_url'] ?? '',
-                              fit: BoxFit.cover,
-                              memCacheWidth: 128,
-                              memCacheHeight: 128,
-                            )
-                          : Center(
-                              child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
-                            ),
+                      child: AppImage(
+                        url: card?['cover_image_url'],
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.cover,
+                        fallback: Center(
+                          child: Icon(Iconsax.image, size: 20, color: AppColors.textMuted),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),

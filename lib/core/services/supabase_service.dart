@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../security/secure_local_storage.dart';
 
 class SupabaseService {
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: 'https://lokoxgwymvvnxhmavuyv.supabase.co');
@@ -13,6 +14,7 @@ class SupabaseService {
       anonKey: supabaseAnonKey,
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.implicit,
+        localStorage: SecureLocalStorage(),
       ),
     );
   }

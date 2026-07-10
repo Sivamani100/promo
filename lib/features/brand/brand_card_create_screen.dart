@@ -16,6 +16,7 @@ import '../../shared/widgets/shared_widgets.dart';
 import '../../core/lifecycle/draft_recovery_service.dart';
 import '../../shared/widgets/screen_skeletons.dart';
 import '../../shared/widgets/app_skeleton.dart';
+import '../../core/security/content_sanitizer.dart';
 
 const _categories = ['Fashion', 'Tech', 'Food', 'Fitness', 'Beauty', 'Travel', 'Gaming', 'Lifestyle'];
 const _platforms = ['Instagram', 'YouTube', 'TikTok', 'Twitter/X', 'LinkedIn'];
@@ -493,16 +494,16 @@ class _BrandCardCreateScreenState extends ConsumerState<BrandCardCreateScreen> {
 
       final cardData = {
         'brand_id': user.id,
-        'title': _titleCtrl.text.trim(),
-        'description': _descCtrl.text.trim(),
+        'title': ContentSanitizer.sanitizeText(_titleCtrl.text.trim()),
+        'description': ContentSanitizer.sanitizeText(_descCtrl.text.trim()),
         'category': _category,
         'niche_tags': finalNicheTags.toList(),
         'platform_requirements': _platformReqs.isEmpty ? null : _platformReqs,
         'languages': _selectedLanguages.isEmpty ? null : _selectedLanguages,
         'min_followers': _minFollowers,
         'preferred_location': _preferredLocation,
-        'budget_range': _budgetCtrl.text.trim().isEmpty ? null : _budgetCtrl.text.trim(),
-        'timeline': _timelineCtrl.text.trim().isEmpty ? null : _timelineCtrl.text.trim(),
+        'budget_range': _budgetCtrl.text.trim().isEmpty ? null : ContentSanitizer.sanitizeText(_budgetCtrl.text.trim()),
+        'timeline': _timelineCtrl.text.trim().isEmpty ? null : ContentSanitizer.sanitizeText(_timelineCtrl.text.trim()),
         'deliverables': deliverablesList.isEmpty ? null : deliverablesList,
         'cover_image_url': _coverImageUrl,
         'application_deadline': _applicationDeadline?.toIso8601String(),

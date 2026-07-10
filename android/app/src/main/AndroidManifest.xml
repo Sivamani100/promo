@@ -10,7 +10,8 @@
     <application
         android:label="Promo"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -46,14 +47,12 @@
                 <data android:scheme="promo" />
             </intent-filter>
             <!-- V3.0: Universal Links / App Links for https://promo.arkio.in -->
+            <!-- autoVerify MUST use https only. Google rejects http in autoVerify filters. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="promo.arkio.in" />
-                <data android:host="lokoxgwymvvnxhmavuyv.supabase.co" />
+                <data android:scheme="https" android:host="promo.arkio.in" />
             </intent-filter>
         </activity>
         <meta-data

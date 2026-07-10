@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:go_router/go_router.dart';
@@ -228,21 +229,27 @@ class AppAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: isValidImageUrl(url)
-            ? CachedNetworkImage(
-                cacheManager: AppCacheManager.instance,
-                imageUrl: url!.trim(),
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Center(
-                  child: SizedBox(
-                    width: size * 0.5,
-                    height: size * 0.5,
-                    child: const CircularProgressIndicator(strokeWidth: 1.5),
-                  ),
-                ),
-                errorWidget: (_, _, _) => _fallback(),
-                memCacheWidth: (size * 2).toInt(),
-                memCacheHeight: (size * 2).toInt(),
-              )
+            ? (kIsWeb
+                ? Image.network(
+                    url!.trim(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _fallback(),
+                  )
+                : CachedNetworkImage(
+                    cacheManager: AppCacheManager.instance,
+                    imageUrl: url!.trim(),
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Center(
+                      child: SizedBox(
+                        width: size * 0.5,
+                        height: size * 0.5,
+                        child: const CircularProgressIndicator(strokeWidth: 1.5),
+                      ),
+                    ),
+                    errorWidget: (_, _, _) => _fallback(),
+                    memCacheWidth: (size * 2).toInt(),
+                    memCacheHeight: (size * 2).toInt(),
+                  ))
             : _fallback(),
       ),
     );
@@ -1995,31 +2002,39 @@ class AppImage extends StatelessWidget {
 
     final cleanUrl = url!.trim();
 
-    Widget imageWidget = CachedNetworkImage(
-      cacheManager: AppCacheManager.instance,
-      imageUrl: cleanUrl,
-      fit: fit,
-      width: width,
-      height: height,
-      memCacheWidth: (width != null && width!.isFinite) ? (width! * 2).toInt() : null,
-      memCacheHeight: (height != null && height!.isFinite) ? (height! * 2).toInt() : null,
-      placeholder: (context, url) => Container(
-        color: AppColors.surface2,
-        width: width,
-        height: height,
-        child: Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+    Widget imageWidget = kIsWeb
+        ? Image.network(
+            cleanUrl,
+            fit: fit,
+            width: width,
+            height: height,
+            errorBuilder: (context, error, stackTrace) => placeholder,
+          )
+        : CachedNetworkImage(
+            cacheManager: AppCacheManager.instance,
+            imageUrl: cleanUrl,
+            fit: fit,
+            width: width,
+            height: height,
+            memCacheWidth: (width != null && width!.isFinite) ? (width! * 2).toInt() : null,
+            memCacheHeight: (height != null && height!.isFinite) ? (height! * 2).toInt() : null,
+            placeholder: (context, url) => Container(
+              color: AppColors.surface2,
+              width: width,
+              height: height,
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-      errorWidget: (context, url, error) => placeholder,
-    );
+            errorWidget: (context, url, error) => placeholder,
+          );
 
     if (borderRadius != null) {
       imageWidget = ClipRRect(

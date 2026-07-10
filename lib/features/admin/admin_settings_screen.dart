@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -13,7 +14,8 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/services/supabase_service.dart';
-import '../../shared/widgets/shared_widgets.dart';
+import '../../core/services/app_update_service.dart';
+import '../../shared/widgets/app_snackbar.dart';
 
 class AdminSettingsScreen extends ConsumerWidget {
   const AdminSettingsScreen({super.key});
@@ -79,6 +81,32 @@ class AdminSettingsScreen extends ConsumerWidget {
                       ? 'Dark Mode'
                       : 'Light Mode',
               onTap: () => _showThemeSelectionDialog(context, ref),
+            ),
+          ]),
+          const SizedBox(height: 20),
+          _SettingsSection(title: 'Admin Control Center', items: [
+            _SettingsItem(
+              icon: Iconsax.setting_5,
+              label: 'Maintenance Mode',
+              subtitle: ref.watch(appConfigCheckerProvider).isInMaintenance
+                  ? '🔒 Active — Users are blocked from app'
+                  : '✅ Inactive — App is live for users',
+              trailing: Switch(
+                value: ref.watch(appConfigCheckerProvider).isInMaintenance,
+                activeThumbColor: Colors.white,
+                activeTrackColor: AppColors.purple,
+                onChanged: (newDesiredVal) async {
+                  // currentVal is what it IS right now, _toggleMaintenanceMode flips it
+                  final current = ref.read(appConfigCheckerProvider).isInMaintenance;
+                  HapticFeedback.mediumImpact();
+                  await _toggleMaintenanceMode(context, ref, current);
+                },
+              ),
+              onTap: () async {
+                final current = ref.read(appConfigCheckerProvider).isInMaintenance;
+                HapticFeedback.mediumImpact();
+                await _toggleMaintenanceMode(context, ref, current);
+              },
             ),
           ]),
           const SizedBox(height: 20),
@@ -258,6 +286,30 @@ class AdminSettingsScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _toggleMaintenanceMode(BuildContext context, WidgetRef ref, bool currentVal) async {
+    // Use the SECURITY DEFINER RPC — direct .update() is blocked by RLS
+    // (platform_config writes are restricted to service_role only).
+    final newVal = !currentVal;
+    try {
+      await SupabaseService.client.rpc(
+        'set_maintenance_mode',
+        params: {'p_enabled': newVal},
+      );
+      // Refresh the local provider state after toggling
+      await ref.read(appConfigCheckerProvider.notifier).check();
+      if (context.mounted) {
+        AppSnackbar.show(
+          context,
+          newVal ? '🔒 Maintenance mode ENABLED — users are now blocked.' : '✅ Maintenance mode DISABLED — app is live.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackbar.error(context, 'Failed to toggle maintenance mode: $e');
+      }
+    }
+  }
+
   void _showThemeSelectionDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -266,7 +318,7 @@ class AdminSettingsScreen extends ConsumerWidget {
         children: [
           SimpleDialogOption(
             onPressed: () {
-              ref.read(themeModeProvider.notifier).state = ThemeMode.system;
+              ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system);
               Navigator.pop(ctx);
             },
             child: const Padding(
@@ -276,7 +328,7 @@ class AdminSettingsScreen extends ConsumerWidget {
           ),
           SimpleDialogOption(
             onPressed: () {
-              ref.read(themeModeProvider.notifier).state = ThemeMode.dark;
+              ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
               Navigator.pop(ctx);
             },
             child: const Padding(
@@ -286,7 +338,7 @@ class AdminSettingsScreen extends ConsumerWidget {
           ),
           SimpleDialogOption(
             onPressed: () {
-              ref.read(themeModeProvider.notifier).state = ThemeMode.light;
+              ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
               Navigator.pop(ctx);
             },
             child: const Padding(
@@ -358,6 +410,7 @@ class _SettingsItem extends StatelessWidget {
   final String? subtitle;
   final VoidCallback onTap;
   final Color? labelColor;
+  final Widget? trailing;
 
   const _SettingsItem({
     required this.icon,
@@ -365,6 +418,7 @@ class _SettingsItem extends StatelessWidget {
     this.subtitle,
     required this.onTap,
     this.labelColor,
+    this.trailing,
   });
 
   @override
@@ -381,7 +435,7 @@ class _SettingsItem extends StatelessWidget {
       subtitle: subtitle != null
           ? Text(subtitle!, style: AppTextStyles.caption)
           : null,
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+      trailing: trailing ?? const Icon(Icons.arrow_forward_ios_rounded, size: 14),
       onTap: onTap,
     );
   }

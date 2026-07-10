@@ -13,6 +13,7 @@ import '../../features/auth/reset_password_screen.dart';
 import '../../features/auth/set_new_password_screen.dart';
 import '../../features/auth/terms_gate_screen.dart';
 import '../../features/auth/consent_screen.dart';
+import '../../features/auth/two_factor_verification_screen.dart';
 import '../../features/onboarding/onboarding_shell.dart';
 import '../../features/onboarding/dashboard_tour_screen.dart';
 import '../../features/brand/brand_home_screen.dart';
@@ -151,6 +152,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
+      // 4.1 Check Two-Factor Authentication (2FA) Gate
+      final isTwoFactorVerified = authState.isTwoFactorVerified;
+      if (!isTwoFactorVerified) {
+        if (path != '/verify-2fa' && !path.startsWith('/@')) {
+          return '/verify-2fa';
+        }
+        return null;
+      }
+
+      // If they are verified but trying to access the 2FA screen, redirect to home
+      if (path == '/verify-2fa') {
+        if (authState.role == 'brand') return '/brand/home';
+        if (authState.role == 'influencer') return '/influencer/home';
+        if (authState.role == 'admin') return '/admin/home';
+        return '/login';
+      }
+
       // 4.5. Check user account status (suspension/ban)
       final status = authState.profile?['account_status'] as String? ?? 'active';
       if (status == 'banned') {
@@ -253,6 +271,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/signup', builder: (_, _) => const SignupScreen()),
       GoRoute(path: '/reset-password', builder: (_, _) => const ResetPasswordScreen()),
       GoRoute(path: '/set-new-password', builder: (_, _) => const SetNewPasswordScreen()),
+      GoRoute(path: '/verify-2fa', builder: (_, _) => const TwoFactorVerificationScreen()),
       
       // Terms Gate & Consent
       GoRoute(path: '/terms-gate', builder: (_, _) => const TermsGateScreen()),

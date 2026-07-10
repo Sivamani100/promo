@@ -14,6 +14,7 @@ import '../../core/providers/app_providers.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../shared/widgets/analytics_consent_dialog.dart';
+import '../../core/security/brute_force_guard.dart';
 import 'widgets/auth_background.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/glass_container.dart';
@@ -37,6 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   bool _loading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
+  int _bruteForceCountdown = 0;
 
   @override
   void initState() {
@@ -87,6 +89,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       return;
     }
 
+    // SECURITY: Check brute force status before attempting login
+    final blockStatus = BruteForceGuard.checkStatus(email);
+    if (blockStatus != null && blockStatus.isBlocked) {
+      if (blockStatus.type == LoginBlockType.delayed) {
+        final secs = blockStatus.delayRemaining?.inSeconds ?? 30;
+        setState(() => _bruteForceCountdown = secs);
+        _showSnack(blockStatus.message);
+        _shakeController.forward(from: 0);
+        return;
+      }
+      _showSnack(blockStatus.message);
+      _shakeController.forward(from: 0);
+      return;
+    }
+
     setState(() => _loading = true);
     final role = await ref.read(authProvider.notifier).signIn(email, password);
     if (mounted) {
@@ -96,8 +113,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     if (role == 'admin') {
       _showSnack('Admin access is web-only. Please use the web dashboard.');
     } else if (role == null) {
+      // SECURITY: Record failed attempt and enforce progressive lockout
+      final result = BruteForceGuard.recordFailure(email);
       final error = ref.read(authProvider).error;
-      _showSnack(error ?? 'Failed to sign in.');
+      final message = result.isBlocked ? result.message : (error ?? 'Failed to sign in.');
+      _showSnack(message);
+      _shakeController.forward(from: 0);
+    } else {
+      // SECURITY: Clear attempt history on successful login
+      BruteForceGuard.recordSuccess(email);
     }
   }
 

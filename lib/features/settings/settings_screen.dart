@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:local_auth/local_auth.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -10,11 +11,14 @@ import '../../core/providers/app_providers.dart';
 import '../../shared/widgets/shared_widgets.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../shared/widgets/app_snackbar.dart';
+import '../../shared/widgets/feedback_dialog.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<bool> _authenticate(BuildContext context) async {
+    // local_auth is not supported on Web
+    if (kIsWeb) return true;
     final auth = LocalAuthentication();
     try {
       final canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
@@ -158,6 +162,12 @@ class SettingsScreen extends ConsumerWidget {
               icon: Iconsax.info_circle,
               label: 'Help & Support',
               onTap: () => context.push('/$role/support'),
+            ),
+            _SettingsItem(
+              icon: Iconsax.message_question,
+              label: 'Share Feedback / Report Bug',
+              subtitle: 'Rate Promo or log issue reports',
+              onTap: () => FeedbackDialog.show(context),
             ),
             _SettingsItem(
               icon: Iconsax.user_octagon,
