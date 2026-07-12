@@ -1,5 +1,0 @@
-{
-  "triggers": [
-    "on_auth_user_created_create_profile"
-  ]
-}

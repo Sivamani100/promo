@@ -1,6 +1,0 @@
-{
-  "type": "serverless",
-  "provider": "Supabase Edge Functions",
-  "runtime": "Deno",
-  "deployment": "Supabase CLI"
-}

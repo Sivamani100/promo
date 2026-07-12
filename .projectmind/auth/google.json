@@ -1,8 +1,0 @@
-{
-  "status": "configured",
-  "client_ids": [
-    "web",
-    "ios",
-    "android"
-  ]
-}

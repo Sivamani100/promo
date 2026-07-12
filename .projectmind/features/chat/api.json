@@ -1,6 +1,0 @@
-{
-  "endpoints": [
-    "Realtime message channel",
-    "append_message_seen_by RPC"
-  ]
-}

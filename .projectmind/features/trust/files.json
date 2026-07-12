@@ -1,7 +1,0 @@
-{
-  "files": [
-    "lib/features/trust/account_status_screens.dart",
-    "lib/features/trust/blocked_users_screen.dart",
-    "lib/features/trust/report_sheet.dart"
-  ]
-}

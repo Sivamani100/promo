@@ -1,7 +1,0 @@
-{
-  "functions": [
-    "append_message_seen_by",
-    "get_recommended_cards",
-    "delete_user_account"
-  ]
-}

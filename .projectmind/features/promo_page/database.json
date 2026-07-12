@@ -1,8 +1,0 @@
-{
-  "tables_used": [
-    "promo_pages",
-    "promo_page_links",
-    "promo_page_views",
-    "promo_page_link_clicks"
-  ]
-}

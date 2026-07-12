@@ -1,7 +1,0 @@
-{
-  "modules": [
-    "lib/core",
-    "lib/features",
-    "lib/shared"
-  ]
-}

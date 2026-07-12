@@ -1,5 +1,0 @@
-{
-  "queues": [
-    "Supabase pg_cron notification dispatcher"
-  ]
-}

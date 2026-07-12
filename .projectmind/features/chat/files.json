@@ -1,9 +1,0 @@
-{
-  "files": [
-    "lib/features/chat/chats_list_screen.dart",
-    "lib/features/chat/chat_room_screen.dart",
-    "lib/features/chat/image_viewer_screen.dart",
-    "lib/features/chat/invite_group_members_screen.dart",
-    "lib/features/chat/widgets/chat_input_bar.dart"
-  ]
-}

@@ -1,6 +1,0 @@
-{
-  "dependencies": [
-    "google_sign_in",
-    "google_one_tap_sign_in"
-  ]
-}

@@ -1,6 +1,0 @@
-{
-  "files": [
-    "lib/features/onboarding/dashboard_tour_screen.dart",
-    "lib/features/onboarding/onboarding_shell.dart"
-  ]
-}

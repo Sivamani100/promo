@@ -1,8 +1,0 @@
-{
-  "patterns": [
-    {
-      "name": "Feature First",
-      "description": "Grouping components by domain features rather than functional layers."
-    }
-  ]
-}

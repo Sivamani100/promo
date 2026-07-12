@@ -1,7 +1,0 @@
-{
-  "indexes": [
-    "profiles_role_idx",
-    "cards_status_idx",
-    "messages_room_created_idx"
-  ]
-}

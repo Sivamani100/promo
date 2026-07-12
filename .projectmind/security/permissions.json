@@ -1,7 +1,0 @@
-{
-  "required": [
-    "camera",
-    "location",
-    "push_notifications"
-  ]
-}

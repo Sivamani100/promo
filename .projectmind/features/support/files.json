@@ -1,7 +1,0 @@
-{
-  "files": [
-    "lib/features/support/feedback_service.dart",
-    "lib/features/support/help_article_detail_screen.dart",
-    "lib/features/support/support_screen.dart"
-  ]
-}

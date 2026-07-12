@@ -1,7 +1,0 @@
-{
-  "endpoints": [
-    "/functions/v1/send-push-notification",
-    "/functions/v1/og-preview",
-    "/functions/v1/mcp-gateway"
-  ]
-}

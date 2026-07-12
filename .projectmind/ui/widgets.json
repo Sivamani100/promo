@@ -1,9 +1,0 @@
-{
-  "widgets": [
-    "AppScaffold",
-    "OfflineBanner",
-    "AppPrivacyGuard",
-    "PasswordStrengthMeter",
-    "PremiumImageCropper"
-  ]
-}
