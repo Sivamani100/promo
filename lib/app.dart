@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:device_preview/device_preview.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
@@ -84,7 +83,6 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
-      locale: DevicePreview.locale(context),
       builder: (context, child) {
         final config = ref.watch(appConfigCheckerProvider);
         if (config.isInMaintenance) {
@@ -93,10 +91,9 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
         if (config.needsForceUpdate) {
           return const ForceUpdateBlockerScreen();
         }
-        final previewChild = DevicePreview.appBuilder(context, child);
         return AppPrivacyGuard(
           child: ResumeAuthGate(
-            child: OfflineBanner(child: previewChild),
+            child: OfflineBanner(child: child ?? const SizedBox.shrink()),
           ),
         );
       },

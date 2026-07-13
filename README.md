@@ -349,4 +349,4 @@ Rules and tips for developing features in the Promo codebase:
 * **RLS Permission Errors**: If database reads or writes fail silently, check the RLS policy definitions in the migrations folder to verify the user has the required roles and permissions.
 
 ---
-*Promo Engineering Manual — Version 1.0.4. Confidential & Proprietary.*
+*Promo Engineering Manual — Version 1.0.5. Confidential & Proprietary.*
