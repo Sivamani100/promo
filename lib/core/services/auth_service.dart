@@ -40,7 +40,7 @@ class AuthService {
   }
 
   Future<void> resetPassword(String email) async {
-    final redirectUrl = kIsWeb ? '${Uri.base.origin}/' : null;
+    final redirectUrl = kIsWeb ? '${Uri.base.origin}/app/' : null;
     if (kDebugMode) {
       debugPrint('[AUTH] resetPassword for $email with redirectTo: $redirectUrl');
     }

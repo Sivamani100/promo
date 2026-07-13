@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+  <!-- Redirect to /app/ if URL contains auth hash or query parameters (e.g. magic link or OAuth callback) -->
+  <script>
+    if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('recovery') || window.location.hash.includes('error='))) {
+      window.location.href = '/app/' + window.location.hash;
+    } else if (window.location.search && (window.location.search.includes('code=') || window.location.search.includes('type=recovery') || window.location.search.includes('error='))) {
+      window.location.href = '/app/' + window.location.search + window.location.hash;
+    }
+
+    // Clean up any old root service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          if (registration.scope === window.location.origin + '/') {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('Unregistered root service worker');
+              }
+            });
+          }
+        }
+      });
+    }
+  </script>
   <!-- Primary Meta Tags -->
   <title>Promo — Creator & Brand Influencer Marketing Marketplace</title>
   <meta name="title" content="Promo — Creator & Brand Influencer Marketing Marketplace">

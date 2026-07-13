@@ -8,6 +8,6 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Secure flag: prevents screenshots and screen recording app-wide on Android
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        // window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 }

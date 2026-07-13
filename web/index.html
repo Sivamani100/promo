@@ -16,6 +16,26 @@
   -->
   <base href="$FLUTTER_BASE_HREF">
 
+  <script>
+    // Clean up any old root service worker to prevent intercepting root domain requests
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          if (registration.scope === window.location.origin + '/') {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('Unregistered old root service worker');
+                if (window.location.pathname === '/') {
+                  window.location.reload();
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  </script>
+
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">

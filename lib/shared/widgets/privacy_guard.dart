@@ -40,6 +40,11 @@ class _AppPrivacyGuardState extends State<AppPrivacyGuard> with WidgetsBindingOb
 
   @override
   Widget build(BuildContext context) {
+    // For now, bypass the privacy guard (hide the Promo Secure Area / Privacy protection active screen)
+    // We will integrate this later.
+    return widget.child;
+
+    /*
     if (!_isBackground) {
       return widget.child;
     }
@@ -103,5 +108,6 @@ class _AppPrivacyGuardState extends State<AppPrivacyGuard> with WidgetsBindingOb
         ),
       ],
     );
+    */
   }
 }

@@ -14,7 +14,7 @@ class InputValidator {
       return 'Name is too long (maximum 60 characters)';
     }
     // Block typical SQL injection characters
-    if (RegExp(r"['\";\\]").hasMatch(value)) {
+    if (RegExp(r"['" + '"' + r';\\]').hasMatch(value)) {
       return 'Name contains invalid characters';
     }
     // Block potential script injections

@@ -136,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       if (kIsWeb) {
         final success = await SupabaseService.client.auth.signInWithOAuth(
           OAuthProvider.google,
-          redirectTo: Uri.base.origin,
+          redirectTo: '${Uri.base.origin}/app/',
         );
         if (!success) {
           throw Exception('Failed to initiate Google Sign-In redirect.');

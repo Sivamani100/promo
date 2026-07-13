@@ -14,13 +14,37 @@ if (Test-Path $LandingPageDir) {
 Write-Host "`n=== Step 2: Compiling Flutter Web ===" -ForegroundColor Cyan
 flutter pub get
 flutter build web --release `
-  --base-href "/" `
+  --base-href "/app/" `
   --no-tree-shake-icons `
   --dart-define=ENV=prod `
   --dart-define=SUPABASE_URL=$SupabaseUrl `
   --dart-define=SUPABASE_ANON_KEY=$SupabaseAnonKey `
   --dart-define=FIREBASE_API_KEY_WEB=$FirebaseApiKey `
   --dart-define=SENTRY_DSN=""
+
+Write-Host "`n=== Step 2.5: Restructuring files for root landing and /app ===" -ForegroundColor Cyan
+$BuildWebDir = "build/web"
+$AppDir = "$BuildWebDir/app"
+
+if (!(Test-Path $AppDir)) {
+    Write-Host "Creating $AppDir directory..."
+    New-Item -ItemType Directory -Path $AppDir -Force
+}
+
+if (Test-Path "$BuildWebDir/index.html") {
+    Write-Host "Moving Flutter index.html to app/index.html..."
+    Move-Item -Path "$BuildWebDir/index.html" -Destination "$AppDir/index.html" -Force
+}
+
+$LandingDir = "$BuildWebDir/landing"
+if (Test-Path $LandingDir) {
+    Write-Host "Moving files from landing/ to root..."
+    Get-ChildItem -Path "$LandingDir/*" | ForEach-Object {
+        Move-Item -Path $_.FullName -Destination "$BuildWebDir/" -Force
+    }
+    Write-Host "Removing empty landing/ directory..."
+    Remove-Item -Path $LandingDir -Recurse -Force
+}
 
 Write-Host "`n=== Step 3: Deploying to Vercel ===" -ForegroundColor Cyan
 vercel build --prod --yes
