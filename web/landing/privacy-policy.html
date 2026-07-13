@@ -33,9 +33,14 @@
           colors: {
             brandBg: '#FFFFFF',
             brandPurple: '#256de8',
+            brandPink: '#EC4899',
             brandMuted: '#6B7280',
             brandCard: 'rgba(0, 0, 0, 0.01)',
             brandBorder: 'rgba(0, 0, 0, 0.05)',
+          },
+          boxShadow: {
+            glow: '0 0 30px rgba(0, 0, 0, 0.05)',
+            glowPink: '0 0 30px rgba(0, 0, 0, 0.03)',
           }
         }
       }
@@ -68,18 +73,19 @@
       font-family: 'Neue Montreal', sans-serif;
     }
 
+    /* Scrollbar Styling */
     ::-webkit-scrollbar {
       width: 8px;
     }
     ::-webkit-scrollbar-track {
-      background: #080a0d;
+      background: #FFFFFF;
     }
     ::-webkit-scrollbar-thumb {
-      background: #256de8/30;
+      background: #E5E7EB;
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #256de8/50;
+      background: #D1D5DB;
     }
 
     table {
@@ -163,7 +169,7 @@
     </div>
     
     <!-- 2. Royal Blue overlay gradient (blended on top) -->
-    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-transparent mix-blend-screen opacity-100 z-0"></div>
 
     <!-- White Bottom Gradient Fade (transitions blue background into white page body) -->
     <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
