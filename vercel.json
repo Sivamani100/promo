@@ -1,7 +1,124 @@
 {
   "ignoreCommand": "exit 0",
   "outputDirectory": "build/web",
+  "cleanUrls": true,
   "rewrites": [
+    {
+      "source": "/",
+      "destination": "/landing/index.html"
+    },
+    {
+      "source": "/features",
+      "destination": "/landing/features.html"
+    },
+    {
+      "source": "/how-it-works",
+      "destination": "/landing/how-it-works.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/landing/faq.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/landing/about.html"
+    },
+    {
+      "source": "/escrow-guide",
+      "destination": "/landing/escrow-guide.html"
+    },
+    {
+      "source": "/brand-guide",
+      "destination": "/landing/brand-guide.html"
+    },
+    {
+      "source": "/influencer-guide",
+      "destination": "/landing/influencer-guide.html"
+    },
+    {
+      "source": "/leaderboard",
+      "destination": "/landing/leaderboard.html"
+    },
+    {
+      "source": "/discovery-feature",
+      "destination": "/landing/discovery-feature.html"
+    },
+    {
+      "source": "/campaign-feature",
+      "destination": "/landing/campaign-feature.html"
+    },
+    {
+      "source": "/collaboration-feature",
+      "destination": "/landing/collaboration-feature.html"
+    },
+    {
+      "source": "/analytics-feature",
+      "destination": "/landing/analytics-feature.html"
+    },
+    {
+      "source": "/help-center",
+      "destination": "/landing/help-center.html"
+    },
+    {
+      "source": "/troubleshooting",
+      "destination": "/landing/troubleshooting.html"
+    },
+    {
+      "source": "/getting-started",
+      "destination": "/landing/getting-started.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/landing/contact.html"
+    },
+    {
+      "source": "/community-guidelines",
+      "destination": "/landing/community-guidelines.html"
+    },
+    {
+      "source": "/research",
+      "destination": "/landing/research.html"
+    },
+    {
+      "source": "/beta",
+      "destination": "/landing/beta.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/landing/privacy-policy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/landing/terms.html"
+    },
+    {
+      "source": "/delete-account",
+      "destination": "/landing/delete-account.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/landing/blog/index.html"
+    },
+    {
+      "source": "/blog/index",
+      "destination": "/landing/blog/index.html"
+    },
+    {
+      "source": "/blog/platform-vs-agency",
+      "destination": "/landing/blog/platform-vs-agency.html"
+    },
+    {
+      "source": "/blog/escrow-rise",
+      "destination": "/landing/blog/escrow-rise.html"
+    },
+    {
+      "source": "/blog/escrow-benefits",
+      "destination": "/landing/blog/escrow-benefits.html"
+    },
+    {
+      "source": "/blog/engagement-optimize",
+      "destination": "/landing/blog/engagement-optimize.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
@@ -23,4 +140,3 @@
     }
   ]
 }
-

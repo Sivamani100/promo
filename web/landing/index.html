@@ -133,6 +133,60 @@
       animation: ticker 35s linear infinite;
     }
   </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://promo.app/#organization",
+        "name": "Promo",
+        "url": "https://promo.app/",
+        "logo": "https://promo.app/assets/logo.png",
+        "description": "Promo is a performance creator marketing platform connecting brands directly with verified influencers through secure escrow payments.",
+        "foundingDate": "2026",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "sameAs": [
+          "https://github.com/Sivamani100/promo"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://promo.app/#website",
+        "url": "https://promo.app/",
+        "name": "Promo. | Performance Creator Marketing Platform",
+        "publisher": {
+          "@id": "https://promo.app/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://promo.app/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://promo.app/#softwareapplication",
+        "name": "Promo",
+        "url": "https://promo.app/",
+        "publisher": {
+          "@id": "https://promo.app/#organization"
+        },
+        "applicationCategory": "BusinessApplication, SocialNetworkingApplication",
+        "operatingSystem": "Android, iOS",
+        "description": "Launch and scale creator marketing campaigns in days. Secure escrow payments, verified creators, live performance tracking, and counter-signed digital agreements.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "INR"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="relative min-h-screen">
 
