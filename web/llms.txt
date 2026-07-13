@@ -1,0 +1,136 @@
+# Promo — Creator Marketing Platform
+> Connecting brands with verified influencers through a structured, escrow-protected workflow.
+
+Promo is a mobile-first influencer marketing platform built for the Indian market.
+It connects brands (businesses of any size) with verified content creators (influencers) through a transparent, secure, end-to-end workflow — from campaign brief creation to content delivery and payment release.
+
+## What Promo Is
+
+Promo eliminates the inefficiencies of traditional influencer marketing by providing:
+- A campaign card system where brands post structured briefs
+- A verified creator discovery and application system
+- Secure escrow-based payments that protect both brands and creators
+- Digital agreement builder for legally-binding collaboration contracts
+- Real-time chat, dispute resolution, and AI assistance
+- Creator leaderboards and certification programs
+
+## Who Uses Promo
+
+**Brands**: D2C startups, established enterprises, and any business wanting to run influencer campaigns without agencies. Brands create campaign cards, review influencer applications, sign agreements, fund escrow, approve deliverables, and release payments.
+
+**Creators / Influencers**: Content creators of all follower tiers (nano: 1K–10K, micro: 10K–100K, macro: 100K–1M, mega: 1M+). Creators discover campaigns, apply with their profile, sign agreements, produce content, submit deliverables, and receive guaranteed payments via escrow.
+
+## Core Features
+
+### For Brands
+- **Campaign Card Builder**: Create structured campaign briefs with deliverable specs (Reels, Stories, YouTube Shorts, etc.), budget caps, application deadlines, and audience targeting criteria
+- **Applicant Management**: Review influencer applications with full profile data, approve or reject, and shortlist candidates
+- **Influencer Discovery**: Search and filter the verified creator pool by niche, location, follower tier, and engagement rate
+- **Secure Escrow Payments**: Fund campaign budgets into platform-managed escrow; funds released only after deliverable approval
+- **Agreement Builder**: Generate tamper-proof digital collaboration agreements; both parties countersign in-app
+- **Brand Analytics**: Campaign ROI tracking, spend breakdown, influencer post performance metrics
+
+### For Influencers / Creators
+- **Campaign Discovery**: Browse a live feed of brand campaign cards; filter by niche, payout, and location
+- **Geo-Discovery Map**: Find brands and campaigns near your city or region on a real-time interactive map
+- **One-Tap Applications**: Apply with pre-filled profile data; add a personalised pitch note
+- **Promo Page**: Public creator profile and media kit accessible at /@username — shareable as a bio link
+- **Creator Leaderboard**: Public ranking by campaigns completed, earnings, engagement rate, and trust score
+- **Creator Certifications**: Platform-issued badges for milestones (identity verified, top-rated, rising star, etc.)
+
+### Shared Tools (for all users)
+- Real-time end-to-end encrypted chat with image sharing
+- Smart push and in-app notifications
+- Built-in AI assistant for briefs, pitches, and recommendations
+- Dispute resolution system (72-hour admin mediation, escrow frozen during disputes)
+- Global search across campaigns, profiles, and messages
+- Two-factor authentication (TOTP via Google Authenticator / Authy) — mandatory
+- Offline mode with local caching
+- Full account settings: security, privacy controls, 2FA, notification preferences
+
+### Trust & Safety
+- Identity verification for all users (government ID for creators, business credentials for brands)
+- Granular privacy controls (public / brand-only / private profile visibility)
+- Report and block system with 24-hour moderation response
+- Fake follower detection and account suspension for metric misrepresentation
+
+## How the Escrow Payment System Works
+
+1. Both parties digitally sign a collaboration agreement in-app
+2. Brand deposits the campaign budget into Promo's secure escrow wallet (card/net banking/UPI)
+3. Funds are locked — inaccessible to both parties
+4. Creator sees "Escrow Funded" status and begins content creation
+5. Creator publishes content and submits live URL via milestone tracker
+6. Promo auto-verifies the post is live and meets requirements
+7. Brand reviews and approves the deliverable
+8. Brand taps "Release Payment" → funds instantly credited to creator's Promo wallet
+9. Creator withdraws to bank account (2–4 business days) or UPI
+
+**Dispute process**: Either party can raise a formal dispute before payment release. Escrow is frozen. Admin team reviews evidence within 72 hours and makes a binding decision within 7 business days.
+
+**Refund policy**: Full refund to brand if creator fails to deliver. Partial refund for milestone cancellations. No refund after brand approves and releases payment.
+
+## Onboarding Flow
+
+**Brand onboarding**:
+1. Sign up → email verification → 2FA setup → business verification (GST/incorporation docs) → campaign card creation
+
+**Creator onboarding**:
+1. Sign up → set username and niche → set up Promo Page → link social accounts → identity verification → browse campaigns → apply
+
+## Platform Technology
+
+- Mobile app: Flutter (cross-platform iOS and Android)
+- Backend: Supabase (PostgreSQL, Auth, Realtime, Storage)
+- Auth: Email/password + mandatory TOTP 2FA
+- Payments: Escrow system via licensed payment processor
+- Real-time features: Supabase Realtime subscriptions
+- AI: Built-in AI assistant for both user types
+- Analytics: Promo Page analytics, campaign performance tracking
+
+## Pages on This Site
+
+- / — Main landing page
+- /features — Full feature breakdown for brands and influencers
+- /how-it-works — Step-by-step platform walkthrough for brands and creators
+- /escrow-guide — Deep dive into Promo's escrow payment system
+- /faq — Comprehensive FAQ (60+ questions covering all topics)
+- /brand-guide — Brand-specific onboarding and campaign guide
+- /influencer-guide — Creator-specific onboarding and earning guide
+- /leaderboard — Live public creator leaderboard
+- /about — About the Promo team and mission
+- /beta — Beta program (bug reports, idea submissions, internship applications)
+- /research — Research center for academic and industry partnership
+- /privacy-policy — Full privacy policy
+- /terms — Terms of service
+- /delete-account — Account deletion request process
+
+## Key Facts
+
+- Founded: 2026
+- Headquarters: India
+- Current market: India (INR payments)
+- Minimum campaign value: ₹500
+- Platform fee: Transparent percentage on completed campaigns (shown at payment step)
+- App platforms: Android and iOS
+- Verification time: Up to 24 hours for identity and business verification
+- Dispute resolution: 72-hour initial response, 7-day resolution target
+- Withdrawal processing: 2–4 business days to bank account
+
+## Contact & Support
+
+- Bug reports and feature ideas: promo.app/beta
+- Research partnerships: promo.app/research
+- Account deletion: promo.app/delete-account
+- Support: Via in-app Support screen
+
+## Optional Extended Resources
+
+- [Features](https://promo.app/features): Complete list of all platform features
+- [How it Works](https://promo.app/how-it-works): Step-by-step flow for brands and creators
+- [Escrow Guide](https://promo.app/escrow-guide): Full escrow system documentation
+- [FAQ](https://promo.app/faq): 60+ frequently asked questions answered
+- [Brand Guide](https://promo.app/brand-guide): Brand-specific platform guide
+- [Influencer Guide](https://promo.app/influencer-guide): Creator-specific platform guide
+- [Privacy Policy](https://promo.app/privacy-policy): Data handling and user rights
+- [Terms of Service](https://promo.app/terms): Platform terms and user obligations

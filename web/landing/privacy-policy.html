@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | Promo.</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Read Promo's privacy policy. Learn how we collect, process, and protect your profile and campaign data.">
+  <meta name="keywords" content="Promo, Privacy Policy, Data Protection, Creator Data">
+  <meta property="og:title" content="Privacy Policy | Promo.">
+  <meta property="og:description" content="Understand our data collection and protection standards built to scale securely.">
+  <meta property="og:image" content="/assets/creator_theme_bg.png">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=My+Soul&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+            display: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brandBg: '#FFFFFF',
+            brandPurple: '#256de8',
+            brandMuted: '#6B7280',
+            brandCard: 'rgba(0, 0, 0, 0.01)',
+            brandBorder: 'rgba(0, 0, 0, 0.05)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      background-color: #FFFFFF;
+      color: #171717;
+      overflow-x: hidden;
+      font-family: 'Neue Montreal', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080a0d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #256de8/30;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #256de8/50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 13.5px;
+    }
+    th, td {
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: rgba(37, 109, 232, 0.06);
+      color: #256de8;
+      font-weight: 500;
+    }
+    td {
+      color: rgba(23, 23, 23, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- ================= NAVBAR ================= -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors duration-300" style="font-family: 'My Soul', cursive;">
+        Promo<span class="text-[#256de8] font-bold text-4xl">.</span>
+      </a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="about.html" id="nav-about" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          About us
+        </a>
+        <a href="/signup" id="nav-signup" class="hidden sm:inline-flex text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          Sign up
+        </a>
+        <a href="download.html" id="nav-cta" class="group inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5 shadow-sm">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="about.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          About us
+        </a>
+      <a href="/signup" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          Sign up
+        </a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[45vh] flex flex-col justify-center items-center px-6">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient (blended on top) -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <!-- White Bottom Gradient Fade (transitions blue background into white page body) -->
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
+
+    <!-- Hero Content -->
+    <div class="relative z-20 pt-28 pb-12 flex flex-col items-center text-center max-w-7xl mx-auto">
+      <!-- Glowing eyebrow pill -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Data Privacy Guidelines</span>
+      </div>
+
+      <!-- Main Heading -->
+      <h1 class="text-4xl sm:text-5xl md:text-[54px] font-medium tracking-[-0.02em] leading-[1.1] max-w-4xl text-white">
+        Privacy Policy
+      </h1>
+      <p class="text-xs text-white/60 mt-4 font-normal">Effective Date: June 27, 2026 &nbsp;|&nbsp; Last Updated: June 27, 2026</p>
+    </div>
+  </section>
+
+  <!-- ================= POLICY CONTENT SECTION ================= -->
+  <section class="relative z-10 py-24 px-6 max-w-7xl mx-auto bg-white">
+    <div class="grid md:grid-cols-[1fr_2.5fr] gap-12 md:gap-16 items-start">
+      
+      <!-- Sticky Navigation Index -->
+      <div class="sticky top-28 hidden md:block">
+        <h4 class="text-xs font-semibold tracking-wider text-[#171717]/40 uppercase mb-6">Sections</h4>
+        <ul class="space-y-4 text-sm font-normal text-[#171717]/60">
+          <li><a href="#intro" class="hover:text-black transition-colors block">1. Introduction</a></li>
+          <li><a href="#collect" class="hover:text-black transition-colors block">2. Information We Collect</a></li>
+          <li><a href="#use" class="hover:text-black transition-colors block">3. How We Use Information</a></li>
+          <li><a href="#share" class="hover:text-black transition-colors block">4. How We Share Information</a></li>
+          <li><a href="#security" class="hover:text-black transition-colors block">5. Data Storage & Security</a></li>
+          <li><a href="#rights" class="hover:text-black transition-colors block">6. Your Rights & Choices</a></li>
+          <li><a href="#permissions" class="hover:text-black transition-colors block">7. Permissions Request</a></li>
+          <li><a href="#contact" class="hover:text-black transition-colors block">8. Contact Us</a></li>
+        </ul>
+      </div>
+
+      <!-- Policy Paragraphs -->
+      <div class="space-y-12 text-[#171717]/80 text-[15px] leading-relaxed font-normal">
+        
+        <!-- Section 1 -->
+        <div id="intro" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">1. Introduction & Scope</h2>
+          <div class="space-y-4">
+            <p>Welcome to Promo ("we", "our", or "us"). Promo operates a modern creator marketing marketplace and dashboard infrastructure designed to connect brands and content creators.</p>
+            <p>This Privacy Policy serves as a legally binding document outlining our data processing standards. It explains what information we collect from you, how we process it, how we secure it, and your legal rights under regulations such as the General Data Protection Regulation (GDPR), the California Consumer Privacy Act (CCPA), and other global data privacy frameworks.</p>
+            <p>By downloading, installing, registering an account, or interacting with Promo's website, mobile application, database APIs, or customer support channels, you consent to the collection and use of your data as detailed in this policy. If you do not agree to these terms, you must immediately cease using the platform.</p>
+          </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div id="collect" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">2. Information We Collect</h2>
+          <p class="mb-6">We collect information directly from you, automatically via app interactions, and through third-party services you authorize to sync with Promo.</p>
+          
+          <h3 class="text-lg font-normal text-black mb-3">2.1 Information You Provide Directly</h3>
+          <div class="space-y-4">
+            <p><strong>Account Registration Details:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Email address and display name.</li>
+              <li>Password (fully encrypted at rest and in transit — we do not store plain-text credentials).</li>
+              <li>Selected marketplace role (Brand Partner or Influencer Creator).</li>
+            </ul>
+            
+            <p><strong>Profile Customization Information:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Company name and legal business entity name (for Brands).</li>
+              <li>Professional bio, category tag selections, website URLs, and avatar images.</li>
+              <li>Location in text format (city, region, country) or geographic coordinates if auto-detected.</li>
+            </ul>
+
+            <p><strong>Social Media Channels (Creators):</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Handles/usernames for connected platforms (Instagram, YouTube, TikTok, Twitter/X, etc.).</li>
+              <li>Audience reach metric details (follower/subscriber counts synced via third-party APIs).</li>
+            </ul>
+
+            <p><strong>Campaign & Deliverable Creation:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Campaign briefs containing project titles, category requirements, budgets, deliverables, and images.</li>
+              <li>Creator portfolio links, uploaded work samples, pitch descriptions, and bid pricing quotes.</li>
+              <li>Direct chat histories (messages, uploaded media files, milestone checklists, and escrow agreement terms).</li>
+            </ul>
+
+            <p><strong>Verification Documents:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-6">
+              <li>Government-issued ID documents or corporate tax filing certificates (exclusively when requesting a verified badge).</li>
+            </ul>
+          </div>
+
+          <h3 class="text-lg font-normal text-black mb-3">2.2 Information Collected Automatically</h3>
+          <div class="space-y-4">
+            <p><strong>App Interaction Logs:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Details of buttons clicked, brief categories viewed, and applications processed.</li>
+              <li>Activity timestamps indicating registration date, login events, and last-active states.</li>
+              <li>Profile inspection records logging which brands or creators viewed your page.</li>
+            </ul>
+
+            <p><strong>Device Metadatas:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>Operating system info (iOS, Android, Windows, Mac), device brand/model, and application version.</li>
+              <li>Firebase Cloud Messaging (FCM) device registration tokens for push sync.</li>
+            </ul>
+
+            <p><strong>Geolocational Geocoding:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-4">
+              <li>GPS coordinates captured only when you actively trigger map geolocating or locate-me tools. We do not track location coordinates in the background.</li>
+            </ul>
+
+            <p><strong>Performance & Crash Analytics:</strong></p>
+            <ul class="list-disc pl-6 space-y-2 mb-6">
+              <li>Sentry error stack traces, execution latency records, and navigation paths leading to system faults.</li>
+            </ul>
+          </div>
+
+          <h3 class="text-lg font-normal text-black mb-3">2.3 Information from Third-Party Services</h3>
+          <div class="space-y-4">
+            <p><strong>Google Authentication:</strong> If you use Google Sign-In, Google shares your primary email address, profile name, and profile picture URL. We do not access your Google account credentials or search history.</p>
+            <p><strong>Social Network Integrations:</strong> If you verify metrics via network APIs (YouTube, Instagram, TikTok), we receive engagement rates and follower metrics. You can revoke these access tokens directly in your social platform security settings at any time.</p>
+          </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div id="use" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">3. How We Use Your Information</h2>
+          <div class="space-y-4">
+            <p>We process your data to maintain the core functionality of Promo, ensure safety, and comply with law:</p>
+            <ul class="list-disc pl-6 space-y-3">
+              <li><strong>Core Service Provisioning:</strong> Hosting profiles, displaying campaign briefs, routing direct chat messages, and supporting map-based discovery pins.</li>
+              <li><strong>Algorithmic Matching & Recommendations:</strong> Personalizing recommendation feeds for creators and sorting creator applicants for brand reviews based on tag matches, engagement sizes, and verified rating histories.</li>
+              <li><strong>Real-Time Alerts:</strong> Delivering Firebase push notifications for chat replies, campaign updates, and payment milestones.</li>
+              <li><strong>Security & Abuse Prevention:</strong> Implementing database Row-Level Security (RLS) policies, checking file uploads for malicious scripts, managing 7-day session inactivity timeouts, and preventing automated scraping of creator contacts.</li>
+              <li><strong>Platform Optimization:</strong> Resolving application crashes and analyzing anonymized transaction metrics (such as average brief rates) to optimize performance.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div id="share" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">4. How We Share Your Information</h2>
+          <p class="mb-4">We do not sell your personal information. We share data only inside the Promo platform interface or with compliance-certified technical partners:</p>
+          
+          <table class="my-6">
+            <thead>
+              <tr>
+                <th>Service Provider</th>
+                <th>Purpose</th>
+                <th>Data Shared</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Supabase</strong></td>
+                <td>Database, authentication, storage, real-time sync</td>
+                <td>All application data elements</td>
+              </tr>
+              <tr>
+                <td><strong>Firebase (Google)</strong></td>
+                <td>Push notifications (FCM)</td>
+                <td>Device token, alert content</td>
+              </tr>
+              <tr>
+                <td><strong>Sentry</strong></td>
+                <td>Crash and error logs</td>
+                <td>Debugging variables, stack traces</td>
+              </tr>
+              <tr>
+                <td><strong>Google Sign-In</strong></td>
+                <td>OAuth authentication</td>
+                <td>Email and Google profile name</td>
+              </tr>
+              <tr>
+                <td><strong>OpenStreetMap Nominatim</strong></td>
+                <td>Location Geocoding</td>
+                <td>Text locations searched</td>
+              </tr>
+              <tr>
+                <td><strong>Carto</strong></td>
+                <td>Map tile rendering</td>
+                <td>None (map assets requests only)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 5 -->
+        <div id="security" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">5. Data Storage, Security & International Transfers</h2>
+          <div class="space-y-4">
+            <p>
+              Your personal data, campaign briefs, metrics, and communications are stored securely within Supabase cloud infrastructure, built on top of enterprise-grade cloud environments.
+            </p>
+            <ul class="list-disc pl-6 space-y-3">
+              <li><strong>Encryption Protocols:</strong> All data is encrypted in transit via Transport Layer Security (TLS 1.3) and at rest using Advanced Encryption Standard (AES-256). Cryptographic passwords are hashed utilizing SCRIPT/bcrypt key derivation functions.</li>
+              <li><strong>Database Protection:</strong> We enforce strict database Row-Level Security (RLS) policies at the PostgreSQL database layer, preventing unauthorized cross-tenant data requests. Static file attachments are isolated in secure storage buckets using randomized UUID identifiers and audited MIME-type checking.</li>
+              <li><strong>Access Control:</strong> Administrative access to database nodes is strictly restricted to certified security engineers and support staff on a documented, need-to-know basis using multi-factor authentication (MFA). Sessions automatically expire after 7 days of inactivity.</li>
+              <li><strong>Cross-Border Transfers:</strong> As we leverage distributed cloud databases, your data may be transferred to and processed in servers situated outside your country of residence (such as AWS US/EU data centers). We utilize European Commission Standard Contractual Clauses (SCCs) and comply with global data security frameworks to safeguard international transfers.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div id="rights" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">6. Your Rights and Choices (GDPR, CCPA & Global Regulations)</h2>
+          <div class="space-y-4">
+            <p>
+              Depending on your location, you possess comprehensive rights over your personal profile data under regional privacy acts (such as GDPR, CCPA, and COPPA):
+            </p>
+            <ul class="list-disc pl-6 space-y-3">
+              <li><strong>Right of Access & Information:</strong> You can request a summary report detailing what data elements we hold about you, the categories of sources, and the processing purposes.</li>
+              <li><strong>Right to Rectification:</strong> You can edit and update your display name, business tags, biographies, and linked social usernames directly in your profile settings panel.</li>
+              <li><strong>Right to Portability:</strong> You have the right to request a copy of your platform profile details, transaction invoices, and campaign briefs in a structured, machine-readable CSV or JSON format.</li>
+              <li><strong>Right to Object & Restrict:</strong> You can opt-out of automatic social channel metric syncs or object to platform-level analytics profiling by customizing your account configurations.</li>
+              <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can permanently purge your database records, chat logs, and files by submitting the form on our dedicated <a href="delete-account.html" class="text-[#256de8] hover:underline">Account Deletion</a> page. Submission immediately hides you from public search feeds, and physical erasure completes within 14 business days.</li>
+              <li><strong>Consent Withdrawal:</strong> You can revoke device permissions (e.g. Location, Camera) at any time through system level settings.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section 7 -->
+        <div id="permissions" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">7. Device Permissions We Request</h2>
+          <p class="mb-4">
+            To provide interactive capabilities, the Promo app requests system permissions. Denying optional permissions will not break core usage, but will restrict specific features:
+          </p>
+          <table class="my-6">
+            <thead>
+              <tr>
+                <th>Permission</th>
+                <th>Why We Need It</th>
+                <th>Impact if Denied</th>
+                <th>Optional?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Internet</strong></td>
+                <td>Required for secure HTTPS API calls, Supabase database queries, and real-time messaging sync.</td>
+                <td>The application cannot authenticate, fetch cards, or send messages.</td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td><strong>Camera</strong></td>
+                <td>To capture live profile images and take portfolio photo attachments.</td>
+                <td>You cannot capture photos directly inside the app; you must choose files from the library instead.</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Photo Library</strong></td>
+                <td>To browse and select campaign brief image assets, billing attachments, or creator portfolio items.</td>
+                <td>You will not be able to upload custom image assets to cards or message threads.</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Location</strong></td>
+                <td>To auto-detect geographic coordinates and center your profile pin on the discovery map layout.</td>
+                <td>The app fallback to capital/country coordinates, and you cannot use the locate-me button.</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Notifications</strong></td>
+                <td>To send Firebase Cloud Messaging (FCM) alerts for direct message replies and campaign matches.</td>
+                <td>You will not receive real-time push messages when the app is minimized.</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td><strong>Microphone</strong></td>
+                <td>To capture voice note attachments in direct chat threads.</td>
+                <td>You cannot record or transmit audio messages.</td>
+                <td>Yes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 8 -->
+        <div id="contact" class="scroll-mt-28">
+          <h2 class="text-2xl font-normal text-black mb-6">8. Contact Us & Grievance Procedures</h2>
+          <div class="space-y-4">
+            <p>
+              If you have any inquiries regarding data protection standards, CCPA data selling opt-outs, or GDPR rights processing, please contact our designated Privacy Compliance Group:
+            </p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li><strong>Email:</strong> <span class="text-black font-medium">mallipurapusiva@gmail.com</span></li>
+              <li><strong>Mailing Address:</strong> Promo. Legal Compliance, Grievance and Privacy Division, Bangalore, India</li>
+              <li><strong>Response Timeline:</strong> We review all inquiries immediately. Legitimate requests under GDPR or CCPA will receive a formal confirmation and response within 30 calendar days.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= UNIFIED FOOTER & CTA ================= -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[85vh] border-t border-white/10">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 opacity-10"></div>
+
+    <!-- Centered CTA Content -->
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Specialised creator marketing</span>
+      </div>
+
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">
+        Scale your creator pipeline today.
+      </h2>
+
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-2 shadow-sm">
+        Download our app
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <!-- Expanded Footer Links Grid -->
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright Row -->
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p>
+    </div>
+  </section>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script><script>
+    if (typeof UnicornStudio !== 'undefined') {
+      UnicornStudio.init();
+    }
+    lucide.createIcons();
+
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+</script>
+</body>
+</html>

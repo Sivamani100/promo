@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Troubleshooting | Promo. — Fix Common Issues</title>
+  <meta name="description" content="Step-by-step solutions for every common issue on Promo — login problems, 2FA failures, campaign errors, payment issues, app crashes, chat bugs, and more. Find your fix instantly.">
+  <meta name="keywords" content="Promo troubleshooting, fix Promo issues, Promo not working, escrow problem, login error, 2FA not working, app crash fix">
+  <meta property="og:title" content="Troubleshooting | Promo.">
+  <meta property="og:description" content="Step-by-step fixes for every common issue on Promo — account, campaigns, payments, and app performance.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=My+Soul&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Neue Montreal"','Inter','sans-serif']}}}}</script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');font-weight:400;font-display:swap;}
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');font-weight:500;font-display:swap;}
+    body{background:#fff;color:#171717;overflow-x:hidden;font-family:'Neue Montreal',sans-serif;}
+    ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-track{background:#fff;}::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:4px;}
+    details summary{cursor:pointer;list-style:none;} details summary::-webkit-details-marker{display:none;}
+    details[open] summary .chevron-icon{transform:rotate(180deg);}
+    details[open]{background:rgba(37,109,232,.02);border-color:rgba(37,109,232,.12);}
+    .issue-card{transition:all .2s;}.issue-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.06);}
+    .step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#256de8;color:#fff;font-size:11px;font-weight:600;flex-shrink:0;margin-right:8px;}
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="features.html" id="nav-feat" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">Features</a>
+        <a href="how-it-works.html" id="nav-hiw" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">How it works</a>
+        <a href="faq.html" id="nav-faq" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">FAQ</a>
+        <a href="download.html" id="nav-cta" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:scale-[1.02] transition-all gap-1.5 shadow-sm">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="features.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">Features</a>
+      <a href="how-it-works.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">How it works</a>
+      <a href="faq.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">FAQ</a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[50vh] flex flex-col justify-center items-center px-6">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
+    <div class="relative z-20 pt-32 pb-16 text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Troubleshooting</span></div>
+      <h1 class="text-4xl sm:text-5xl md:text-[58px] font-medium tracking-[-0.02em] leading-[1.07] text-white">Fix it <span class="text-[#EC4899]/90">fast.</span></h1>
+      <p class="text-sm text-white/60 mt-5 max-w-xl mx-auto leading-relaxed">Step-by-step solutions for every common issue on Promo — from login problems to payment failures. Find your fix in seconds.</p>
+      <div class="flex flex-wrap gap-3 justify-center mt-8">
+        <a href="#account" class="px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">Account & Login</a>
+        <a href="#campaigns" class="px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">Campaigns</a>
+        <a href="#payments" class="px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">Payments & Escrow</a>
+        <a href="#chat" class="px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">Chat & Notifications</a>
+        <a href="#app" class="px-5 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">App Performance</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- EMERGENCY BANNER -->
+  <section class="py-6 px-6 max-w-4xl mx-auto">
+    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-5 flex items-start gap-4">
+      <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0 mt-0.5"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+      <div>
+        <h3 class="text-sm font-medium text-rose-800 mb-1">Account Compromised or Unauthorised Payment?</h3>
+        <p class="text-xs text-rose-700/70 leading-relaxed">If you suspect your account has been hacked or you see an unauthorised payment, email <strong>security@promo.app</strong> immediately with your registered email address. Our security team responds to critical incidents within 2 hours and will lock your account to prevent further damage.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: ACCOUNT & LOGIN -->
+  <section id="account" class="py-20 px-6 max-w-4xl mx-auto scroll-mt-24">
+    <div class="mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 text-[10px] font-semibold uppercase tracking-wider mb-4">Account & Login</div>
+      <h2 class="text-2xl md:text-3xl font-medium text-[#171717] tracking-tight">Account & Login Issues</h2>
+      <p class="text-sm text-[#171717]/50 mt-2 max-w-lg">Problems with logging in, password resets, verification, and account access.</p>
+    </div>
+
+    <div class="space-y-3">
+      <!-- Issue 1: Can't log in -->
+      <details id="password-reset" class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="lock" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">I can't log in to my account</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Incorrect email or password</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Account temporarily locked after too many failed attempts</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Account suspended by moderation team</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Email not verified after signup</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Double-check that you're using the correct email address. Promo accounts are case-insensitive, but make sure there are no extra spaces.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Tap "Forgot Password" on the login screen. Enter your registered email address. You'll receive a password reset link within 5 minutes.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Check your spam/junk folder if you don't see the email. Add <strong>noreply@promo.app</strong> to your contacts.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>If your account is locked due to too many failed login attempts, wait 30 minutes before trying again. The lockout resets automatically.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>If you see a "Account Suspended" message, check your email for a notification explaining the reason. You can appeal by emailing <strong>appeals@promo.app</strong>.</div>
+            </div>
+          </div>
+          <div class="p-4 bg-amber-50 rounded-xl text-xs text-amber-800 leading-relaxed border border-amber-100">
+            <strong>Still stuck?</strong> Email <strong>support@promo.app</strong> with your registered email address and a screenshot of the error message. Our team will respond within 24 hours.
+          </div>
+        </div>
+      </details>
+
+      <!-- Issue 2: 2FA not working -->
+      <details id="2fa-issues" class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="smartphone" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My 2FA code isn't working</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Your phone's clock is out of sync (TOTP codes are time-sensitive)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>You switched phones and didn't transfer your authenticator app</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>You reinstalled the authenticator app and lost the Promo entry</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Entering the code too slowly (codes expire every 30 seconds)</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span><strong>Sync your phone clock:</strong> Go to your phone's Settings → Date & Time → Enable "Set automatically" or "Use network-provided time". This is the #1 fix for 2FA failures.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span><strong>Enter codes faster:</strong> TOTP codes refresh every 30 seconds. Wait for a fresh code to appear, then enter it immediately.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Lost authenticator access:</strong> If you no longer have access to your authenticator app, you will need to contact our support team to verify your identity and reset your 2FA.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Email <strong>support@promo.app</strong> with subject line "2FA Reset Request". Include your registered email, a government-issued ID photo, and a selfie holding the ID for verification. Our team will process the reset within 24–48 hours.</div>
+            </div>
+          </div>
+          <div class="p-4 bg-blue-50 rounded-xl text-xs text-blue-800 leading-relaxed border border-blue-100">
+            <strong>Pro tip:</strong> When setting up 2FA, save the QR code screenshot or the manual key in a secure location (like a password manager). This allows you to re-add the entry if you switch phones.
+          </div>
+        </div>
+      </details>
+
+      <!-- Issue 3: Verification stuck -->
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="clock" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My verification has been pending for over 24 hours</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Submitted documents are blurry, cropped, or expired</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Document type not accepted (e.g. student ID instead of government ID)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>High volume of pending reviews during beta periods</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Name mismatch between your account and the document</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Go to Settings → Verification in the app and check if your submission has a status update or rejection reason.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>If rejected, re-upload with a clear, unobstructed photo of the full document. Ensure all four corners are visible and the text is readable.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Accepted documents:</strong> Aadhaar card, passport, driving licence (creators). GST certificate, company incorporation certificate, trade licence (brands).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>If it's been more than 48 hours with no update, email <strong>verification@promo.app</strong> with your username and a reference to your submission.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Issue 4: Email not received -->
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="mail-x" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">I'm not receiving emails from Promo</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Check your spam, junk, and promotions folders. Many email providers route automated emails there by default.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Add <strong>noreply@promo.app</strong> and <strong>support@promo.app</strong> to your email contacts to prevent future filtering.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>If using Gmail, check the "All Mail" label — the email may have been archived automatically.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Verify that the email address on your account is correct: open the app → Settings → Account → Email.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>Wait 10 minutes and try the action again (e.g. "Resend verification email"). If still nothing, try from a different email provider.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- Issue 5: Account locked -->
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-600 shrink-0"><i data-lucide="ban" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My account is locked or suspended</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i><strong>Temporary lock:</strong> 5+ failed login attempts triggers a 30-minute automatic lockout for security</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i><strong>Suspension:</strong> Violation of community guidelines (e.g. fake metrics, harassment, off-platform payment solicitation)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i><strong>Security hold:</strong> Unusual login activity detected from a different country or device</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span><strong>Temporary lock:</strong> Wait 30 minutes, then try logging in again with the correct credentials.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span><strong>Suspension:</strong> Check your email for a message from Promo explaining the reason. If you believe this is an error, email <strong>appeals@promo.app</strong> with your username and a brief explanation.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Security hold:</strong> You may receive a verification email to confirm it's really you. Click the link in the email to unlock your account.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>After regaining access, immediately change your password and ensure 2FA is enabled from Settings → Security.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SECTION 2: CAMPAIGNS -->
+  <section id="campaigns" class="py-20 px-6 max-w-4xl mx-auto border-t border-black/5 scroll-mt-24">
+    <div class="mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 text-[10px] font-semibold uppercase tracking-wider mb-4">Campaigns</div>
+      <h2 class="text-2xl md:text-3xl font-medium text-[#171717] tracking-tight">Campaign & Application Issues</h2>
+      <p class="text-sm text-[#171717]/50 mt-2 max-w-lg">Problems with creating campaigns, applying, deliverables, or campaign visibility.</p>
+    </div>
+
+    <div class="space-y-3">
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0"><i data-lucide="eye-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My campaign isn't showing up for influencers</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Campaign is in "Draft" status — it hasn't been published yet</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Application deadline has passed</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>All application slots are filled</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Your brand verification is incomplete — unverified brands can create drafts but not publish</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Open the campaign from your Dashboard → My Campaigns. Check the status badge — it should say "Active" not "Draft".</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Verify the application deadline hasn't passed. If it has, edit the campaign and extend the deadline.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Check if all application slots are filled. You can increase the slot count from the campaign editor.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Ensure your brand account verification is complete. Go to Settings → Verification and check your status.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0"><i data-lucide="x-circle" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">I can't apply to a campaign</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>You're logged in as a Brand account (only Creator accounts can apply)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>The campaign's application slots are full</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>The application deadline has passed</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Your profile is incomplete (missing required fields)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>You've already applied to this campaign</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Confirm you're logged in as a Creator account. Brand accounts cannot apply to campaigns — they create them.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Check the campaign card for a "Slots Full" or "Deadline Passed" indicator.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Complete your profile: Go to Settings → Profile and fill out all required fields (bio, niche, at least one social link, follower count).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Check "My Applications" to see if you've already applied. Duplicate applications are blocked.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0"><i data-lucide="file-x" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My campaign brief won't save or publish</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Check for required fields: Title, content type, at least one deliverable requirement, budget/payout amount, and application deadline are all mandatory.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Ensure your budget amount meets the minimum threshold (shown on the form). Very low budgets may be rejected to protect creator expectations.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>If the app shows a loading spinner and nothing happens, check your internet connection, close and re-open the campaign editor.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Save your campaign as a Draft first, then publish from the Drafts section. This avoids losing progress on flaky connections.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0"><i data-lucide="loader" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">My application status is stuck on "Pending"</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>"Pending" means the brand has not yet reviewed your application. Brands review applications manually and may take 24–72 hours.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Improve your chances: Complete your profile fully, get verified, and write a specific, personalised pitch note for each campaign.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>You can send a polite follow-up message to the brand via the in-app chat (if the brand has enabled pre-approval messaging).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>If the application deadline passes and you're still on "Pending", the campaign may have closed. Apply to other relevant campaigns in the meantime.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SECTION 3: PAYMENTS & ESCROW -->
+  <section id="payments" class="py-20 px-6 max-w-4xl mx-auto border-t border-black/5 scroll-mt-24">
+    <div class="mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold uppercase tracking-wider mb-4">Payments & Escrow</div>
+      <h2 class="text-2xl md:text-3xl font-medium text-[#171717] tracking-tight">Payment & Escrow Issues</h2>
+      <p class="text-sm text-[#171717]/50 mt-2 max-w-lg">Problems with funding escrow, payment releases, wallet withdrawals, and bank linking.</p>
+    </div>
+
+    <div class="space-y-3">
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0"><i data-lucide="wallet" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Escrow funding failed or is stuck</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-2">Possible Causes</h4>
+            <ul class="space-y-1.5 text-sm text-[#171717]/60 leading-relaxed">
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Payment gateway timeout due to slow internet connection</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Insufficient balance in your linked payment method</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Your bank declined the transaction (daily limits, international blocks)</li>
+              <li class="flex items-start gap-2"><i data-lucide="circle" class="w-1.5 h-1.5 mt-2 shrink-0 text-[#171717]/30"></i>Payment gateway maintenance window</li>
+            </ul>
+          </div>
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Check your payment tracker in the campaign view. If the status says "Processing", wait 15 minutes — some bank transfers take time to confirm.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>If it says "Failed", tap "Retry Payment". Ensure your account has sufficient funds and try again on a stable Wi-Fi connection.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>If your bank is blocking the transaction, call your bank and confirm that online payments to payment gateways are enabled.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Try a different payment method (UPI, debit card, net banking) if available.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>If money was debited from your bank but escrow doesn't show "Funded", email <strong>payments@promo.app</strong> with your transaction reference number. We'll reconcile within 24 hours.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0"><i data-lucide="circle-slash" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Brand hasn't released my payment</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Confirm that you have submitted your deliverable URL through the milestone tracker (not just via chat).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Check the milestone tracker to see if the brand has requested revisions. Complete any revision requests first.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Send a polite message to the brand through the in-app chat asking for a status update on the payment release.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>If the brand does not release payment within 7 days after your deliverable has been submitted and meets the brief, <strong>raise a formal dispute</strong> from the campaign screen → "Raise Dispute".</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>Promo's admin team will review the submitted deliverable against the agreed brief and release the payment within 72 hours if your work meets the requirements.</div>
+            </div>
+          </div>
+          <div class="p-4 bg-emerald-50 rounded-xl text-xs text-emerald-800 leading-relaxed border border-emerald-100">
+            <strong>Your money is safe:</strong> Escrow funds are locked in the platform's neutral wallet. Neither the brand nor the creator can access the funds unilaterally — they can only be released by mutual approval or by our dispute resolution team.
+          </div>
+        </div>
+      </details>
+
+      <details id="wallet" class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0"><i data-lucide="arrow-down-to-line" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Wallet withdrawal failed or money not received</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Go to Wallet → Transaction History. Check if the withdrawal status says "Processing" (normal — bank transfers take 2–4 business days).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>If it says "Failed", verify your linked bank details are correct: account number, IFSC code, and account holder name must match exactly.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Re-link your bank account from Wallet → Bank Details → Edit. Ensure there are no extra spaces in the account number or IFSC code.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>UPI withdrawals are typically instant. If a UPI withdrawal failed, verify your UPI ID is active and correctly formatted (e.g. name@bankname).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>If money was deducted from your Promo wallet but hasn't arrived in your bank after 4 business days, email <strong>payments@promo.app</strong> with your withdrawal transaction ID.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0"><i data-lucide="receipt" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">How do refunds work?</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">How Refunds Work</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span><strong>Creator fails to deliver:</strong> If the creator does not deliver by the deadline and doesn't respond to follow-ups, the brand can raise a dispute. If the dispute is upheld, the full escrow amount is refunded to the brand.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span><strong>Mutual cancellation:</strong> If both parties agree to cancel, the brand receives a full refund minus any platform fees for work already completed.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Refund processing time:</strong> Refunds to the original payment method take 5–7 business days. Refunds to your Promo wallet are instant.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Platform fees on completed milestones are non-refundable unless the dispute team rules otherwise.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SECTION 4: CHAT & NOTIFICATIONS -->
+  <section id="chat" class="py-20 px-6 max-w-4xl mx-auto border-t border-black/5 scroll-mt-24">
+    <div class="mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 text-sky-600 text-[10px] font-semibold uppercase tracking-wider mb-4">Chat & Notifications</div>
+      <h2 class="text-2xl md:text-3xl font-medium text-[#171717] tracking-tight">Chat & Notification Issues</h2>
+      <p class="text-sm text-[#171717]/50 mt-2 max-w-lg">Problems with messaging, media uploads, and push notifications.</p>
+    </div>
+
+    <div class="space-y-3">
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0"><i data-lucide="message-circle-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Messages aren't sending or loading</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Check your internet connection. Chat requires an active connection to send and receive messages in real-time.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Force-close the app and reopen it. This reconnects to the messaging service.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>If messages show a red "Failed" indicator, tap the message to retry sending.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>If you're on a VPN or corporate network, try switching to mobile data — some networks block WebSocket connections used by real-time chat.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>Ensure the app is updated to the latest version from the App Store or Play Store.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0"><i data-lucide="image-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Media uploads failing in chat</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Check the file size: Images must be under 10 MB. Videos must be under 50 MB. Compress large files before uploading.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Supported formats: JPEG, PNG, WebP for images. MP4, MOV for videos. Unsupported formats will be rejected.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Ensure the app has storage/photos permissions: Settings (phone) → Apps → Promo → Permissions → Enable Storage/Photos.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Upload on a stable Wi-Fi connection. Large video files on mobile data may time out.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600 shrink-0"><i data-lucide="bell-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">I'm not receiving push notifications</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span><strong>Check phone settings:</strong> Go to your phone's Settings → Apps → Promo → Notifications → Ensure they are enabled and not set to "Silent".</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span><strong>Check in-app settings:</strong> Open Promo → Settings → Notifications → Enable all relevant notification types (new applications, approvals, messages, payments).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Battery optimisation:</strong> On Android, go to Settings → Battery → App Battery Management → Promo → Set to "Unrestricted". Battery savers often kill background notification services.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span><strong>Do Not Disturb:</strong> Check if your phone's DND mode is active — it blocks all notifications including Promo.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>Log out of the app and log back in. This re-registers your device with the notification service.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- SECTION 5: APP PERFORMANCE -->
+  <section id="app" class="py-20 px-6 max-w-4xl mx-auto border-t border-black/5 scroll-mt-24">
+    <div class="mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-semibold uppercase tracking-wider mb-4">App Performance</div>
+      <h2 class="text-2xl md:text-3xl font-medium text-[#171717] tracking-tight">App Performance & Technical Issues</h2>
+      <p class="text-sm text-[#171717]/50 mt-2 max-w-lg">App crashes, slow loading, offline sync problems, and compatibility issues.</p>
+    </div>
+
+    <div class="space-y-3">
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="zap-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">The app keeps crashing or freezing</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span><strong>Update the app:</strong> Go to App Store (iOS) or Play Store (Android) and install the latest version of Promo. Many crashes are fixed in newer releases.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span><strong>Clear app cache:</strong> Android: Settings → Apps → Promo → Storage → Clear Cache. iOS: Delete and reinstall the app (iOS doesn't expose cache clearing).</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span><strong>Free up storage:</strong> The app needs at least 200 MB of free storage to function properly. Delete unnecessary files or apps to free up space.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span><strong>Restart your phone:</strong> A full restart clears background processes that may conflict with Promo.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span><strong>Minimum requirements:</strong> Android 8.0+ or iOS 14.0+. Older operating systems may cause unexpected crashes.</div>
+            </div>
+          </div>
+          <div class="p-4 bg-amber-50 rounded-xl text-xs text-amber-800 leading-relaxed border border-amber-100">
+            <strong>Report persistent crashes:</strong> If the app continues crashing after trying all steps, email <strong>bugs@promo.app</strong> with your phone model, OS version, and a description of when the crash occurs (e.g. "crashes when opening chat").
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="hourglass" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">The app is loading very slowly</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Test your internet speed. Promo works best on connections with at least 2 Mbps download speed.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Switch between Wi-Fi and mobile data to see if one is faster.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>Close other apps running in the background that may be consuming bandwidth.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Clear the app cache (see crash fix above) — accumulated cached data can slow down the app over time.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">5</span>If the entire platform is slow for everyone, check our <strong>status page</strong> or X/Twitter (@promo_app) for any ongoing service issues.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group border border-black/5 rounded-2xl overflow-hidden transition-all">
+        <summary class="flex justify-between items-center px-6 py-5 select-none">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="wifi-off" class="w-4 h-4"></i></div>
+            <span class="font-medium text-sm text-[#171717]">Offline mode isn't syncing when I reconnect</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon w-4 h-4 text-[#171717]/30 transition-transform shrink-0"></i>
+        </summary>
+        <div class="px-6 pb-6 pt-2 border-t border-black/5">
+          <div class="mb-4">
+            <h4 class="text-xs font-semibold text-[#171717]/40 uppercase tracking-wider mb-3">Step-by-Step Solution</h4>
+            <div class="space-y-3">
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">1</span>Ensure you have a stable internet connection when attempting to sync. The app needs a strong signal to upload cached changes.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">2</span>Pull down on the main screen to trigger a manual sync/refresh.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">3</span>If offline data appears outdated, force-close the app and reopen it while connected to the internet. The app will pull fresh data from the server.</div>
+              <div class="flex items-start text-sm text-[#171717]/70 leading-relaxed"><span class="step-num">4</span>Note: Some actions (like applying to campaigns or sending payments) require an active connection and cannot be queued offline.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- STILL NEED HELP CTA -->
+  <section class="py-16 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="bg-[#f8f8f8] rounded-3xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-medium text-[#171717] mb-3">Problem not listed here?</h2>
+        <p class="text-sm text-[#171717]/55 max-w-md leading-relaxed">Our support team is ready to help you with any issue not covered above. Reach out and we'll get back to you quickly.</p>
+      </div>
+      <div class="flex gap-3 shrink-0 flex-wrap">
+        <a href="contact.html" class="px-6 py-3 rounded-full bg-[#171717] text-white text-sm font-medium hover:bg-black transition-colors">Contact Support</a>
+        <a href="faq.html" class="px-6 py-3 rounded-full border border-black/10 text-sm font-medium hover:bg-black/5 transition-colors">Browse FAQ</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[80vh] border-t border-white/10">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Specialised creator marketing</span></div>
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">Scale your creator pipeline today.</h2>
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:scale-[1.02] transition-all gap-2 shadow-sm">Download our app <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex justify-between items-center"><p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p><p class="text-xs text-white/30">Creator marketing, reimagined.</p></div>
+  </section><script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script>
+  <script>
+    if(typeof UnicornStudio!=='undefined'){UnicornStudio.init();}
+    lucide.createIcons();
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+</script>
+</body>
+</html>

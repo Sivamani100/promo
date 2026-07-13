@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Deletion | Promo.</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Request permanent account deletion from Promo. Deleting your account will erase your profile information, linked social metrics, and campaign logs.">
+  <meta name="keywords" content="Promo, Delete Account, Data Privacy, Account Management">
+  <meta property="og:title" content="Account Deletion | Promo.">
+  <meta property="og:description" content="Request permanent account deletion from the Promo platform securely.">
+  <meta property="og:image" content="/assets/creator_theme_bg.png">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=My+Soul&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+            display: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brandBg: '#FFFFFF',
+            brandPurple: '#256de8',
+            brandMuted: '#6B7280',
+            brandCard: 'rgba(0, 0, 0, 0.01)',
+            brandBorder: 'rgba(0, 0, 0, 0.05)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      background-color: #FFFFFF;
+      color: #171717;
+      overflow-x: hidden;
+      font-family: 'Neue Montreal', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080a0d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #256de8/30;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #256de8/50;
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- ================= NAVBAR ================= -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors duration-300" style="font-family: 'My Soul', cursive;">
+        Promo<span class="text-[#256de8] font-bold text-4xl">.</span>
+      </a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="about.html" id="nav-about" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          About us
+        </a>
+        <a href="/signup" id="nav-signup" class="hidden sm:inline-flex text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          Sign up
+        </a>
+        <a href="download.html" id="nav-cta" class="group inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5 shadow-sm">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="about.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          About us
+        </a>
+      <a href="/signup" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          Sign up
+        </a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[45vh] flex flex-col justify-center items-center px-6">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient (blended on top) -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <!-- White Bottom Gradient Fade -->
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
+
+    <!-- Hero Content -->
+    <div class="relative z-20 pt-28 pb-12 flex flex-col items-center text-center max-w-7xl mx-auto">
+      <!-- Glowing eyebrow pill -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Manage Profile Settings</span>
+      </div>
+
+      <!-- Main Heading -->
+      <h1 class="text-4xl sm:text-5xl md:text-[54px] font-medium tracking-[-0.02em] leading-[1.1] max-w-4xl text-white">
+        Account Deletion
+      </h1>
+      <p class="text-xs text-white/60 mt-4 font-normal">Last Updated: July 12, 2026</p>
+    </div>
+  </section>
+
+  <!-- ================= POLICY CONTENT SECTION ================= -->
+  <section class="relative z-10 py-24 px-6 max-w-7xl mx-auto bg-white">
+    <div class="grid md:grid-cols-[1.2fr_2fr] gap-12 md:gap-16 items-start">
+      
+      <!-- Sticky info side -->
+      <div class="md:sticky md:top-28 space-y-8">
+        <div>
+          <h2 class="text-3xl font-normal tracking-[-0.02em] leading-[1.1] mb-4 text-[#171717]">
+            Before You Leave
+          </h2>
+          <p class="text-[#171717]/60 text-sm font-normal leading-relaxed">
+            Please read these requirements and policies carefully. Account deletion is permanent and cannot be reversed under any circumstances.
+          </p>
+        </div>
+
+        <!-- Comprehensive Guides -->
+        <div class="space-y-6">
+          <!-- Step 1: Active Campaigns -->
+          <div class="flex gap-4 p-5 rounded-2xl bg-[#f8f8f8] border border-black/[0.03] transition-all hover:bg-neutral-50">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-[#256de8] flex items-center justify-center flex-shrink-0">
+              <i data-lucide="wallet" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-neutral-900 mb-1">1. Settle Balances & Escrow</h3>
+              <p class="text-xs text-neutral-500 leading-relaxed font-normal">
+                You must complete or cancel all active campaigns, withdraw remaining wallet funds, and resolve pending escrow milestones before initiating deletion. Accounts with active escrow funds cannot be deleted.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2: Unlink Channels -->
+          <div class="flex gap-4 p-5 rounded-2xl bg-[#f8f8f8] border border-black/[0.03] transition-all hover:bg-neutral-50">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="link-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-neutral-900 mb-1">2. Unlink Channels & Metrics</h3>
+              <p class="text-xs text-neutral-500 leading-relaxed font-normal">
+                All connected social channels (Instagram, TikTok, YouTube) will be permanently unlinked, and historical performance widgets and dashboard archives will be purged.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3: Data Deletion & Retentions -->
+          <div class="flex gap-4 p-5 rounded-2xl bg-[#f8f8f8] border border-black/[0.03] transition-all hover:bg-neutral-50">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-neutral-900 mb-1">3. Privacy & GDPR Compliance</h3>
+              <p class="text-xs text-neutral-500 leading-relaxed font-normal">
+                Personal profile data is fully erased from our creator marketplace directory instantly. However, tax records, billing invoices, and cryptographic transaction hash logs are retained for statutory legal compliance.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 4: Deletion Process & Time -->
+          <div class="flex gap-4 p-5 rounded-2xl bg-[#f8f8f8] border border-black/[0.03] transition-all hover:bg-neutral-50">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-neutral-900 mb-1">4. 14-Day Safety Hold</h3>
+              <p class="text-xs text-neutral-500 leading-relaxed font-normal">
+                Once submitted, your profile is hidden from search metrics immediately. Complete database purge occurs after a 14 business days safety cooling-off period during which you can cancel deletion by contacting support.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-red-500/5 border border-red-500/10 text-xs text-red-600 leading-relaxed flex gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+          <span>
+            <strong>Warning:</strong> Action is irreversible. All campaign history, rating reviews, and messages will be unrecoverable once the 14-day safety window closes.
+          </span>
+        </div>
+      </div>
+
+      <!-- Deletion Form Card -->
+      <div class="bg-[#f8f8f8] rounded-3xl p-8 md:p-12 border border-transparent shadow-sm">
+        
+        <form id="deletion-form" class="space-y-6">
+          
+          <!-- Email Input -->
+          <div class="flex flex-col gap-2">
+            <label for="email" class="text-xs font-semibold text-black/60 uppercase tracking-wider">Email Address</label>
+            <input type="email" id="email" required placeholder="name@company.com" 
+                   class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px] font-normal transition-colors duration-200">
+          </div>
+
+          <!-- Password Input -->
+          <div class="flex flex-col gap-2">
+            <label for="password" class="text-xs font-semibold text-black/60 uppercase tracking-wider">Confirm Password</label>
+            <input type="password" id="password" required placeholder="••••••••" 
+                   class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px] font-normal transition-colors duration-200">
+          </div>
+
+          <!-- Reason Select -->
+          <div class="flex flex-col gap-2">
+            <label for="reason" class="text-xs font-semibold text-black/60 uppercase tracking-wider">Reason for Deletion</label>
+            <select id="reason" required 
+                    class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px] font-normal transition-colors duration-200 text-black/60">
+              <option value="" disabled selected>Select a reason...</option>
+              <option value="not-using">I am not using the platform anymore</option>
+              <option value="too-expensive">The campaign fees are too high</option>
+              <option value="privacy">I have data privacy concerns</option>
+              <option value="other">Other reason</option>
+            </select>
+          </div>
+
+          <!-- Confirmation Checkbox -->
+          <div class="flex items-start gap-3 mt-4">
+            <input type="checkbox" id="confirm-check" required 
+                   class="w-4 h-4 rounded border-black/10 text-[#256de8] focus:ring-[#256de8] mt-0.5 cursor-pointer">
+            <label for="confirm-check" class="text-[13px] text-[#171717]/60 leading-normal cursor-pointer select-none">
+              I understand that deleting my account permanently erases all linked escrow balances and history records, and this action is irreversible.
+            </label>
+          </div>
+
+          <!-- Deletion Button -->
+          <div class="pt-4">
+            <button type="submit" 
+                    class="w-full inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white text-sm font-medium transition-all gap-2 shadow-sm cursor-pointer">
+              Request Permanent Account Deletion
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Success Toast Message (Hidden initially) -->
+        <div id="success-message" class="hidden flex flex-col items-center text-center py-12 space-y-4">
+          <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <i data-lucide="check-circle" class="w-8 h-8"></i>
+          </div>
+          <h3 class="text-xl font-normal text-black">Request Submitted</h3>
+          <p class="text-[13px] text-[#171717]/60 leading-relaxed max-w-sm">
+            Your account deletion request has been successfully queued. Our privacy compliance group will verify and process the erasure within 14 business days.
+          </p>
+          <div class="pt-6">
+            <a href="index.html" class="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-black/10 hover:bg-black/5 text-xs font-semibold text-black transition-all">
+              Return to Homepage
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= UNIFIED FOOTER & CTA ================= -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[85vh] border-t border-white/10">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 opacity-10"></div>
+
+    <!-- Centered CTA Content -->
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Specialised creator marketing</span>
+      </div>
+
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">
+        Scale your creator pipeline today.
+      </h2>
+
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-2 shadow-sm">
+        Download our app
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <!-- Expanded Footer Links Grid -->
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright Row -->
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p>
+    </div>
+  </section>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script><script>
+    if (typeof UnicornStudio !== 'undefined') {
+      UnicornStudio.init();
+    }
+    lucide.createIcons();
+
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+// Form submission simulation
+    const form = document.getElementById('deletion-form');
+    const successMsg = document.getElementById('success-message');
+    if (form && successMsg) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Hide form, show visual success block
+        form.classList.add('hidden');
+        successMsg.classList.remove('hidden');
+      });
+    }
+  </script>
+</body>
+</html>

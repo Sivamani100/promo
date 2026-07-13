@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started | Promo. — Your First 15 Minutes</title>
+  <meta name="description" content="Get up and running on Promo in 15 minutes. Step-by-step onboarding for brands and creators — account setup, verification, 2FA, your first campaign, and profile optimisation tips.">
+  <meta name="keywords" content="Promo getting started, Promo setup, onboarding, brand setup, creator setup, first campaign, Promo tutorial">
+  <meta property="og:title" content="Getting Started | Promo.">
+  <meta property="og:description" content="Your complete onboarding guide — from signup to your first campaign in 15 minutes.">
+  <meta property="og:type" content="website">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"Getting Started with Promo","description":"Step-by-step onboarding guide for brands and creators on Promo","step":[{"@type":"HowToStep","name":"Download & Sign Up","text":"Download Promo and create your account as a Brand or Creator"},{"@type":"HowToStep","name":"Verify Identity","text":"Complete identity and business verification to unlock full features"},{"@type":"HowToStep","name":"Enable 2FA","text":"Set up two-factor authentication for account security"},{"@type":"HowToStep","name":"Set Up Profile","text":"Complete your profile with all relevant information"},{"@type":"HowToStep","name":"Launch","text":"Create your first campaign or apply to your first brand collaboration"}]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=My+Soul&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Neue Montreal"','Inter','sans-serif']}}}}</script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');font-weight:400;font-display:swap;}
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');font-weight:500;font-display:swap;}
+    body{background:#fff;color:#171717;overflow-x:hidden;font-family:'Neue Montreal',sans-serif;}
+    ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-track{background:#fff;}::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:4px;}
+    .fc{transition:transform .2s,box-shadow .2s;}.fc:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.06);}
+    .badge{display:inline-flex;align-items:center;padding:3px 12px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    .checklist-item{transition:all .15s;}.checklist-item:hover{background:rgba(37,109,232,.03);}
+    .tab-btn{transition:all .2s;}.tab-btn.active{background:#171717;color:#fff;}.tab-btn:not(.active):hover{background:rgba(0,0,0,.04);}
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="features.html" id="nav-feat" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">Features</a>
+        <a href="how-it-works.html" id="nav-hiw" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">How it works</a>
+        <a href="faq.html" id="nav-faq" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">FAQ</a>
+        <a href="download.html" id="nav-cta" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:scale-[1.02] transition-all gap-1.5 shadow-sm">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="features.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">Features</a>
+      <a href="how-it-works.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">How it works</a>
+      <a href="faq.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">FAQ</a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[55vh] flex flex-col justify-center items-center px-6">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
+    <div class="relative z-20 pt-32 pb-16 text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Quick-Start Guide</span></div>
+      <h1 class="text-4xl sm:text-5xl md:text-[58px] font-medium tracking-[-0.02em] leading-[1.07] text-white">Get started in <span class="text-[#EC4899]/90">15 minutes.</span></h1>
+      <p class="text-sm text-white/60 mt-5 max-w-xl mx-auto leading-relaxed">Everything you need to go from download to your first campaign — whether you're a brand or a creator. Follow the steps below.</p>
+      <div class="flex gap-4 justify-center mt-8">
+        <button onclick="showTab('brands')" id="tab-brands" class="tab-btn active px-6 py-2.5 rounded-full text-xs font-semibold transition-all shadow-sm">I'm a Brand</button>
+        <button onclick="showTab('creators')" id="tab-creators" class="tab-btn px-6 py-2.5 rounded-full border border-white/20 text-white text-xs font-medium transition-all">I'm a Creator</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIME ESTIMATE BAR -->
+  <section class="py-6 px-6 max-w-4xl mx-auto">
+    <div class="flex items-center justify-center gap-8 flex-wrap">
+      <div class="flex items-center gap-2 text-xs text-[#171717]/50"><i data-lucide="clock" class="w-4 h-4 text-[#256de8]"></i><span><strong class="text-[#171717]">15 min</strong> total setup time</span></div>
+      <div class="flex items-center gap-2 text-xs text-[#171717]/50"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-500"></i><span><strong class="text-[#171717]">Free</strong> to sign up</span></div>
+      <div class="flex items-center gap-2 text-xs text-[#171717]/50"><i data-lucide="smartphone" class="w-4 h-4 text-purple-500"></i><span>Available on <strong class="text-[#171717]">iOS & Android</strong></span></div>
+    </div>
+  </section>
+
+  <!-- ===== BRANDS JOURNEY ===== -->
+  <div id="section-brands">
+
+    <section id="brands" class="py-20 px-6 max-w-4xl mx-auto scroll-mt-24">
+      <div class="mb-12">
+        <span class="badge bg-blue-500/10 text-blue-600 mb-4">Brand Onboarding</span>
+        <h2 class="text-3xl md:text-[40px] font-medium text-[#171717] tracking-tight mt-3">Your first 15 minutes as a Brand</h2>
+        <p class="text-sm text-[#171717]/50 mt-3 max-w-lg">From downloading the app to publishing your first campaign card — follow these 5 steps.</p>
+      </div>
+
+      <div class="space-y-8">
+        <!-- Step 1 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">1</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-[#256de8]/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Download & Create Your Brand Account</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Download Promo from the App Store (iOS) or Google Play Store (Android). Open the app and tap "Sign Up". Choose <strong>"I'm a Brand"</strong> when prompted. Enter your company name, business email, industry category, and create a strong password.</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-4 bg-[#f8f8f8] rounded-xl"><p class="text-[11px] text-[#171717]/40 font-semibold uppercase tracking-wider mb-1">Time Required</p><p class="text-sm text-[#171717]/70">3 minutes</p></div>
+              <div class="p-4 bg-[#f8f8f8] rounded-xl"><p class="text-[11px] text-[#171717]/40 font-semibold uppercase tracking-wider mb-1">What You Need</p><p class="text-sm text-[#171717]/70">Business email address</p></div>
+            </div>
+            <div class="mt-3 p-4 bg-blue-50 rounded-xl text-xs text-blue-800 leading-relaxed border border-blue-100">
+              <strong>Tip:</strong> Use your company domain email (e.g. name@yourcompany.com) rather than a personal Gmail. This speeds up the business verification process.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">2</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-[#256de8]/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Complete Business Verification</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">To create and fund campaigns, your brand must be verified. Go to <strong>Settings → Verification</strong> and upload one of the following business documents:</p>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="p-3 bg-[#f8f8f8] rounded-xl flex items-center gap-3"><i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i><span class="text-xs text-[#171717]/60">GST Registration Certificate</span></div>
+              <div class="p-3 bg-[#f8f8f8] rounded-xl flex items-center gap-3"><i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i><span class="text-xs text-[#171717]/60">Company Incorporation Certificate</span></div>
+              <div class="p-3 bg-[#f8f8f8] rounded-xl flex items-center gap-3"><i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i><span class="text-xs text-[#171717]/60">Trade Licence</span></div>
+              <div class="p-3 bg-[#f8f8f8] rounded-xl flex items-center gap-3"><i data-lucide="file-check" class="w-4 h-4 text-emerald-500 shrink-0"></i><span class="text-xs text-[#171717]/60">Registered Business PAN Card</span></div>
+            </div>
+            <p class="text-sm text-[#171717]/60 leading-relaxed">The review takes up to <strong>24 hours</strong>. You'll receive a push notification when approved. While waiting, you can still explore the platform and draft campaigns.</p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="2fa" class="relative flex gap-6 items-start scroll-mt-24">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">3</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-[#256de8]/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Enable Two-Factor Authentication (2FA)</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Promo requires 2FA for all accounts before accessing campaigns or payments. This protects your account and budget from unauthorised access.</p>
+            <div class="space-y-2 mb-4">
+              <div class="flex items-start gap-3 text-sm text-[#171717]/70 leading-relaxed p-3 bg-[#f8f8f8] rounded-xl"><span class="w-6 h-6 rounded-full bg-[#256de8]/10 text-[#256de8] flex items-center justify-center text-xs font-semibold shrink-0">1</span>Download <strong>Google Authenticator</strong> or <strong>Authy</strong> from your app store</div>
+              <div class="flex items-start gap-3 text-sm text-[#171717]/70 leading-relaxed p-3 bg-[#f8f8f8] rounded-xl"><span class="w-6 h-6 rounded-full bg-[#256de8]/10 text-[#256de8] flex items-center justify-center text-xs font-semibold shrink-0">2</span>In Promo, go to <strong>Settings → Security → Enable 2FA</strong></div>
+              <div class="flex items-start gap-3 text-sm text-[#171717]/70 leading-relaxed p-3 bg-[#f8f8f8] rounded-xl"><span class="w-6 h-6 rounded-full bg-[#256de8]/10 text-[#256de8] flex items-center justify-center text-xs font-semibold shrink-0">3</span>Scan the QR code with your authenticator app</div>
+              <div class="flex items-start gap-3 text-sm text-[#171717]/70 leading-relaxed p-3 bg-[#f8f8f8] rounded-xl"><span class="w-6 h-6 rounded-full bg-[#256de8]/10 text-[#256de8] flex items-center justify-center text-xs font-semibold shrink-0">4</span>Enter the 6-digit code to confirm — you're protected!</div>
+            </div>
+            <div class="p-4 bg-amber-50 rounded-xl text-xs text-amber-800 leading-relaxed border border-amber-100">
+              <strong>Important:</strong> Save a screenshot of the QR code or the manual setup key in a secure location. If you lose your phone, you'll need this to recover your 2FA access.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div id="first-campaign" class="relative flex gap-6 items-start scroll-mt-24">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">4</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-[#256de8]/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Create Your First Campaign</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Tap <strong>"Create Campaign"</strong> from your dashboard. Fill out the campaign brief:</p>
+            <div class="overflow-x-auto rounded-2xl border border-black/5 mb-4">
+              <table class="w-full text-sm">
+                <thead><tr class="bg-[#f8f8f8] border-b border-black/5"><th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#171717]/40">Field</th><th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[#171717]/40">What to Enter</th></tr></thead>
+                <tbody class="divide-y divide-black/5">
+                  <tr><td class="px-5 py-3 text-[#171717]/70 font-medium">Campaign Title</td><td class="px-5 py-3 text-[#171717]/55">Clear, descriptive name (e.g. "Summer Collection Reels Campaign")</td></tr>
+                  <tr class="bg-[#fafafa]"><td class="px-5 py-3 text-[#171717]/70 font-medium">Content Type</td><td class="px-5 py-3 text-[#171717]/55">Instagram Reel, Story, YouTube Short, X post, or custom</td></tr>
+                  <tr><td class="px-5 py-3 text-[#171717]/70 font-medium">Content Guidelines</td><td class="px-5 py-3 text-[#171717]/55">Key messages, hashtags, mention requirements, do's and don'ts</td></tr>
+                  <tr class="bg-[#fafafa]"><td class="px-5 py-3 text-[#171717]/70 font-medium">Budget / Payout</td><td class="px-5 py-3 text-[#171717]/55">Fixed per-post, milestone-based, or performance-linked</td></tr>
+                  <tr><td class="px-5 py-3 text-[#171717]/70 font-medium">Creator Niche</td><td class="px-5 py-3 text-[#171717]/55">Fashion, tech, food, travel, fitness, gaming, lifestyle, etc.</td></tr>
+                  <tr class="bg-[#fafafa]"><td class="px-5 py-3 text-[#171717]/70 font-medium">Deadline</td><td class="px-5 py-3 text-[#171717]/55">Application deadline and content delivery deadline</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-4 bg-blue-50 rounded-xl text-xs text-blue-800 leading-relaxed border border-blue-100">
+              <strong>Writer's block?</strong> Use the built-in <strong>AI Assistant</strong> to generate a compelling brief from scratch. Just describe your product and goals, and the AI will draft a professional campaign card for you.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-semibold shadow-md">✓</div>
+          <div class="flex-1">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">You're Live — Now Discover Creators</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Once your campaign is published, matching influencers will start applying within hours. While you wait, explore the <strong>Influencer Discovery</strong> screen to proactively find creators by niche, location, follower tier, and engagement rate. You can also browse the <a href="leaderboard.html" class="text-[#256de8] underline">Creator Leaderboard</a> to find top performers.</p>
+            <div class="flex flex-wrap gap-3">
+              <a href="brand-guide.html" class="px-5 py-2.5 rounded-full bg-[#171717] text-white text-xs font-medium hover:bg-black transition-colors">Full Brand Guide →</a>
+              <a href="how-it-works.html#brands" class="px-5 py-2.5 rounded-full border border-black/10 text-xs font-medium hover:bg-black/5 transition-colors">Detailed Walkthrough →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== CREATORS JOURNEY ===== -->
+  <div id="section-creators" style="display:none;">
+
+    <section id="creators" class="py-20 px-6 max-w-4xl mx-auto scroll-mt-24">
+      <div class="mb-12">
+        <span class="badge bg-purple-500/10 text-purple-600 mb-4">Creator Onboarding</span>
+        <h2 class="text-3xl md:text-[40px] font-medium text-[#171717] tracking-tight mt-3">Your first 15 minutes as a Creator</h2>
+        <p class="text-sm text-[#171717]/50 mt-3 max-w-lg">From downloading the app to applying for your first brand collaboration — follow these 5 steps.</p>
+      </div>
+
+      <div class="space-y-8">
+        <!-- Step 1 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">1</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-purple-500/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Download & Create Your Creator Account</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Download Promo from the App Store or Play Store. Open the app and tap "Sign Up". Choose <strong>"I'm a Creator / Influencer"</strong>. Enter your name, email, and choose your primary content niche (fashion, tech, food, travel, fitness, gaming, lifestyle, or other). Set a unique username — this becomes your public Promo Page URL: <strong>/@yourusername</strong></p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-4 bg-[#f8f8f8] rounded-xl"><p class="text-[11px] text-[#171717]/40 font-semibold uppercase tracking-wider mb-1">Time Required</p><p class="text-sm text-[#171717]/70">3 minutes</p></div>
+              <div class="p-4 bg-[#f8f8f8] rounded-xl"><p class="text-[11px] text-[#171717]/40 font-semibold uppercase tracking-wider mb-1">Cost</p><p class="text-sm text-[#171717]/70">100% free</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">2</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-purple-500/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Build Your Promo Page (Profile)</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Your Promo Page is your digital media kit — it's what brands see when reviewing your applications. Make it count.</p>
+            <div class="space-y-2 mb-4">
+              <div class="checklist-item flex items-center gap-3 p-3 rounded-xl border border-black/[0.04]"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i><span class="text-sm text-[#171717]/70">Upload a professional, high-quality profile photo</span></div>
+              <div class="checklist-item flex items-center gap-3 p-3 rounded-xl border border-black/[0.04]"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i><span class="text-sm text-[#171717]/70">Write a compelling bio that highlights your niche and content style</span></div>
+              <div class="checklist-item flex items-center gap-3 p-3 rounded-xl border border-black/[0.04]"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i><span class="text-sm text-[#171717]/70">Link your social accounts (Instagram, YouTube, TikTok, X)</span></div>
+              <div class="checklist-item flex items-center gap-3 p-3 rounded-xl border border-black/[0.04]"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i><span class="text-sm text-[#171717]/70">Add your follower counts and average engagement rate</span></div>
+              <div class="checklist-item flex items-center gap-3 p-3 rounded-xl border border-black/[0.04]"><i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i><span class="text-sm text-[#171717]/70">Select your content niche tags (up to 5)</span></div>
+            </div>
+            <div class="p-4 bg-purple-50 rounded-xl text-xs text-purple-800 leading-relaxed border border-purple-100">
+              <strong>Profile completeness matters:</strong> Brands are 3x more likely to approve creators with fully completed profiles. Don't leave any field blank — treat this like your professional portfolio.
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">3</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-purple-500/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Get Verified & Enable 2FA</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Verification is optional but <strong>strongly recommended</strong>. Verified creators get the blue badge, appear higher in brand searches, and unlock higher-paying campaign tiers.</p>
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+              <div class="p-5 bg-[#f8f8f8] rounded-2xl border border-black/[0.04]">
+                <div class="flex items-center gap-2 mb-3"><i data-lucide="badge-check" class="w-5 h-5 text-[#256de8]"></i><h4 class="text-sm font-medium text-[#171717]">Identity Verification</h4></div>
+                <ul class="space-y-1.5 text-xs text-[#171717]/55 leading-relaxed">
+                  <li>• Submit a government-issued ID (Aadhaar, passport, or driving licence)</li>
+                  <li>• Confirm your linked social handles are genuinely yours</li>
+                  <li>• Review takes up to 24 hours</li>
+                </ul>
+              </div>
+              <div class="p-5 bg-[#f8f8f8] rounded-2xl border border-black/[0.04]">
+                <div class="flex items-center gap-2 mb-3"><i data-lucide="shield-check" class="w-5 h-5 text-emerald-500"></i><h4 class="text-sm font-medium text-[#171717]">2FA Setup (Required)</h4></div>
+                <ul class="space-y-1.5 text-xs text-[#171717]/55 leading-relaxed">
+                  <li>• Download Google Authenticator or Authy</li>
+                  <li>• Go to Settings → Security → Enable 2FA</li>
+                  <li>• Scan the QR code and confirm with 6-digit code</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold z-10 shadow-md">4</div>
+          <div class="relative flex-1 pb-8 before:absolute before:left-[-30px] before:top-12 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-purple-500/40 before:to-transparent">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">Discover & Apply to Your First Campaign</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Browse the <strong>Campaign Discovery</strong> feed to find brand collaborations that match your niche. Use filters to narrow by category, payout range, deadline, and location. You can also use the <strong>Geo-Map</strong> to find brands near your city.</p>
+            <div class="space-y-3 mb-4">
+              <div class="p-4 bg-[#f8f8f8] rounded-xl text-sm text-[#171717]/70 leading-relaxed"><strong class="text-[#171717]">Read the full brief</strong> — check the deliverable type, timeline, payout, and brand guidelines before applying.</div>
+              <div class="p-4 bg-[#f8f8f8] rounded-xl text-sm text-[#171717]/70 leading-relaxed"><strong class="text-[#171717]">Write a personalised pitch note</strong> — explain why you're the right fit for <em>this specific</em> campaign. Generic notes get ignored.</div>
+              <div class="p-4 bg-[#f8f8f8] rounded-xl text-sm text-[#171717]/70 leading-relaxed"><strong class="text-[#171717]">Tap "Apply"</strong> — your full Promo Page is automatically attached. The brand reviews and responds.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="flex gap-6 items-start">
+          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-semibold shadow-md">✓</div>
+          <div class="flex-1">
+            <h3 class="text-xl font-medium text-[#171717] mb-2">You're Ready — Start Building Your Reputation</h3>
+            <p class="text-sm text-[#171717]/60 leading-relaxed mb-4">Once approved, you'll sign a digital agreement, wait for escrow confirmation, create your content, and get paid. Every completed campaign boosts your leaderboard ranking, earns certifications, and increases your visibility to future brands.</p>
+            <div class="flex flex-wrap gap-3">
+              <a href="influencer-guide.html" class="px-5 py-2.5 rounded-full bg-[#171717] text-white text-xs font-medium hover:bg-black transition-colors">Full Creator Guide →</a>
+              <a href="how-it-works.html#influencers" class="px-5 py-2.5 rounded-full border border-black/10 text-xs font-medium hover:bg-black/5 transition-colors">Detailed Walkthrough →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PRO TIPS SECTION -->
+  <section class="py-20 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-medium text-[#171717] tracking-tight">Pro Tips for Success</h2>
+      <p class="text-sm text-[#171717]/50 mt-3 max-w-lg mx-auto">Maximise your results from day one with these expert recommendations.</p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-[#256de8] mb-5"><i data-lucide="pen-tool" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Write Compelling Briefs</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Be specific about what you want. Include content examples, mood references, and clear do's and don'ts. The more detailed your brief, the better the content you'll receive from creators. Use the AI assistant if you need help crafting the perfect brief.</p>
+      </div>
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 mb-5"><i data-lucide="message-square" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Personalise Every Pitch</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Generic pitch notes like "I'd love to collaborate!" rarely get approved. Instead, reference the specific campaign, explain why your audience aligns with the brand's target market, and mention any relevant past experience. Specificity wins.</p>
+      </div>
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-5"><i data-lucide="shield" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Always Use Escrow</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Never accept requests to pay or get paid outside the platform. Promo's escrow system exists to protect both parties. Off-platform payments bypass all dispute protection and violate community guidelines. If someone asks, report them.</p>
+      </div>
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 mb-5"><i data-lucide="clock" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Respond Quickly</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Fast response times build trust. Brands: review applications within 48 hours. Creators: respond to approval notifications and messages within 24 hours. Quick communication keeps campaigns on track and builds your platform reputation.</p>
+      </div>
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-600 mb-5"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Set Clear Agreements</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Before any work begins, ensure the digital agreement covers all specifics: deliverable count, revision rounds, content usage rights, post retention period, and timeline. Clear agreements prevent 95% of disputes. Use the Agreement Builder for this.</p>
+      </div>
+      <div class="fc p-7 rounded-3xl bg-[#f8f8f8] border border-black/[0.04]">
+        <div class="w-10 h-10 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-600 mb-5"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
+        <h3 class="text-base font-medium text-[#171717] mb-2">Track Your Analytics</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed">Regularly check your analytics dashboard. Brands: track which creators drive the best ROI. Creators: monitor your profile views, link clicks, and application success rate. Data-driven decisions lead to better campaign outcomes over time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT'S NEXT -->
+  <section class="py-16 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="bg-[#f8f8f8] rounded-3xl p-10 md:p-14">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-medium text-[#171717] mb-3">What's Next?</h2>
+        <p class="text-sm text-[#171717]/55 max-w-lg mx-auto leading-relaxed">Now that you're set up, dive deeper into these comprehensive guides.</p>
+      </div>
+      <div class="grid md:grid-cols-4 gap-4">
+        <a href="how-it-works.html" class="bg-white p-5 rounded-2xl border border-black/[0.04] hover:border-[#256de8]/15 transition-all text-center group">
+          <i data-lucide="route" class="w-6 h-6 text-[#256de8] mx-auto mb-3"></i>
+          <h4 class="text-sm font-medium text-[#171717] mb-1">How It Works</h4>
+          <p class="text-[11px] text-[#171717]/45">Full platform walkthrough</p>
+        </a>
+        <a href="escrow-guide.html" class="bg-white p-5 rounded-2xl border border-black/[0.04] hover:border-[#256de8]/15 transition-all text-center group">
+          <i data-lucide="wallet" class="w-6 h-6 text-emerald-500 mx-auto mb-3"></i>
+          <h4 class="text-sm font-medium text-[#171717] mb-1">Escrow Guide</h4>
+          <p class="text-[11px] text-[#171717]/45">Payment protection explained</p>
+        </a>
+        <a href="features.html" class="bg-white p-5 rounded-2xl border border-black/[0.04] hover:border-[#256de8]/15 transition-all text-center group">
+          <i data-lucide="layers" class="w-6 h-6 text-purple-500 mx-auto mb-3"></i>
+          <h4 class="text-sm font-medium text-[#171717] mb-1">All Features</h4>
+          <p class="text-[11px] text-[#171717]/45">Explore every tool</p>
+        </a>
+        <a href="faq.html" class="bg-white p-5 rounded-2xl border border-black/[0.04] hover:border-[#256de8]/15 transition-all text-center group">
+          <i data-lucide="help-circle" class="w-6 h-6 text-amber-500 mx-auto mb-3"></i>
+          <h4 class="text-sm font-medium text-[#171717] mb-1">FAQ</h4>
+          <p class="text-[11px] text-[#171717]/45">50+ questions answered</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[80vh] border-t border-white/10">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Specialised creator marketing</span></div>
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">Scale your creator pipeline today.</h2>
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:scale-[1.02] transition-all gap-2 shadow-sm">Download our app <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex justify-between items-center"><p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p><p class="text-xs text-white/30">Creator marketing, reimagined.</p></div>
+  </section><script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script>
+  <script>
+    if(typeof UnicornStudio!=='undefined'){UnicornStudio.init();}
+    lucide.createIcons();
+
+    // Tab switching
+    function showTab(tab) {
+      const brandsSection = document.getElementById('section-brands');
+      const creatorsSection = document.getElementById('section-creators');
+      const tabBrands = document.getElementById('tab-brands');
+      const tabCreators = document.getElementById('tab-creators');
+
+      if (tab === 'brands') {
+        brandsSection.style.display = 'block';
+        creatorsSection.style.display = 'none';
+        tabBrands.classList.add('active');
+        tabBrands.classList.remove('border', 'border-white/20', 'text-white');
+        tabCreators.classList.remove('active');
+        tabCreators.classList.add('border', 'border-white/20', 'text-white');
+      } else {
+        brandsSection.style.display = 'none';
+        creatorsSection.style.display = 'block';
+        tabCreators.classList.add('active');
+        tabCreators.classList.remove('border', 'border-white/20', 'text-white');
+        tabBrands.classList.remove('active');
+        tabBrands.classList.add('border', 'border-white/20', 'text-white');
+      }
+    }
+
+    // Navbar scroll
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+</script>
+</body>
+</html>

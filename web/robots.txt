@@ -1,0 +1,52 @@
+# Promo. — robots.txt
+# We explicitly welcome all web crawlers, search engines, and AI bots.
+# This site is designed to be fully indexed and understood by AI assistants.
+
+User-agent: *
+Allow: /
+
+# Google
+User-agent: Googlebot
+Allow: /
+
+# GPT / OpenAI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic Claude
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Bing / Copilot
+User-agent: Bingbot
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+# Meta / Facebook
+User-agent: Facebookbot
+Allow: /
+
+# Common scraper bots
+User-agent: CCBot
+Allow: /
+
+User-agent: ia_archiver
+Allow: /
+
+# Sitemap location
+Sitemap: https://promo.app/sitemap.xml
+
+# LLM context file — for AI assistant understanding
+# See: https://promo.app/llms.txt

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beta Research Campaign | Promo.</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Join Promo's official Beta Research Campaign 2026. Find bugs, share product ideas, or apply for internships to win rewards and work with Team Promo.">
+  <meta name="keywords" content="Promo, Beta, Bug Bounty, Idea submission, Startup Internship, Creator Marketing">
+  <meta property="og:title" content="Beta Research Campaign | Promo.">
+  <meta property="og:description" content="Help us build the future of creator marketing. Report bugs, suggest features, or join the team as an intern.">
+  <meta property="og:image" content="/assets/creator_theme_bg.png">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=My+Soul&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+            display: ['"Neue Montreal"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brandBg: '#FFFFFF',
+            brandPurple: '#256de8',
+            brandYellow: '#FACC15',
+            brandCard: '#f8f8f8',
+            brandBorder: 'rgba(0, 0, 0, 0.05)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Neue Montreal';
+      src: url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      background-color: #FFFFFF;
+      color: #171717;
+      overflow-x: hidden;
+      font-family: 'Neue Montreal', sans-serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080a0d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #256de8/30;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #256de8/50;
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- ================= NAVBAR ================= -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors duration-300" style="font-family: 'My Soul', cursive;">
+        Promo<span class="text-[#256de8] font-bold text-4xl">.</span>
+      </a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="about.html" id="nav-about" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          About us
+        </a>
+        <a href="/signup" id="nav-signup" class="hidden sm:inline-flex text-[14px] font-medium text-white/80 hover:text-white transition-colors duration-300">
+          Sign up
+        </a>
+        <a href="download.html" id="nav-cta" class="group inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-1.5 shadow-sm">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="about.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          About us
+        </a>
+      <a href="/signup" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">
+          Sign up
+        </a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">
+          Download our app
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[50vh] flex flex-col justify-center items-center px-6">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient (blended on top) -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <!-- White Bottom Gradient Fade -->
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
+
+    <!-- Hero Content -->
+    <div class="relative z-20 pt-28 pb-12 flex flex-col items-center text-center max-w-7xl mx-auto">
+      <!-- Glowing eyebrow pill -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Beta Research Campaign 2026</span>
+      </div>
+
+      <!-- Main Heading -->
+      <h1 class="text-4xl sm:text-5xl md:text-[54px] font-medium tracking-[-0.02em] leading-[1.1] max-w-4xl text-white">
+        Help us build the future of <span class="text-[#EC4899]/90">creator marketing.</span>
+      </h1>
+      <p class="text-sm text-white/60 mt-4 font-normal max-w-xl mx-auto">
+        Report bugs, submit ideas, or apply for internships to win rewards and work directly with the Promo team.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= CAMPAIGN CHANNELS GRID ================= -->
+  <section class="relative z-10 py-16 px-6 max-w-7xl mx-auto bg-white">
+    <div class="grid md:grid-cols-3 gap-8">
+      
+      <!-- Card 1: Bug Bounty -->
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] flex flex-col shadow-sm">
+        <div class="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-[#256de8] mb-6">
+          <i data-lucide="bug" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-lg font-normal text-black mb-4">Bug Bounty</h3>
+        <p class="text-xs text-[#171717]/60 leading-relaxed mb-6 flex-grow">
+          Explore the app and document any glitches, visual alignment bugs, or app crash logs to earn verified rewards.
+        </p>
+        <a href="#bug-report" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#256de8] hover:underline">
+          Report a bug
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none" class="w-2 h-2"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Card 2: Idea Rewards -->
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] flex flex-col shadow-sm">
+        <div class="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 mb-6">
+          <i data-lucide="lightbulb" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-lg font-normal text-black mb-4">Idea Submission</h3>
+        <p class="text-xs text-[#171717]/60 leading-relaxed mb-6 flex-grow">
+          Share new feature concepts, UI/UX workflow updates, or unique database tracking ideas to help structure our roadmap.
+        </p>
+        <a href="#submit-idea" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#256de8] hover:underline">
+          Submit an idea
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none" class="w-2 h-2"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+      <!-- Card 3: Internships -->
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] flex flex-col shadow-sm">
+        <div class="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 mb-6">
+          <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-lg font-normal text-black mb-4">Join the Team</h3>
+        <p class="text-xs text-[#171717]/60 leading-relaxed mb-6 flex-grow">
+          Gain real-world experience at a fast-growing startup. Submit applications for coding, marketing, or design roles.
+        </p>
+        <a href="#intern-apply" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#256de8] hover:underline">
+          Apply to intern
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none" class="w-2 h-2"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= FORMS CONTAINER ================= -->
+  <section class="relative z-10 py-16 px-6 max-w-4xl mx-auto bg-white border-t border-black/5">
+    
+    <!-- 1. BUG REPORT FORM -->
+    <div id="bug-report" class="scroll-mt-24 mb-24">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-normal text-black mb-2">Report a Bug</h2>
+        <p class="text-xs text-[#171717]/60">Found something broken? Fill out the details below.</p>
+      </div>
+
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] shadow-sm">
+        <form id="bug-form" class="space-y-6">
+          <div class="flex flex-col gap-2">
+            <label for="bug-title" class="text-xs font-semibold text-black/60 uppercase">Bug Title *</label>
+            <input type="text" id="bug-title" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label for="bug-screen" class="text-xs font-semibold text-black/60 uppercase">Feature/Screen *</label>
+              <select id="bug-screen" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+                <option value="" disabled selected>Select option</option>
+                <option value="Login">Login/Signup</option>
+                <option value="Dashboard">Discover Cards</option>
+                <option value="Chat">Chat & Messaging</option>
+                <option value="Map">Map Discovery</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="bug-device" class="text-xs font-semibold text-black/60 uppercase">Device Type *</label>
+              <select id="bug-device" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+                <option value="" disabled selected>Select device</option>
+                <option value="Android">Android</option>
+                <option value="iOS">iOS</option>
+                <option value="Web">Web / Desktop</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="bug-desc" class="text-xs font-semibold text-black/60 uppercase">Description *</label>
+            <textarea id="bug-desc" required rows="4" class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label for="bug-name" class="text-xs font-semibold text-black/60 uppercase">Your Name *</label>
+              <input type="text" id="bug-name" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="bug-email" class="text-xs font-semibold text-black/60 uppercase">Your Email *</label>
+              <input type="email" id="bug-email" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-full bg-[#171717] hover:bg-black text-white text-sm font-medium transition-all shadow-sm">
+            Submit Bug Report
+          </button>
+        </form>
+
+        <!-- Bug Success Outcome -->
+        <div id="bug-success" class="hidden text-center py-6 space-y-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+            <i data-lucide="check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-normal text-black">Bug Report Submitted!</h3>
+          <p class="text-xs text-[#171717]/60 max-w-sm mx-auto">
+            Your report was registered. Here is your unique token ID: <span id="bug-token-id" class="font-bold text-black block mt-2 text-sm">BUG-X82L9A1N</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. IDEA SUBMISSION FORM -->
+    <div id="submit-idea" class="scroll-mt-24 mb-24 border-t border-black/5 pt-16">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-normal text-black mb-2">Submit an Idea</h2>
+        <p class="text-xs text-[#171717]/60">Have suggestions to optimize the app? Let us know.</p>
+      </div>
+
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] shadow-sm">
+        <form id="idea-form" class="space-y-6">
+          <div class="flex flex-col gap-2">
+            <label for="idea-title" class="text-xs font-semibold text-black/60 uppercase">Idea Title *</label>
+            <input type="text" id="idea-title" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="idea-desc" class="text-xs font-semibold text-black/60 uppercase">Detailed Description *</label>
+            <textarea id="idea-desc" required rows="4" class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label for="idea-name" class="text-xs font-semibold text-black/60 uppercase">Your Name *</label>
+              <input type="text" id="idea-name" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="idea-email" class="text-xs font-semibold text-black/60 uppercase">Your Email *</label>
+              <input type="email" id="idea-email" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-full bg-[#171717] hover:bg-black text-white text-sm font-medium transition-all shadow-sm">
+            Submit My Idea
+          </button>
+        </form>
+
+        <!-- Idea Success Outcome -->
+        <div id="idea-success" class="hidden text-center py-6 space-y-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+            <i data-lucide="check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-normal text-black">Idea Registered!</h3>
+          <p class="text-xs text-[#171717]/60 max-w-sm mx-auto">
+            Your concept has been queued. Here is your unique token ID: <span id="idea-token-id" class="font-bold text-black block mt-2 text-sm">IDEA-K93P2F4X</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. INTERNSHIP APPLICATION FORM -->
+    <div id="intern-apply" class="scroll-mt-24 border-t border-black/5 pt-16">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-normal text-black mb-2">Apply to Intern</h2>
+        <p class="text-xs text-[#171717]/60">Submit details to join our engineering or marketing cohorts.</p>
+      </div>
+
+      <div class="p-8 rounded-3xl bg-[#f8f8f8] border border-black/[0.04] shadow-sm">
+        <form id="intern-form" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label for="intern-name" class="text-xs font-semibold text-black/60 uppercase">Full Name *</label>
+              <input type="text" id="intern-name" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="intern-email" class="text-xs font-semibold text-black/60 uppercase">Email Address *</label>
+              <input type="email" id="intern-email" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label for="intern-role" class="text-xs font-semibold text-black/60 uppercase">Role of Interest *</label>
+              <select id="intern-role" required class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+                <option value="" disabled selected>Select role</option>
+                <option value="flutter_developer">Frontend (Flutter/Web)</option>
+                <option value="business_development">Backend / Business Development</option>
+                <option value="marketing">Growth Marketing</option>
+                <option value="ui_ux_designer">UI/UX Design</option>
+                <option value="content_creator">Content Creation</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="intern-link" class="text-xs font-semibold text-black/60 uppercase">Portfolio / Resume Link *</label>
+              <input type="url" id="intern-link" required placeholder="https://github.com/username" class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="intern-cover" class="text-xs font-semibold text-black/60 uppercase">Why join Promo? *</label>
+            <textarea id="intern-cover" required rows="3" class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white focus:outline-none focus:border-[#256de8] text-[14px]"></textarea>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-full bg-[#171717] hover:bg-black text-white text-sm font-medium transition-all shadow-sm">
+            Submit Application
+          </button>
+        </form>
+
+        <!-- Intern Success Outcome -->
+        <div id="intern-success" class="hidden text-center py-6 space-y-4">
+          <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+            <i data-lucide="check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-normal text-black">Application Received!</h3>
+          <p class="text-xs text-[#171717]/60 max-w-sm mx-auto">
+            Thank you for applying. We review candidate details and reach out within 7-10 working days.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================= UNIFIED FOOTER & CTA ================= -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[85vh] border-t border-white/10">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
+    </div>
+    
+    <!-- 2. Royal Blue overlay gradient -->
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100 z-0"></div>
+
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 opacity-10"></div>
+
+    <!-- Centered CTA Content -->
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span class="text-[11px] font-medium tracking-[0.08em] text-white/80 uppercase">Specialised creator marketing</span>
+      </div>
+
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">
+        Scale your creator pipeline today.
+      </h2>
+
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:bg-white/95 hover:scale-[1.02] active:scale-[0.98] transition-all gap-2 shadow-sm">
+        Download our app
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+
+    <!-- Expanded Footer Links Grid -->
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright Row -->
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p>
+    </div>
+  </section>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script><script>
+    if (typeof UnicornStudio !== 'undefined') {
+      UnicornStudio.init();
+    }
+    lucide.createIcons();
+
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+// Supabase Credentials
+    const supabaseUrl = 'https://lokoxgwymvvnxhmavuyv.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxva294Z3d5bXZ2bnhobWF2dXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDM3MTEsImV4cCI6MjA5NzE3OTcxMX0.gpQT_54GRBls2q3dpxsKt70tcEkRdDgGVvjocq79qMU'; 
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Form Submissions
+    const bugForm = document.getElementById('bug-form');
+    const bugSuccess = document.getElementById('bug-success');
+    if (bugForm && bugSuccess) {
+      bugForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = bugForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+
+        const title = document.getElementById('bug-title').value.trim();
+        const screen_or_feature = document.getElementById('bug-screen').value;
+        const device_type = document.getElementById('bug-device').value;
+        const description = document.getElementById('bug-desc').value.trim();
+        const submitter_name = document.getElementById('bug-name').value.trim();
+        const submitter_email = document.getElementById('bug-email').value.trim();
+
+        try {
+          const { data, error } = await client
+            .from('bug_reports')
+            .insert([{
+              title,
+              description,
+              screen_or_feature,
+              device_type,
+              submitter_name,
+              submitter_email,
+              severity: 'medium'
+            }])
+            .select('token');
+
+          if (error) throw error;
+
+          bugForm.classList.add('hidden');
+          if (data && data[0] && data[0].token) {
+            document.getElementById('bug-token-id').innerText = data[0].token;
+          }
+          bugSuccess.classList.remove('hidden');
+        } catch (err) {
+          alert('Error reporting bug: ' + (err.message || err));
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit Bug Report';
+        }
+      });
+    }
+
+    const ideaForm = document.getElementById('idea-form');
+    const ideaSuccess = document.getElementById('idea-success');
+    if (ideaForm && ideaSuccess) {
+      ideaForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = ideaForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+
+        const title = document.getElementById('idea-title').value.trim();
+        const description = document.getElementById('idea-desc').value.trim();
+        const submitter_name = document.getElementById('idea-name').value.trim();
+        const submitter_email = document.getElementById('idea-email').value.trim();
+
+        try {
+          const { data, error } = await client
+            .from('idea_submissions')
+            .insert([{
+              title,
+              description,
+              submitter_name,
+              submitter_email,
+              category: 'other'
+            }])
+            .select('token');
+
+          if (error) throw error;
+
+          ideaForm.classList.add('hidden');
+          if (data && data[0] && data[0].token) {
+            document.getElementById('idea-token-id').innerText = data[0].token;
+          }
+          ideaSuccess.classList.remove('hidden');
+        } catch (err) {
+          alert('Error submitting idea: ' + (err.message || err));
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit My Idea';
+        }
+      });
+    }
+
+    const internForm = document.getElementById('intern-form');
+    const internSuccess = document.getElementById('intern-success');
+    if (internForm && internSuccess) {
+      internForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = internForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+
+        const full_name = document.getElementById('intern-name').value.trim();
+        const email = document.getElementById('intern-email').value.trim();
+        const roleVal = document.getElementById('intern-role').value;
+        const resume_url = document.getElementById('intern-link').value.trim();
+        const why_promo = document.getElementById('intern-cover').value.trim();
+
+        const role_interest = roleVal || 'other';
+
+        try {
+          const { error } = await client
+            .from('internship_applications')
+            .insert([{
+              full_name,
+              email,
+              role_interest,
+              resume_url,
+              why_promo
+            }]);
+
+          if (error) throw error;
+
+          internForm.classList.add('hidden');
+          internSuccess.classList.remove('hidden');
+        } catch (err) {
+          alert('Error submitting application: ' + (err.message || err));
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit Application';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

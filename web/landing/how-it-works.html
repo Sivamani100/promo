@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works | Promo. — Creator Marketing Platform</title>
+  <meta name="description" content="Learn exactly how Promo works — step-by-step walkthroughs for brands and influencers. From signing up and creating a campaign to funding escrow, submitting deliverables, and getting paid.">
+  <meta name="keywords" content="how Promo works, influencer marketing process, brand campaign steps, creator application process, escrow payment flow">
+  <meta property="og:title" content="How It Works | Promo.">
+  <meta property="og:description" content="A step-by-step walkthrough of how Promo connects brands and influencers — from signup to payout.">
+  <meta property="og:type" content="website">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to run an influencer campaign on Promo","description":"Step-by-step guide to running a brand campaign or applying as a creator on Promo","step":[{"@type":"HowToStep","name":"Sign up and verify","text":"Create a brand or influencer account and complete identity verification"},{"@type":"HowToStep","name":"Create or discover campaigns","text":"Brands create campaign cards; influencers browse and discover relevant campaigns"},{"@type":"HowToStep","name":"Apply and get approved","text":"Influencers apply with one tap; brands review and approve from the application dashboard"},{"@type":"HowToStep","name":"Sign agreement and fund escrow","text":"Both parties sign a digital agreement; brand funds the campaign budget into secure escrow"},{"@type":"HowToStep","name":"Create and submit deliverables","text":"Creator produces and submits content according to the campaign brief"},{"@type":"HowToStep","name":"Review and release payment","text":"Brand reviews deliverables and releases escrow payment to the creator"}]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=My+Soul&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Neue Montreal"','Inter','sans-serif']}}}}</script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');font-weight:400;font-display:swap;}
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');font-weight:500;font-display:swap;}
+    body{background:#fff;color:#171717;overflow-x:hidden;font-family:'Neue Montreal',sans-serif;}
+    ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-track{background:#080a0d;}::-webkit-scrollbar-thumb{background:#256de830;border-radius:4px;}
+    .fc{transition:transform .2s,box-shadow .2s;}.fc:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.07);}
+    .badge{display:inline-flex;align-items:center;padding:3px 12px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    .step-line{position:absolute;left:19px;top:48px;bottom:0;width:1px;background:linear-gradient(to bottom,#256de8,transparent);}
+    details summary{cursor:pointer;list-style:none;} details summary::-webkit-details-marker{display:none;}
+  </style>
+</head>
+<body class="bg-white">
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="features.html" id="nav-feat" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">Features</a>
+        <a href="how-it-works.html" id="nav-hiw" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">How it works</a>
+        <a href="faq.html" id="nav-faq" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">FAQ</a>
+        <a href="download.html" id="nav-cta" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:scale-[1.02] transition-all gap-1.5 shadow-sm">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="features.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">Features</a>
+      <a href="how-it-works.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">How it works</a>
+      <a href="faq.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">FAQ</a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </nav>
+
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[50vh] flex flex-col justify-center items-center px-6">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
+    <div class="relative z-20 pt-32 pb-16 text-center max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Platform Walkthrough</span></div>
+      <h1 class="text-4xl sm:text-5xl md:text-[58px] font-medium tracking-[-0.02em] leading-[1.07] text-white">How Promo <span class="text-[#EC4899]/90">works.</span></h1>
+      <p class="text-sm text-white/60 mt-5 max-w-xl mx-auto leading-relaxed">A clear, step-by-step walkthrough for both brands and creators — from the moment you sign up to the moment payment clears.</p>
+      <div class="flex gap-4 justify-center mt-8">
+        <a href="#brands" class="px-6 py-2.5 rounded-full bg-white text-[#171717] text-xs font-semibold hover:scale-[1.02] transition-all shadow-sm">For Brands</a>
+        <a href="#influencers" class="px-6 py-2.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/20 transition-colors">For Influencers</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOR BRANDS -->
+  <section id="brands" class="py-24 px-6 max-w-6xl mx-auto scroll-mt-24">
+    <div class="mb-16 text-center"><span class="badge bg-blue-500/10 text-blue-600 mb-4">Brand Journey</span><h2 class="text-3xl md:text-[40px] font-medium text-black tracking-tight mt-3">How brands run campaigns on Promo</h2><p class="text-sm text-[#171717]/50 mt-3 max-w-lg mx-auto">Everything from account setup to releasing the final payment — 8 clear steps.</p></div>
+    <div class="space-y-6 max-w-3xl mx-auto">
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">1</div><div class="relative flex-1 pb-8 before:absolute before:left-[-26px] before:top-10 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-[#256de8]/40 before:to-transparent"><h3 class="text-lg font-medium text-black mb-2">Create your Brand Account</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Download the Promo app and sign up as a Brand. Enter your company name, industry, and contact details. You will receive a verification email — click the link to activate your account. Your brand account starts in a free onboarding state with full access to the campaign builder.</p><div class="mt-3 flex flex-wrap gap-2"><span class="px-3 py-1 bg-[#f8f8f8] rounded-full text-xs text-[#171717]/60">Takes 3 minutes</span><span class="px-3 py-1 bg-[#f8f8f8] rounded-full text-xs text-[#171717]/60">No credit card required upfront</span></div></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">2</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Complete Identity &amp; Business Verification</h3><p class="text-sm text-[#171717]/60 leading-relaxed">To unlock campaign creation, complete your business verification by submitting your company registration document or GST certificate. This step confirms you are a legitimate business entity and unlocks the full platform — including escrow funding and influencer discovery. The review takes up to 24 hours.</p><div class="mt-3 p-4 bg-[#f8f8f8] rounded-2xl text-xs text-[#171717]/60 leading-relaxed"><strong class="text-black">Documents accepted:</strong> GST registration, company incorporation certificate, trade licence, or registered business PAN card.</div></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">3</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Enable Two-Factor Authentication (2FA)</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Promo requires all accounts to enable 2FA before accessing campaigns or payments. Download Google Authenticator or Authy, scan the QR code shown in your security settings, and enter the 6-digit code to confirm. From this point, every login session requires your 2FA code — keeping your account and budget fully protected.</p></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">4</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Create a Campaign Card</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Tap "Create Campaign" from your dashboard. Fill out the campaign brief: title, deliverable type (Reel, Story, YouTube Short, Blog post), content guidelines, hashtags, mention requirements, desired audience demographics, application deadline, and payout structure. The AI assistant can help you write a compelling brief if you need a starting point.</p><div class="mt-3 grid grid-cols-2 gap-3"><div class="p-3 bg-[#f8f8f8] rounded-xl text-xs"><strong class="block text-black mb-1">Payout options</strong><span class="text-[#171717]/60">Fixed per-post, milestone-based, or performance-linked</span></div><div class="p-3 bg-[#f8f8f8] rounded-xl text-xs"><strong class="block text-black mb-1">Deliverable types</strong><span class="text-[#171717]/60">Instagram Reel, Story, YouTube Short, X post, Blog, or custom</span></div></div></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">5</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Review Influencer Applications</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Once your campaign card is live, influencers matching your criteria will apply. You receive a push notification for each application. Open the Applications screen to see each applicant's full Promo Page: follower count, engagement rate, niche, past campaigns, certifications, and their personalised pitch note. Shortlist, approve, or reject with a single tap.</p></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">6</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Sign Agreement &amp; Fund Escrow</h3><p class="text-sm text-[#171717]/60 leading-relaxed">After approving an influencer, Promo generates a digital collaboration agreement covering deliverables, timeline, usage rights, and payment terms. Both parties review and sign in-app. Once signed, you fund the agreed campaign amount into Promo's secure escrow wallet. The creator can see that funds are locked — building trust before any work begins. <a href="escrow-guide.html" class="text-[#256de8] underline">Escrow guide →</a></p></div></div>
+      <div class="relative flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#256de8] text-white flex items-center justify-center text-sm font-semibold z-10">7</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Review the Submitted Deliverable</h3><p class="text-sm text-[#171717]/60 leading-relaxed">The influencer will submit their content draft via the chat or the milestone tracker screen. Review the draft — if it meets the brief, approve it. If changes are needed, send revision notes. Once the content goes live on their social platform, Promo's system verifies the post URL and metrics. You can then move to the final step.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-semibold">✓</div><div class="flex-1"><h3 class="text-lg font-medium text-black mb-2">Release Escrow Payment</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Once you are satisfied with the deliverable and confirmed it is live, tap "Release Payment" on the milestone tracker. The escrow funds are instantly transferred to the influencer's Promo wallet. The campaign is marked complete, and both parties can leave ratings. Your analytics dashboard updates with the campaign's final performance metrics.</p><div class="mt-3 p-4 bg-emerald-50 rounded-2xl text-xs text-emerald-700 leading-relaxed border border-emerald-100"><strong>If something goes wrong:</strong> Raise a dispute at any point before releasing payment. Funds remain locked in escrow while our team mediates a fair resolution.</div></div></div>
+    </div>
+  </section>
+
+  <!-- FOR INFLUENCERS -->
+  <section id="influencers" class="py-24 px-6 max-w-6xl mx-auto border-t border-black/5 scroll-mt-24">
+    <div class="mb-16 text-center"><span class="badge bg-purple-500/10 text-purple-600 mb-4">Creator / Influencer Journey</span><h2 class="text-3xl md:text-[40px] font-medium text-black tracking-tight mt-3">How creators earn with Promo</h2><p class="text-sm text-[#171717]/50 mt-3 max-w-lg mx-auto">From your first signup to receiving your first brand payment — here is everything step by step.</p></div>
+    <div class="space-y-6 max-w-3xl mx-auto">
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">1</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Create your Creator Account</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Download Promo and sign up as a Creator. Enter your name, email, and choose your primary content niche (fashion, tech, food, travel, fitness, gaming, lifestyle, or other). Set a username — this becomes your public Promo Page URL (/@yourusername) that you can share in your bio.</p><div class="mt-3 flex flex-wrap gap-2"><span class="px-3 py-1 bg-[#f8f8f8] rounded-full text-xs text-[#171717]/60">Takes under 5 minutes</span><span class="px-3 py-1 bg-[#f8f8f8] rounded-full text-xs text-[#171717]/60">Free to join and use</span></div></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">2</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Complete Onboarding &amp; Set Up Your Promo Page</h3><p class="text-sm text-[#171717]/60 leading-relaxed">After signup, the onboarding flow guides you through setting up your Promo Page — add a profile photo, write a compelling bio, link your Instagram/YouTube/TikTok accounts, and specify your follower counts and average engagement rate. The more complete your profile, the better your application success rate. Brands assess your Promo Page before approving applications.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">3</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Verify your Identity</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Complete identity verification to earn your verified badge and unlock higher-paying campaign tiers. Submit a government-issued ID (Aadhaar, passport, or driving licence) and confirm your linked social handles are genuinely yours. Verified creators appear higher in brand search results and earn the blue verification badge on their Promo Page.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">4</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Discover &amp; Apply to Campaigns</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Browse the campaign discovery feed filtered by your niche, location, and desired payout range. Use the geo-map to find brands near you. When you find a campaign that fits, read the full brief — deliverables, timeline, payment, and brand details — then apply with one tap. Add a personalised note to explain why you are the right fit.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">5</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Get Approved &amp; Sign the Agreement</h3><p class="text-sm text-[#171717]/60 leading-relaxed">You receive a push notification when a brand approves your application. Open the app to find a digital collaboration agreement ready for your signature. Review the deliverable specifications, timeline, usage rights, and payment terms carefully. Sign in-app — once both parties sign, the agreement is locked and binding.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">6</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Wait for Escrow Funding Confirmation</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Before you start creating content, confirm via the payment tracker that the brand has funded escrow. You will see a green "Escrow Funded" status on the campaign. This guarantees your payment is already set aside and protected — you can now proceed with confidence knowing you will be paid once you deliver.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold">7</div><div class="flex-1 pb-8"><h3 class="text-lg font-medium text-black mb-2">Create Content &amp; Submit Deliverable</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Produce the agreed content following the brief. Before publishing, you may share a draft preview via the in-app chat for brand feedback. Incorporate any revision notes. Then publish the content on your social platform and submit the live post URL through the milestone tracker. Promo automatically verifies the post is live and matches deliverable requirements.</p></div></div>
+      <div class="flex gap-6 items-start"><div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-semibold">✓</div><div class="flex-1"><h3 class="text-lg font-medium text-black mb-2">Receive Payment to Your Promo Wallet</h3><p class="text-sm text-[#171717]/60 leading-relaxed">Once the brand reviews and approves your deliverable, they release the escrow. The funds are instantly credited to your Promo wallet. Transfer to your linked bank account or UPI with one tap — settlements process within 2–4 business days depending on your bank. The campaign is marked complete, and your stats update on the leaderboard.</p><div class="mt-3 p-4 bg-purple-50 rounded-2xl text-xs text-purple-700 leading-relaxed border border-purple-100"><strong>Dispute protection:</strong> If a brand refuses to release payment without valid cause, raise a dispute. Promo's admin team will review the evidence and release payment to you if your deliverable meets the agreed brief.</div></div></div>
+    </div>
+  </section>
+
+  <!-- QUICK SUMMARY TABLE -->
+  <section class="py-16 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="text-center mb-10"><h2 class="text-2xl font-medium text-black">At a glance</h2><p class="text-sm text-[#171717]/50 mt-2">Promo's platform flow in a single overview</p></div>
+    <div class="overflow-x-auto rounded-2xl border border-black/5"><table class="w-full text-sm"><thead><tr class="bg-[#f8f8f8] border-b border-black/5"><th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#171717]/40">Step</th><th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#171717]/40">Brands do</th><th class="text-left px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#171717]/40">Creators do</th></tr></thead><tbody class="divide-y divide-black/5"><tr><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Signup</td><td class="px-6 py-4 text-sm text-[#171717]/70">Create brand account, verify business credentials</td><td class="px-6 py-4 text-sm text-[#171717]/70">Create creator account, set up Promo Page</td></tr><tr class="bg-[#fafafa]"><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Security</td><td class="px-6 py-4 text-sm text-[#171717]/70">Enable 2FA, complete KYB verification</td><td class="px-6 py-4 text-sm text-[#171717]/70">Enable 2FA, submit ID for verification badge</td></tr><tr><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Campaign</td><td class="px-6 py-4 text-sm text-[#171717]/70">Create campaign card with brief and budget</td><td class="px-6 py-4 text-sm text-[#171717]/70">Browse cards, apply with profile + pitch note</td></tr><tr class="bg-[#fafafa]"><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Agreement</td><td class="px-6 py-4 text-sm text-[#171717]/70">Review applicants, approve, countersign</td><td class="px-6 py-4 text-sm text-[#171717]/70">Sign digital agreement, wait for escrow</td></tr><tr><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Payment</td><td class="px-6 py-4 text-sm text-[#171717]/70">Fund escrow wallet with campaign budget</td><td class="px-6 py-4 text-sm text-[#171717]/70">Confirm escrow funded, begin creating</td></tr><tr class="bg-[#fafafa]"><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Delivery</td><td class="px-6 py-4 text-sm text-[#171717]/70">Review draft, request revisions if needed</td><td class="px-6 py-4 text-sm text-[#171717]/70">Produce content, submit live URL</td></tr><tr><td class="px-6 py-4 text-[#171717]/40 text-xs font-medium">Release</td><td class="px-6 py-4 text-sm text-[#171717]/70">Approve deliverable, release escrow</td><td class="px-6 py-4 text-sm text-[#171717]/70">Receive payment to Promo wallet</td></tr></tbody></table></div>
+    <div class="mt-8 flex flex-wrap gap-4 justify-center"><a href="brand-guide.html" class="px-6 py-3 rounded-full bg-[#171717] text-white text-sm font-medium hover:bg-black transition-colors">Full Brand Guide</a><a href="influencer-guide.html" class="px-6 py-3 rounded-full border border-black/10 text-sm font-medium hover:bg-black/5 transition-colors">Full Influencer Guide</a><a href="escrow-guide.html" class="px-6 py-3 rounded-full border border-black/10 text-sm font-medium hover:bg-black/5 transition-colors">Escrow Guide</a></div>
+  </section>
+
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[80vh] border-t border-white/10">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Specialised creator marketing</span></div>
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">Scale your creator pipeline today.</h2>
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:scale-[1.02] transition-all gap-2 shadow-sm">Download our app <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex justify-between items-center"><p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p><p class="text-xs text-white/30">Creator marketing, reimagined.</p></div>
+  </section><script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script>
+  <script>
+    if(typeof UnicornStudio!=='undefined'){UnicornStudio.init();}
+    lucide.createIcons();
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+</script>
+</body>
+</html>

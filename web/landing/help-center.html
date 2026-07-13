@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Center | Promo. — Support & Resources</title>
+  <meta name="description" content="Find answers, troubleshoot issues, and get help using the Promo creator marketing platform. Browse guides for brands and creators, payment support, account help, and more.">
+  <meta name="keywords" content="Promo help, Promo support, creator marketing help, influencer platform support, escrow help, campaign help">
+  <meta property="og:title" content="Help Center | Promo.">
+  <meta property="og:description" content="Your central hub for support, troubleshooting, and documentation on the Promo platform.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=My+Soul&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['"Neue Montreal"','Inter','sans-serif']}}}}</script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/EN0wrjjcgDdG3SMgxfEI19PNHRs.woff2') format('woff2');font-weight:400;font-display:swap;}
+    @font-face{font-family:'Neue Montreal';src:url('https://framerusercontent.com/assets/vEydk8LUwvYV3ZJtsQhKLqsza0.woff2') format('woff2');font-weight:500;font-display:swap;}
+    body{background:#fff;color:#171717;overflow-x:hidden;font-family:'Neue Montreal',sans-serif;}
+    ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-track{background:#fff;}::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:4px;}::-webkit-scrollbar-thumb:hover{background:#D1D5DB;}
+    .help-card{transition:transform .2s,box-shadow .2s,border-color .2s;}.help-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.06);border-color:rgba(0,0,0,.1);}
+    .search-glow{box-shadow:0 0 0 1px rgba(37,109,232,.15),0 8px 40px rgba(37,109,232,.08);}
+    .search-glow:focus-within{box-shadow:0 0 0 2px rgba(37,109,232,.3),0 8px 40px rgba(37,109,232,.12);}
+    .quick-link{transition:all .2s;}.quick-link:hover{background:rgba(37,109,232,.04);border-color:rgba(37,109,232,.15);}
+    .popular-item{transition:all .15s;}.popular-item:hover{padding-left:24px;color:#256de8;}
+  </style>
+</head>
+<body class="bg-white">
+
+  <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent border-b border-transparent">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" id="nav-logo" class="text-3xl font-semibold tracking-tight flex items-center gap-0.5 text-white transition-colors" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+      
+      <!-- Action Buttons -->
+      <div id="nav-links" class="hidden md:flex items-center gap-6">
+        <a href="features.html" id="nav-feat" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">Features</a>
+        <a href="how-it-works.html" id="nav-hiw" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">How it works</a>
+        <a href="faq.html" id="nav-faq" class="text-[14px] font-medium text-white/80 hover:text-white transition-colors">FAQ</a>
+        <a href="download.html" id="nav-cta" class="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#171717] text-[13px] font-medium hover:scale-[1.02] transition-all gap-1.5 shadow-sm">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden flex items-center justify-center text-white focus:outline-none transition-colors duration-300" aria-label="Toggle Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path id="mobile-menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu Drawer (Slide down) -->
+    <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-white/95 backdrop-blur-xl border-b border-black/[0.05] shadow-lg flex flex-col px-6 py-6 gap-4 z-40">
+      <a href="features.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">Features</a>
+      <a href="how-it-works.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">How it works</a>
+      <a href="faq.html" class="text-[16px] font-medium text-[#171717]/85 hover:text-[#171717] transition-colors py-2 border-b border-black/[0.03]">FAQ</a>
+      <a href="download.html" class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-[#256de8] text-white text-[14px] font-medium hover:bg-[#256de8]/90 transition-all gap-1.5 shadow-sm mt-2 w-full">Download <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-[#080a0d] min-h-[55vh] flex flex-col justify-center items-center px-6">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
+    <div class="relative z-20 pt-32 pb-16 text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Support & Resources</span></div>
+      <h1 class="text-4xl sm:text-5xl md:text-[58px] font-medium tracking-[-0.02em] leading-[1.07] text-white">How can we <span class="text-[#EC4899]/90">help you?</span></h1>
+      <p class="text-sm text-white/60 mt-5 max-w-xl mx-auto leading-relaxed">Find guides, troubleshoot issues, and get the answers you need — all in one place.</p>
+
+      <!-- Search Bar -->
+      <div class="mt-10 max-w-xl mx-auto">
+        <div class="search-glow bg-white rounded-2xl flex items-center gap-3 px-5 py-4 transition-all duration-300">
+          <i data-lucide="search" class="w-5 h-5 text-[#171717]/30 shrink-0"></i>
+          <input id="help-search" type="text" placeholder="Search for help — e.g. 'escrow not funded', 'can't log in', '2FA setup'" class="w-full text-sm text-[#171717] placeholder:text-[#171717]/35 bg-transparent focus:outline-none font-normal">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK ACTIONS -->
+  <section class="py-16 px-6 max-w-7xl mx-auto -mt-6 relative z-20">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="getting-started.html" class="quick-link flex items-center gap-3 p-4 rounded-2xl border border-black/5 bg-white">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-[#256de8] shrink-0"><i data-lucide="rocket" class="w-5 h-5"></i></div>
+        <div><h3 class="text-sm font-medium text-[#171717]">Getting Started</h3><p class="text-[11px] text-[#171717]/50 mt-0.5">New user setup guide</p></div>
+      </a>
+      <a href="troubleshooting.html" class="quick-link flex items-center gap-3 p-4 rounded-2xl border border-black/5 bg-white">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><i data-lucide="wrench" class="w-5 h-5"></i></div>
+        <div><h3 class="text-sm font-medium text-[#171717]">Troubleshooting</h3><p class="text-[11px] text-[#171717]/50 mt-0.5">Fix common issues</p></div>
+      </a>
+      <a href="escrow-guide.html" class="quick-link flex items-center gap-3 p-4 rounded-2xl border border-black/5 bg-white">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+        <div><h3 class="text-sm font-medium text-[#171717]">Escrow & Payments</h3><p class="text-[11px] text-[#171717]/50 mt-0.5">How payments work</p></div>
+      </a>
+      <a href="contact.html" class="quick-link flex items-center gap-3 p-4 rounded-2xl border border-black/5 bg-white">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 shrink-0"><i data-lucide="headphones" class="w-5 h-5"></i></div>
+        <div><h3 class="text-sm font-medium text-[#171717]">Contact Support</h3><p class="text-[11px] text-[#171717]/50 mt-0.5">Talk to our team</p></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- HELP CATEGORIES -->
+  <section class="py-16 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-medium text-[#171717] tracking-tight">Browse by Category</h2>
+      <p class="text-sm text-[#171717]/50 mt-3 max-w-lg mx-auto">Everything you need to know about Promo, organized by topic.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Category 1: Getting Started -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-[#256de8] mb-5"><i data-lucide="play-circle" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Getting Started</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Everything you need to set up your account, complete verification, and launch your first campaign or application.</p>
+        <ul class="space-y-2.5">
+          <li><a href="getting-started.html#brands" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-[#256de8]"></i>Brand account setup & verification</a></li>
+          <li><a href="getting-started.html#creators" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-[#256de8]"></i>Creator profile & Promo Page setup</a></li>
+          <li><a href="getting-started.html#2fa" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-[#256de8]"></i>Two-Factor Authentication (2FA) setup</a></li>
+          <li><a href="getting-started.html#first-campaign" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-[#256de8]"></i>Your first campaign in 15 minutes</a></li>
+        </ul>
+        <a href="getting-started.html" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#256de8] hover:gap-2.5 transition-all">View full guide <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+
+      <!-- Category 2: Campaigns -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 mb-5"><i data-lucide="briefcase" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Campaigns & Collaborations</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Learn how to create campaign briefs, manage applications, review deliverables, and run multi-creator campaigns.</p>
+        <ul class="space-y-2.5">
+          <li><a href="how-it-works.html#brands" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-purple-500"></i>How brands run campaigns</a></li>
+          <li><a href="how-it-works.html#influencers" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-purple-500"></i>How creators apply & deliver</a></li>
+          <li><a href="features.html#brands" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-purple-500"></i>Campaign Card Builder features</a></li>
+          <li><a href="faq.html#brands-faq" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-purple-500"></i>Campaign FAQs</a></li>
+        </ul>
+        <a href="how-it-works.html" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:gap-2.5 transition-all">See how it works <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+
+      <!-- Category 3: Payments & Escrow -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-5"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Payments & Escrow</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Understand escrow funding, payment releases, wallet withdrawals, refund policies, and milestone-based structures.</p>
+        <ul class="space-y-2.5">
+          <li><a href="escrow-guide.html" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-emerald-500"></i>Complete Escrow Guide</a></li>
+          <li><a href="troubleshooting.html#payments" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-emerald-500"></i>Fix payment issues</a></li>
+          <li><a href="faq.html#payments-faq" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-emerald-500"></i>Payment & escrow FAQs</a></li>
+          <li><a href="troubleshooting.html#wallet" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-emerald-500"></i>Wallet & withdrawal help</a></li>
+        </ul>
+        <a href="escrow-guide.html" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:gap-2.5 transition-all">Read escrow guide <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+
+      <!-- Category 4: Account & Security -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-600 mb-5"><i data-lucide="shield" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Account & Security</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Manage your account settings, security, 2FA, verification status, privacy controls, and connected social platforms.</p>
+        <ul class="space-y-2.5">
+          <li><a href="troubleshooting.html#account" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-rose-500"></i>Can't log in or account locked</a></li>
+          <li><a href="troubleshooting.html#2fa-issues" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-rose-500"></i>2FA not working</a></li>
+          <li><a href="faq.html#safety-faq" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-rose-500"></i>Privacy & safety FAQs</a></li>
+          <li><a href="delete-account.html" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-rose-500"></i>Delete your account</a></li>
+        </ul>
+        <a href="troubleshooting.html#account" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:gap-2.5 transition-all">Troubleshoot account <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+
+      <!-- Category 5: Troubleshooting -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 mb-5"><i data-lucide="settings" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Troubleshooting</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Step-by-step solutions for login problems, campaign errors, payment failures, app crashes, and everything else.</p>
+        <ul class="space-y-2.5">
+          <li><a href="troubleshooting.html#account" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-amber-500"></i>Account & login issues</a></li>
+          <li><a href="troubleshooting.html#campaigns" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-amber-500"></i>Campaign & application issues</a></li>
+          <li><a href="troubleshooting.html#payments" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-amber-500"></i>Payment & escrow issues</a></li>
+          <li><a href="troubleshooting.html#app" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-amber-500"></i>App performance & bugs</a></li>
+        </ul>
+        <a href="troubleshooting.html" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:gap-2.5 transition-all">View all solutions <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+
+      <!-- Category 6: Platform Policies -->
+      <div class="help-card p-7 rounded-3xl bg-[#f8f8f8] border border-black/[.04]">
+        <div class="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-600 mb-5"><i data-lucide="scale" class="w-6 h-6"></i></div>
+        <h3 class="text-lg font-medium text-[#171717] mb-2">Platform Policies</h3>
+        <p class="text-xs text-[#171717]/55 leading-relaxed mb-5">Review community guidelines, terms of service, privacy policy, dispute resolution process, and content ownership rules.</p>
+        <ul class="space-y-2.5">
+          <li><a href="community-guidelines.html" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-sky-500"></i>Community Guidelines</a></li>
+          <li><a href="terms.html" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-sky-500"></i>Terms of Service</a></li>
+          <li><a href="privacy-policy.html" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-sky-500"></i>Privacy Policy</a></li>
+          <li><a href="community-guidelines.html#disputes" class="text-xs text-[#171717]/70 hover:text-[#256de8] transition-colors flex items-center gap-2"><i data-lucide="chevron-right" class="w-3 h-3 text-sky-500"></i>Dispute resolution & appeals</a></li>
+        </ul>
+        <a href="community-guidelines.html" class="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:gap-2.5 transition-all">Read guidelines <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- POPULAR ARTICLES -->
+  <section class="py-20 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="grid md:grid-cols-2 gap-16">
+      <!-- Left: Popular Articles -->
+      <div>
+        <h2 class="text-2xl font-medium text-[#171717] mb-8">Most Popular Articles</h2>
+        <div class="space-y-0">
+          <a href="escrow-guide.html" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>How does the escrow payment system work?</span>
+          </a>
+          <a href="getting-started.html#brands" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>How to create your first campaign (brand guide)</span>
+          </a>
+          <a href="troubleshooting.html#2fa-issues" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>My 2FA code isn't working — how to fix it</span>
+          </a>
+          <a href="troubleshooting.html#payments" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>Payment not released — what to do</span>
+          </a>
+          <a href="getting-started.html#creators" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>Setting up your Promo Page as a creator</span>
+          </a>
+          <a href="faq.html#general" class="popular-item block py-4 border-b border-black/5 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>What is Promo and who is it for?</span>
+          </a>
+          <a href="community-guidelines.html#reporting" class="popular-item block py-4 text-sm text-[#171717]/70 transition-all flex items-center gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-[#256de8] shrink-0"></i>
+            <span>How to report a user or dispute a campaign</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Self-Service & Guides -->
+      <div>
+        <h2 class="text-2xl font-medium text-[#171717] mb-8">Self-Service Actions</h2>
+        <div class="space-y-4">
+          <a href="troubleshooting.html#password-reset" class="flex items-center gap-4 p-4 rounded-2xl border border-black/5 hover:border-[#256de8]/15 hover:bg-[#256de8]/[0.02] transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-[#f8f8f8] flex items-center justify-center text-[#171717]/40 group-hover:text-[#256de8] transition-colors"><i data-lucide="key-round" class="w-5 h-5"></i></div>
+            <div><h4 class="text-sm font-medium text-[#171717]">Reset your password</h4><p class="text-[11px] text-[#171717]/45 mt-0.5">Recover access to your account</p></div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-[#171717]/20 ml-auto group-hover:text-[#256de8] transition-colors"></i>
+          </a>
+          <a href="troubleshooting.html#2fa-issues" class="flex items-center gap-4 p-4 rounded-2xl border border-black/5 hover:border-[#256de8]/15 hover:bg-[#256de8]/[0.02] transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-[#f8f8f8] flex items-center justify-center text-[#171717]/40 group-hover:text-[#256de8] transition-colors"><i data-lucide="smartphone" class="w-5 h-5"></i></div>
+            <div><h4 class="text-sm font-medium text-[#171717]">Recover 2FA access</h4><p class="text-[11px] text-[#171717]/45 mt-0.5">Lost your authenticator app?</p></div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-[#171717]/20 ml-auto group-hover:text-[#256de8] transition-colors"></i>
+          </a>
+          <a href="delete-account.html" class="flex items-center gap-4 p-4 rounded-2xl border border-black/5 hover:border-[#256de8]/15 hover:bg-[#256de8]/[0.02] transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-[#f8f8f8] flex items-center justify-center text-[#171717]/40 group-hover:text-rose-500 transition-colors"><i data-lucide="user-x" class="w-5 h-5"></i></div>
+            <div><h4 class="text-sm font-medium text-[#171717]">Delete your account</h4><p class="text-[11px] text-[#171717]/45 mt-0.5">Permanently remove your data</p></div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-[#171717]/20 ml-auto group-hover:text-rose-500 transition-colors"></i>
+          </a>
+          <a href="community-guidelines.html#reporting" class="flex items-center gap-4 p-4 rounded-2xl border border-black/5 hover:border-[#256de8]/15 hover:bg-[#256de8]/[0.02] transition-all group">
+            <div class="w-10 h-10 rounded-xl bg-[#f8f8f8] flex items-center justify-center text-[#171717]/40 group-hover:text-amber-500 transition-colors"><i data-lucide="flag" class="w-5 h-5"></i></div>
+            <div><h4 class="text-sm font-medium text-[#171717]">Report a problem or user</h4><p class="text-[11px] text-[#171717]/45 mt-0.5">Flag suspicious activity</p></div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-[#171717]/20 ml-auto group-hover:text-amber-500 transition-colors"></i>
+          </a>
+        </div>
+
+        <!-- Guides Strip -->
+        <div class="mt-8 p-6 rounded-2xl bg-[#f8f8f8] border border-black/[0.04]">
+          <h3 class="text-sm font-medium text-[#171717] mb-4">In-Depth Guides</h3>
+          <div class="flex flex-wrap gap-2">
+            <a href="brand-guide.html" class="px-4 py-2 rounded-full bg-white border border-black/5 text-xs font-medium text-[#171717]/60 hover:border-[#256de8]/20 hover:text-[#256de8] transition-all">Brand Guide</a>
+            <a href="influencer-guide.html" class="px-4 py-2 rounded-full bg-white border border-black/5 text-xs font-medium text-[#171717]/60 hover:border-[#256de8]/20 hover:text-[#256de8] transition-all">Influencer Guide</a>
+            <a href="escrow-guide.html" class="px-4 py-2 rounded-full bg-white border border-black/5 text-xs font-medium text-[#171717]/60 hover:border-[#256de8]/20 hover:text-[#256de8] transition-all">Escrow Guide</a>
+            <a href="features.html" class="px-4 py-2 rounded-full bg-white border border-black/5 text-xs font-medium text-[#171717]/60 hover:border-[#256de8]/20 hover:text-[#256de8] transition-all">Features</a>
+            <a href="how-it-works.html" class="px-4 py-2 rounded-full bg-white border border-black/5 text-xs font-medium text-[#171717]/60 hover:border-[#256de8]/20 hover:text-[#256de8] transition-all">How It Works</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPPORT CONTACT STRIP -->
+  <section class="py-16 px-6 max-w-7xl mx-auto border-t border-black/5">
+    <div class="bg-[#f8f8f8] rounded-3xl p-10 md:p-14">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl md:text-3xl font-medium text-[#171717] mb-3">Still need help?</h2>
+        <p class="text-sm text-[#171717]/55 max-w-lg mx-auto leading-relaxed">Our support team is available to help you resolve any issue. Choose the channel that works best for you.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl p-6 text-center border border-black/[0.04]">
+          <div class="w-12 h-12 rounded-2xl bg-[#256de8]/10 flex items-center justify-center text-[#256de8] mx-auto mb-4"><i data-lucide="message-circle" class="w-6 h-6"></i></div>
+          <h3 class="text-sm font-medium text-[#171717] mb-1">In-App Chat</h3>
+          <p class="text-xs text-[#171717]/50 mb-3">Fastest way to reach us</p>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Under 4 hours</span>
+        </div>
+        <div class="bg-white rounded-2xl p-6 text-center border border-black/[0.04]">
+          <div class="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-600 mx-auto mb-4"><i data-lucide="mail" class="w-6 h-6"></i></div>
+          <h3 class="text-sm font-medium text-[#171717] mb-1">Email Support</h3>
+          <p class="text-xs text-[#171717]/50 mb-3">support@promo.app</p>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Under 24 hours</span>
+        </div>
+        <div class="bg-white rounded-2xl p-6 text-center border border-black/[0.04]">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 mx-auto mb-4"><i data-lucide="book-open" class="w-6 h-6"></i></div>
+          <h3 class="text-sm font-medium text-[#171717] mb-1">FAQ & Guides</h3>
+          <p class="text-xs text-[#171717]/50 mb-3">Browse 50+ answered questions</p>
+          <a href="faq.html" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f8f8f8] text-[#171717]/60 text-[10px] font-semibold hover:text-[#256de8] transition-colors">Browse FAQs <i data-lucide="arrow-right" class="w-3 h-3"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA + LINKS -->
+  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[80vh] border-t border-white/10">
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
+    <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-8"><span class="w-1.5 h-1.5 rounded-full bg-white"></span><span class="text-[11px] font-medium tracking-[.08em] text-white/80 uppercase">Specialised creator marketing</span></div>
+      <h2 class="text-4xl sm:text-6xl md:text-[72px] font-medium tracking-[-0.02em] leading-[1.05] mb-8 text-white max-w-3xl">Scale your creator pipeline today.</h2>
+      <a href="download.html" class="group inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-white text-sm font-medium text-[#171717] hover:scale-[1.02] transition-all gap-2 shadow-sm">Download our app <svg width="10" height="10" viewBox="0 0 12 12" fill="none" class="w-2.5 h-2.5"><path d="M1.5 10.5L10.5 1.5M10.5 1.5H3M10.5 1.5V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+            <div class="relative z-20 w-full max-w-7xl mx-auto mt-24 pt-16 border-t border-white/10 grid grid-cols-2 md:grid-cols-7 gap-8 text-left">
+      <!-- Brand column -->
+      <div class="col-span-2 space-y-4">
+        <a href="index.html" class="text-3xl font-semibold tracking-tight text-white flex items-center gap-0.5" style="font-family:'My Soul',cursive;">Promo<span class="text-[#256de8] font-bold text-4xl">.</span></a>
+        <p class="text-xs text-white/60 leading-relaxed max-w-sm">We replace manual agency pipelines with clean, integrated digital infrastructure built to move as fast as your brand needs.</p>
+      </div>
+
+      <!-- Column 1: Platform Features -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Platform</span>
+        <a href="features.html" class="text-white hover:text-white/80 transition-colors">Overview</a>
+        <a href="discovery-feature.html" class="text-white hover:text-white/80 transition-colors">Discovery &amp; Matching</a>
+        <a href="campaign-feature.html" class="text-white hover:text-white/80 transition-colors">Campaign &amp; Agreements</a>
+        <a href="collaboration-feature.html" class="text-white hover:text-white/80 transition-colors">Collaboration &amp; Chat</a>
+        <a href="analytics-feature.html" class="text-white hover:text-white/80 transition-colors">Analytics &amp; APIs</a>
+        <a href="download.html" class="text-white hover:text-white/80 transition-colors">Download App</a>
+      </div>
+
+      <!-- Column 2: Guides & Resources -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Guides</span>
+        <a href="how-it-works.html" class="text-white hover:text-white/80 transition-colors">How it Works</a>
+        <a href="brand-guide.html" class="text-white hover:text-white/80 transition-colors">Brand Guide</a>
+        <a href="influencer-guide.html" class="text-white hover:text-white/80 transition-colors">Influencer Guide</a>
+        <a href="escrow-guide.html" class="text-white hover:text-white/80 transition-colors">Escrow Guide</a>
+        <a href="leaderboard.html" class="text-white hover:text-white/80 transition-colors">Leaderboard</a>      </div>
+
+      <!-- Column 3: Support & Safety -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Support</span>
+        <a href="help-center.html" class="text-white hover:text-white/80 transition-colors">Help Center</a>
+        <a href="troubleshooting.html" class="text-white hover:text-white/80 transition-colors">Troubleshooting</a>
+        <a href="getting-started.html" class="text-white hover:text-white/80 transition-colors">Getting Started</a>
+        <a href="contact.html" class="text-white hover:text-white/80 transition-colors">Contact Support</a>
+        <a href="community-guidelines.html" class="text-white hover:text-white/80 transition-colors">Community Guidelines</a>
+      </div>
+
+      <!-- Column 4: Insights & Blog -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Insights</span>
+        <a href="blog/index.html" class="text-white hover:text-white/80 transition-colors">Blog Home</a>
+        <a href="blog/platform-vs-agency.html" class="text-white hover:text-white/80 transition-colors">Platform vs. Agency</a>
+        <a href="blog/escrow-rise.html" class="text-white hover:text-white/80 transition-colors">Rise of Escrow</a>
+        <a href="blog/escrow-benefits.html" class="text-white hover:text-white/80 transition-colors">Escrow Benefits</a>
+        <a href="blog/engagement-optimize.html" class="text-white hover:text-white/80 transition-colors">Optimize Engagement</a>
+      </div>
+
+      <!-- Column 5: Legal & Programs -->
+      <div class="flex flex-col gap-3 text-xs">
+        <span class="text-white/45 uppercase tracking-wider font-semibold text-[10px] mb-1">Legal &amp; Beta</span>
+        <a href="about.html" class="text-white hover:text-white/80 transition-colors">About Us</a>
+        <a href="beta.html" class="text-white hover:text-white/80 transition-colors">Beta Program</a>
+        <a href="research.html" class="text-white hover:text-white/80 transition-colors">Research Center</a>
+        <a href="privacy-policy.html" class="text-white hover:text-white/80 transition-colors">Privacy Policy</a>
+        <a href="terms.html" class="text-white hover:text-white/80 transition-colors">Terms of Service</a>
+        <a href="delete-account.html" class="text-white hover:text-white/80 transition-colors">Delete Account</a>
+      </div>
+    </div>
+    <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex justify-between items-center"><p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p><p class="text-xs text-white/30">Creator marketing, reimagined.</p></div>
+  </section>
+
+  <!-- SCRIPTS --><script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script>
+  <script>
+    if(typeof UnicornStudio!=='undefined'){UnicornStudio.init();}
+    lucide.createIcons();
+    // Universal Navbar & Scroll handling
+    (function() {
+      const navbar = document.getElementById('navbar');
+      const navLogo = document.getElementById('nav-logo');
+      const navCta = document.getElementById('nav-cta');
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+      
+      const navLinks = Array.from(navbar.querySelectorAll('a')).filter(a => {
+        return a !== navLogo && a !== navCta && !a.closest('#mobile-menu');
+      });
+
+      let mobileMenuOpen = false;
+
+      function updateNavbar() {
+        const scrolled = window.scrollY > 50;
+        const active = scrolled || mobileMenuOpen;
+
+        navbar.classList.toggle('bg-transparent', !active);
+        navbar.classList.toggle('border-transparent', !active);
+        
+        navbar.classList.toggle('bg-white/80', active);
+        navbar.classList.toggle('backdrop-blur-md', active);
+        navbar.classList.toggle('border-b', active);
+        navbar.classList.toggle('border-black/[0.04]', active);
+        navbar.classList.toggle('shadow-[0_2px_8px_rgba(0,0,0,0.03)]', active);
+
+        // Logo color
+        if (navLogo) {
+          navLogo.classList.toggle('text-white', !active);
+          navLogo.classList.remove('text-[#171717]', 'text-black');
+          if (active) navLogo.classList.add('text-[#171717]');
+        }
+
+        // Links color
+        navLinks.forEach(link => {
+          link.classList.toggle('text-white/80', !active);
+          link.classList.remove('text-[#171717]/60', 'text-[#171717]', 'text-black');
+          if (active) link.classList.add('text-[#171717]/60');
+        });
+
+        // CTA color
+        if (navCta) {
+          navCta.classList.toggle('bg-white', !active);
+          navCta.classList.toggle('text-[#171717]', !active);
+          navCta.classList.toggle('bg-[#171717]', active);
+          navCta.classList.toggle('text-white', active);
+        }
+
+        // Mobile button color
+        if (mobileMenuBtn) {
+          mobileMenuBtn.classList.toggle('text-white', !active);
+          mobileMenuBtn.classList.remove('text-[#171717]', 'text-black');
+          if (active) mobileMenuBtn.classList.add('text-[#171717]');
+        }
+      }
+
+      window.addEventListener('scroll', updateNavbar);
+
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenuOpen = !mobileMenuOpen;
+          mobileMenu.classList.toggle('hidden', !mobileMenuOpen);
+          
+          if (mobileMenuIcon) {
+            if (mobileMenuOpen) {
+              mobileMenuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+          }
+          
+          updateNavbar();
+        });
+      }
+
+      if (mobileMenu) {
+        mobileMenu.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', () => {
+            mobileMenuOpen = false;
+            mobileMenu.classList.add('hidden');
+            if (mobileMenuIcon) {
+              mobileMenuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+            updateNavbar();
+          });
+        });
+      }
+      
+      updateNavbar();
+    })();
+</script>
+</body>
+</html>
