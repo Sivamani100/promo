@@ -63,7 +63,14 @@
   </nav>
 
   <section class="relative overflow-hidden bg-[#080a0d] min-h-[50vh] flex flex-col justify-center items-center px-6">
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
     <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
@@ -177,7 +184,14 @@
   </section>
 
   <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[80vh] border-t border-white/10">
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(37,109,232,0.50) 0%, rgba(37,109,232,0.12) 55%, transparent 75%), radial-gradient(ellipse 70% 50% at 80% 20%, rgba(37,109,232,0.35) 0%, transparent 65%);">
+    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
+    <div class="absolute inset-0 w-full h-full opacity-100" 
+         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
+         data-us-dpi="1.5" 
+         data-us-scale="1" 
+         data-us-fps="60" 
+         data-us-lazyload="true"
+         style="width: 100%; height: 100%;">
     </div>
     <div class="absolute inset-0 bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen z-0"></div>
     <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
@@ -244,10 +258,11 @@
       </div>
     </div>
     <div class="relative z-20 w-full max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex justify-between items-center"><p class="text-xs text-white/40">&copy; 2026 Promo. All rights reserved.</p><p class="text-xs text-white/30">Creator marketing, reimagined.</p></div>
-  </section><script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v2.2.1/dist/unicornStudio.umd.js"></script>
+  </section>
+  <script src="js/grid-animation.js"></script>
   <script>
-    if(typeof UnicornStudio!=='undefined'){UnicornStudio.init();}
-    lucide.createIcons();
+    // Promo grid animation auto-initializes via grid-animation.js
+lucide.createIcons();
     // Universal Navbar & Scroll handling
     (function() {
       const navbar = document.getElementById('navbar');
