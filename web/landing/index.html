@@ -137,22 +137,15 @@
 <body class="relative min-h-screen">
 
   <!-- ================= BACKGROUND LAYERS (TWOSPOON STYLE MESH) ================= -->
-  <div class="absolute top-0 left-0 w-full h-[100vh] md:h-[110vh] overflow-hidden pointer-events-none z-0 bg-[#080a0d]">
-    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
-    <div class="absolute inset-0 w-full h-full opacity-100" 
-         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
-         data-us-dpi="1.5" 
-         data-us-scale="1" 
-         data-us-fps="60" 
-         data-us-lazyload="true"
-         style="width: 100%; height: 100%;">
-    </div>
+  <div class="absolute top-0 left-0 w-full h-[100vh] md:h-[110vh] overflow-hidden pointer-events-none z-0" style="background: #080a0d;">
+    <!-- Canvas Grid Animation Target (dot grid + glow orbs) -->
+    <div id="hero-bg-canvas" data-grid-target="true" style="position:absolute;inset:0;width:100%;height:100%;"></div>
     
-    <!-- 2. Royal Blue overlay gradient (blended on top) -->
-    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-transparent mix-blend-screen opacity-100"></div>
+    <!-- Royal Blue radial overlay — gives the vivid blue tint matching TwoSpoon -->
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 110% 70% at 50% -10%, rgba(37,109,232,0.82) 0%, rgba(37,109,232,0.30) 45%, transparent 75%);pointer-events:none;"></div>
     
-    <!-- 3. Hero Bottom Fade out (blends blue hero into white content section) -->
-    <div class="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-white to-transparent"></div>
+    <!-- Bottom fade: blends dark hero into white content below -->
+    <div style="position:absolute;bottom:0;left:0;width:100%;height:200px;background:linear-gradient(to top, #ffffff 0%, transparent 100%);pointer-events:none;"></div>
   </div>
 
   <!-- Bottom Page Glows -->
@@ -447,22 +440,15 @@
   </section>
 
   <!-- ================= UNIFIED FOOTER & CTA (TWOSPOON STYLE) ================= -->
-  <section id="download" class="relative overflow-hidden bg-[#080a0d] py-32 px-6 flex flex-col justify-between min-h-[85vh] border-t border-white/10">
-    <!-- 1. Unicorn Studio WebGL ASCII/Mesh Container -->
-    <div class="absolute inset-0 w-full h-full opacity-100" 
-         data-us-project="0ckf4AXOaSbNZz6Uc2tn" 
-         data-us-dpi="1.5" 
-         data-us-scale="1" 
-         data-us-fps="60" 
-         data-us-lazyload="true"
-         style="width: 100%; height: 100%;">
-    </div>
-    
-    <!-- 2. Royal Blue overlay gradient (blended on top) -->
-    <div class="absolute inset-0 w-full h-full bg-gradient-to-b from-[#256de8]/85 to-[#256de8]/85 mix-blend-screen opacity-100"></div>
+  <section id="download" class="relative overflow-hidden py-32 px-6 flex flex-col justify-between min-h-[85vh] border-t border-white/10" style="background: #080a0d;">
+    <!-- Canvas Grid Animation Target (dot grid + glow orbs) -->
+    <div id="footer-bg-canvas" data-grid-target="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;"></div>
 
-    <!-- Top glow fading in from the content above -->
-    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent pointer-events-none z-10 opacity-10"></div>
+    <!-- Royal Blue radial overlay -->
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 110% 70% at 50% 50%, rgba(37,109,232,0.80) 0%, rgba(37,109,232,0.28) 50%, transparent 80%);z-index:1;pointer-events:none;"></div>
+
+    <!-- Top fade from content above -->
+    <div style="position:absolute;top:0;left:0;width:100%;height:120px;background:linear-gradient(to bottom,rgba(255,255,255,0.06),transparent);z-index:2;pointer-events:none;"></div>
 
     <!-- Centered CTA Content -->
     <div class="relative z-20 max-w-4xl mx-auto text-center my-auto flex flex-col items-center">
@@ -557,7 +543,7 @@
   </section>
 
   <!-- ================= SCRIPTS ================= -->
-  <!-- Unicorn Studio WebGL script -->
+  <!-- Grid Animation (dot mesh + floating glow orbs) -->
   <script src="js/grid-animation.js"></script>
   <script>
         // Promo grid animation auto-initializes via grid-animation.js
