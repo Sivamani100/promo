@@ -1,35 +1,50 @@
 {
-    "name": "Promo",
-    "short_name": "Promo",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
-    "prefer_related_applications": false,
-    "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
-    ]
+  "name": "Promo — Influencer Marketing Marketplace",
+  "short_name": "Promo",
+  "description": "Connect brands with creators. Free influencer marketing marketplace.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#7C3AED",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "social", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshots/discover.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "Discover brand deals"
+    },
+    {
+      "src": "/screenshots/chat.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "label": "Real-time chat"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Discover Cards",
+      "url": "/discover",
+      "description": "Browse brand collaboration opportunities"
+    },
+    {
+      "name": "My Profile",
+      "url": "/profile",
+      "description": "View and edit your profile"
+    }
+  ]
 }

@@ -6,31 +6,35 @@
 
   <!-- Core Pages -->
   <url>
-    <loc>https://promo.app/</loc>
+    <loc>https://promo.arkio.in/</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://promo.arkio.in/og-image.png</image:loc>
+      <image:title>Promo - Influencer Marketing Marketplace</image:title>
+    </image:image>
   </url>
   <url>
-    <loc>https://promo.app/features</loc>
+    <loc>https://promo.arkio.in/features</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://promo.app/how-it-works</loc>
+    <loc>https://promo.arkio.in/how-it-works</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://promo.app/faq</loc>
+    <loc>https://promo.arkio.in/faq</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/about</loc>
+    <loc>https://promo.arkio.in/about</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -38,25 +42,25 @@
 
   <!-- Guides & Resources -->
   <url>
-    <loc>https://promo.app/escrow-guide</loc>
+    <loc>https://promo.arkio.in/escrow-guide</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/brand-guide</loc>
+    <loc>https://promo.arkio.in/brand-guide</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/influencer-guide</loc>
+    <loc>https://promo.arkio.in/influencer-guide</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/leaderboard</loc>
+    <loc>https://promo.arkio.in/leaderboard</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
@@ -64,25 +68,25 @@
 
   <!-- Platform Features Detailed -->
   <url>
-    <loc>https://promo.app/discovery-feature</loc>
+    <loc>https://promo.arkio.in/discovery-feature</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/campaign-feature</loc>
+    <loc>https://promo.arkio.in/campaign-feature</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/collaboration-feature</loc>
+    <loc>https://promo.arkio.in/collaboration-feature</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/analytics-feature</loc>
+    <loc>https://promo.arkio.in/analytics-feature</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -90,31 +94,31 @@
 
   <!-- Support & Help -->
   <url>
-    <loc>https://promo.app/help-center</loc>
+    <loc>https://promo.arkio.in/help-center</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/troubleshooting</loc>
+    <loc>https://promo.arkio.in/troubleshooting</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/getting-started</loc>
+    <loc>https://promo.arkio.in/getting-started</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://promo.app/community-guidelines</loc>
+    <loc>https://promo.arkio.in/community-guidelines</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://promo.app/contact</loc>
+    <loc>https://promo.arkio.in/contact</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -122,13 +126,13 @@
 
   <!-- Programs -->
   <url>
-    <loc>https://promo.app/beta</loc>
+    <loc>https://promo.arkio.in/beta</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://promo.app/research</loc>
+    <loc>https://promo.arkio.in/research</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -136,25 +140,25 @@
 
   <!-- Legal -->
   <url>
-    <loc>https://promo.app/privacy-policy</loc>
+    <loc>https://promo.arkio.in/privacy-policy</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://promo.app/terms</loc>
+    <loc>https://promo.arkio.in/terms</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://promo.app/delete-account</loc>
+    <loc>https://promo.arkio.in/delete-account</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://promo.app/poster</loc>
+    <loc>https://promo.arkio.in/poster</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -162,31 +166,31 @@
 
   <!-- Blog & Articles -->
   <url>
-    <loc>https://promo.app/blog/index</loc>
+    <loc>https://promo.arkio.in/blog/index</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://promo.app/blog/platform-vs-agency</loc>
+    <loc>https://promo.arkio.in/blog/platform-vs-agency</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://promo.app/blog/escrow-rise</loc>
+    <loc>https://promo.arkio.in/blog/escrow-rise</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://promo.app/blog/escrow-benefits</loc>
+    <loc>https://promo.arkio.in/blog/escrow-benefits</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://promo.app/blog/engagement-optimize</loc>
+    <loc>https://promo.arkio.in/blog/engagement-optimize</loc>
     <lastmod>2026-07-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
