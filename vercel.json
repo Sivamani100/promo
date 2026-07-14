@@ -201,6 +201,10 @@
       "destination": "/blog/engagement-optimize.html"
     },
     {
+      "source": "/@:username",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
