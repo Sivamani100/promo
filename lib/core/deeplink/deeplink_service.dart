@@ -63,7 +63,13 @@ class DeepLinkService {
       return;
     }
 
-    final segments = uri.pathSegments;
+    var segments = List<String>.from(uri.pathSegments);
+    if (segments.isEmpty) return;
+
+    // Strip leading 'app' segment when running in a subpath environment
+    if (segments[0] == 'app') {
+      segments.removeAt(0);
+    }
     if (segments.isEmpty) return;
 
     // Handle @username public profile links
