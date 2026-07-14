@@ -86,6 +86,10 @@
       "destination": "/app/index.html"
     },
     {
+      "source": "/app/@:username",
+      "destination": "/app/index.html"
+    },
+    {
       "source": "/app/:path*",
       "destination": "/app/index.html"
     },
