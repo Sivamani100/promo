@@ -37,6 +37,11 @@
       "source": "/auth/v1/callback",
       "destination": "/app/auth/v1/callback",
       "permanent": false
+    },
+    {
+      "source": "/@:username",
+      "destination": "/app/@:username",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -199,10 +204,6 @@
     {
       "source": "/blog/engagement-optimize",
       "destination": "/blog/engagement-optimize.html"
-    },
-    {
-      "source": "/@:username",
-      "destination": "/index.html"
     },
     {
       "source": "/(.*)",
