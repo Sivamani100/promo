@@ -87,7 +87,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog>
         'comment': _npsCommentCtrl.text.trim().isEmpty
             ? null
             : _npsCommentCtrl.text.trim(),
-        'metadata': {'app_version': '1.0.0'},
+        'metadata': {'app_version': '1.0.7'},
       });
       _onSuccess();
     } catch (e) {

@@ -83,12 +83,12 @@ class AppConfigNotifier extends StateNotifier<AppConfigState> {
     } catch (e) {
       // Graceful degradation: if config fetch fails (network / RLS), never block the user.
       debugPrint('[CONFIG_CHECK] Could not fetch platform config: $e');
-      final version = state.currentVersion == '1.0.0'
+      final version = state.currentVersion == '1.0.7'
           ? (await PackageInfo.fromPlatform().catchError((_) => PackageInfo(
               appName: 'Promo',
               packageName: 'com.brand.promo',
-              version: '1.0.0',
-              buildNumber: '1',
+              version: '1.0.7',
+              buildNumber: '8',
             ))).version
           : state.currentVersion;
       state = state.copyWith(
