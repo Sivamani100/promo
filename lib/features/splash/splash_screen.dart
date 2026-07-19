@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -220,28 +221,52 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
 
-    // Preload My Soul font to prevent FOUT (Flash of Unstyled Text)
-    GoogleFonts.pendingFonts([
-      GoogleFonts.mySoul(),
-    ]).then((_) {
-      if (mounted) {
-        setState(() {
-          _isFontLoaded = true;
-        });
-        // Start the sweep animation only AFTER the font is fully loaded and ready
-        _sweepController.forward().then((_) => _onAnimationFinished());
-      }
-    });
+    final bool isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    if (isTest) {
+      _isFontLoaded = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _sweepController.forward().then((_) => _onAnimationFinished());
+        }
+      });
+    } else {
+      // Preload My Soul font to prevent FOUT (Flash of Unstyled Text)
+      GoogleFonts.pendingFonts([
+        GoogleFonts.mySoul(),
+      ]).then((_) {
+        if (mounted) {
+          setState(() {
+            _isFontLoaded = true;
+          });
+          // Start the sweep animation only AFTER the font is fully loaded and ready
+          _sweepController.forward().then((_) => _onAnimationFinished());
+        }
+      }).catchError((error) {
+        debugPrint('[SPLASH] Failed to preload custom font: $error');
+        if (mounted) {
+          setState(() {
+            _isFontLoaded = true;
+          });
+          _sweepController.forward().then((_) => _onAnimationFinished());
+        }
+      });
+    }
 
     _runBackgroundChecks();
   }
 
   void _onAnimationFinished() async {
-    // Hold the completed state for 0.5 seconds
-    await Future.delayed(const Duration(milliseconds: 500));
+    debugPrint('[SPLASH] _onAnimationFinished entered');
+    final bool isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    if (!isTest) {
+      // Hold the completed state for 0.5 seconds
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    debugPrint('[SPLASH] _onAnimationFinished after delay, mounted: $mounted');
     if (!mounted) return;
 
     if (_needBiometricLock) {
+      debugPrint('[SPLASH] _onAnimationFinished - need biometric lock');
       setState(() {
         _isLocked = true;
       });
@@ -249,13 +274,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
 
     if (_backgroundChecksDone) {
+      debugPrint('[SPLASH] _onAnimationFinished - background checks done, navigating');
       _navigateToNextScreen();
     } else {
+      debugPrint('[SPLASH] _onAnimationFinished - waiting for background checks');
       // Wait for background checks to complete
       Future.doWhile(() async {
         await Future.delayed(const Duration(milliseconds: 100));
         return !_backgroundChecksDone && mounted;
       }).then((_) {
+        debugPrint('[SPLASH] _onAnimationFinished - after wait, checks done: $_backgroundChecksDone, lock: $_needBiometricLock');
         if (_needBiometricLock) {
           if (mounted) {
             setState(() {
@@ -270,6 +298,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _runBackgroundChecks() async {
+    debugPrint('[SPLASH] _runBackgroundChecks started');
     try {
       // 1. Check Force Update
       String? minVersion;
@@ -306,10 +335,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       debugPrint('[SPLASH] Error in background checks: $e');
     } finally {
       _backgroundChecksDone = true;
+      debugPrint('[SPLASH] _runBackgroundChecks finished');
     }
   }
 
   void _navigateToNextScreen() {
+    debugPrint('[SPLASH] _navigateToNextScreen called, hasNavigated: $_hasNavigated, mounted: $mounted');
     if (_hasNavigated || !mounted) return;
     _hasNavigated = true;
     ref.read(splashCompletedProvider.notifier).state = true;

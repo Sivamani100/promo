@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:io';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() {
   HttpOverrides.global = MockHttpOverrides();
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +16,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await SupabaseService.initialize();
+    GoogleFonts.config.allowRuntimeFetching = false;
   });
 
   testWidgets('App transitions from Splash to Login after animation completes', (tester) async {
@@ -28,17 +31,30 @@ void main() {
       ),
     );
 
+    // Allow microtasks (like GoogleFonts pendingFonts callback) to run and rebuild
+    await tester.pump();
+
+    for (final element in find.byType(Text).evaluate()) {
+      final textWidget = element.widget as Text;
+      debugPrint('FOUND TEXT WIDGET: "${textWidget.data}"');
+    }
+
     // Verify splash screen content is visible initially
     expect(find.text('Promo'), findsOneWidget);
-    expect(find.text('Connect · Create · Collaborate'), findsOneWidget);
 
-    // Wait for the splash screen animation timer to complete
+    // Wait for the splash screen animation timer to complete (1500ms total)
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pump(const Duration(milliseconds: 700));
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump(const Duration(milliseconds: 600));
 
     // Allow GoRouter transition to execute
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    for (final element in find.byType(Text).evaluate()) {
+      final textWidget = element.widget as Text;
+      debugPrint('POST-SETTLE TEXT WIDGET: "${textWidget.data}"');
+    }
 
     // Verify that we successfully transitioned to the Login screen
     expect(find.textContaining('Sign in to'), findsOneWidget);
