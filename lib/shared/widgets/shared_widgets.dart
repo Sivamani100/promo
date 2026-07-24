@@ -232,12 +232,41 @@ class AppAvatar extends StatelessWidget {
             ? (kIsWeb
                 ? Image.network(
                     url!.trim(),
+                    width: size,
+                    height: size,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _fallback(),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: size,
+                        height: size,
+                        color: AppColors.surface2,
+                        child: Center(
+                          child: SizedBox(
+                            width: size * 0.4,
+                            height: size * 0.4,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              color: AppColors.textMuted,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      debugPrint('[AppAvatar] Image failed to load: $url — $error');
+                      return _fallback();
+                    },
                   )
                 : CachedNetworkImage(
                     cacheManager: AppCacheManager.instance,
                     imageUrl: url!.trim(),
+                    width: size,
+                    height: size,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Center(
                       child: SizedBox(
@@ -246,7 +275,10 @@ class AppAvatar extends StatelessWidget {
                         child: const CircularProgressIndicator(strokeWidth: 1.5),
                       ),
                     ),
-                    errorWidget: (_, _, _) => _fallback(),
+                    errorWidget: (context, url, error) {
+                      debugPrint('[AppAvatar] CachedNetworkImage error: $url — $error');
+                      return _fallback();
+                    },
                     memCacheWidth: (size * 2).toInt(),
                     memCacheHeight: (size * 2).toInt(),
                   ))
@@ -274,6 +306,8 @@ class AppAvatar extends StatelessWidget {
   Widget _fallback() {
     final letter = (fallbackText ?? '?')[0].toUpperCase();
     return Container(
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: AppColors.accent,
         shape: BoxShape.circle,
@@ -283,6 +317,7 @@ class AppAvatar extends StatelessWidget {
     );
   }
 }
+
 
 // ---------- AppChip ----------
 class AppChip extends StatelessWidget {

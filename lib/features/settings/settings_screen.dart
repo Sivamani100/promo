@@ -70,6 +70,33 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Password & sessions',
               onTap: () => context.push('/$role/settings/security'),
             ),
+            _SettingsItem(
+              icon: Iconsax.rotate_left,
+              label: 'Reset Onboarding',
+              subtitle: 'Change role (Creator / Brand) & restart setup',
+              onTap: () async {
+                final confirmed = await showPremiumConfirmDialog(
+                  context: context,
+                  title: 'Reset Onboarding?',
+                  message: 'This will reset your onboarding progress and allow you to select a new account role (Creator or Brand) and walk through setup fresh. Are you sure?',
+                  confirmLabel: 'Reset & Restart',
+                  isDestructive: false,
+                  icon: Iconsax.rotate_left,
+                );
+                if (confirmed == true) {
+                  try {
+                    await ref.read(authProvider.notifier).resetOnboarding();
+                    if (context.mounted) {
+                      AppSnackbar.show(context, 'Onboarding reset successfully.');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      AppSnackbar.show(context, 'Failed to reset onboarding: $e');
+                    }
+                  }
+                }
+              },
+            ),
           ]),
           const SizedBox(height: 20),
           _SettingsSection(title: 'Profile', items: [

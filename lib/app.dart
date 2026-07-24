@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
@@ -74,16 +75,17 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
       }
     });
 
-    // HARDENING: devops-agent 2026-06-24
     return MaterialApp.router(
       title: 'Promo',
       debugShowCheckedModeBanner: AppConfig.showDebugBanner,
       useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
       builder: (context, child) {
+        final previewChild = DevicePreview.appBuilder(context, child);
         final config = ref.watch(appConfigCheckerProvider);
         if (config.isInMaintenance) {
           return const MaintenanceBlockerScreen();
@@ -93,7 +95,7 @@ class _BrandAppState extends ConsumerState<BrandApp> with WidgetsBindingObserver
         }
         return AppPrivacyGuard(
           child: ResumeAuthGate(
-            child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+            child: OfflineBanner(child: previewChild),
           ),
         );
       },

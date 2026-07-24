@@ -13,6 +13,8 @@ import 'core/config/url_strategy_stub.dart'
 import 'firebase_options.dart';
 import 'app.dart';
 
+import 'package:device_preview/device_preview.dart';
+
 void main() async {
   configureUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,17 +42,23 @@ void main() async {
         options.environment = AppConfig.env;
       },
       appRunner: () => runApp(
-        UncontrolledProviderScope(
-          container: container,
-          child: const BrandApp(),
+        DevicePreview(
+          enabled: !kReleaseMode,
+          builder: (context) => UncontrolledProviderScope(
+            container: container,
+            child: const BrandApp(),
+          ),
         ),
       ),
     );
   } else {
     runApp(
-      UncontrolledProviderScope(
-        container: container,
-        child: const BrandApp(),
+      DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => UncontrolledProviderScope(
+          container: container,
+          child: const BrandApp(),
+        ),
       ),
     );
   }

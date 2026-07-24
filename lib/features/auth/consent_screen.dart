@@ -74,6 +74,8 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppColors.isDarkMode;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -187,19 +189,40 @@ class _ConsentScreenState extends ConsumerState<ConsentScreen> {
                     isMandatory: false,
                     onChanged: (val) => setState(() => _marketingGranted = val),
                   ),
-                  const SizedBox(height: DesignTokens.space32),
-
-                  // Save & Continue Button
-                  AppButton(
-                    label: 'Confirm Choices',
-                    isLoading: _isLoading,
-                    onTap: _handleSave,
-                  ),
-                  const SizedBox(height: DesignTokens.space16),
+                  const SizedBox(height: DesignTokens.space24),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: DesignTokens.space16,
+          right: DesignTokens.space16,
+          top: DesignTokens.space12,
+          bottom: MediaQuery.of(context).padding.bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surface : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.border : const Color(0xFFF3F4F6),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: AppButton(
+          label: 'Confirm Choices',
+          isLoading: _isLoading,
+          onTap: _handleSave,
         ),
       ),
     );

@@ -213,20 +213,41 @@ class _TermsGateScreenState extends ConsumerState<TermsGateScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: DesignTokens.space32),
-
-                  // Actions
-                  AppButton(
-                    label: 'Continue',
-                    isLoading: _isLoading,
-                    isDisabled: !_agreedToTerms || !_isEighteenOrOlder,
-                    onTap: _handleAccept,
-                  ),
-                  const SizedBox(height: DesignTokens.space16),
+                  const SizedBox(height: DesignTokens.space24),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: DesignTokens.space16,
+          right: DesignTokens.space16,
+          top: DesignTokens.space12,
+          bottom: MediaQuery.of(context).padding.bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surface : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.border : const Color(0xFFF3F4F6),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: AppButton(
+          label: 'Continue',
+          isLoading: _isLoading,
+          isDisabled: !_agreedToTerms || !_isEighteenOrOlder,
+          onTap: _handleAccept,
         ),
       ),
     );

@@ -221,7 +221,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
 
-    final bool isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    final bool isTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
     if (isTest) {
       _isFontLoaded = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -257,7 +257,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   void _onAnimationFinished() async {
     debugPrint('[SPLASH] _onAnimationFinished entered');
-    final bool isTest = Platform.environment.containsKey('FLUTTER_TEST');
+    final bool isTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
     if (!isTest) {
       // Hold the completed state for 0.5 seconds
       await Future.delayed(const Duration(milliseconds: 500));

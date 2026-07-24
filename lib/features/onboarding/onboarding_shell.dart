@@ -272,6 +272,11 @@ final onboardingStateProvider = StateNotifierProvider<OnboardingStateNotifier, O
   return OnboardingStateNotifier(profile);
 });
 
+final onboardingSelectedRoleProvider = StateProvider<String>((ref) {
+  final role = ref.read(authProvider).role;
+  return role ?? 'influencer';
+});
+
 // ---------- Onboarding Shell Widget ----------
 class OnboardingShell extends ConsumerStatefulWidget {
   final int currentStep;
@@ -388,84 +393,401 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsB
     }
   }
 
+  Future<void> _handleStepContinue(BuildContext context, WidgetRef ref, String role) async {
+    final step = widget.currentStep;
+    final state = ref.read(onboardingStateProvider);
+
+    if (step == 1) {
+      final selectedRole = ref.read(onboardingSelectedRoleProvider);
+      final user = ref.read(authProvider).user;
+      if (user != null) {
+        await ProfileService().updateProfile(user.id, {'role': selectedRole});
+        await ref.read(authProvider.notifier).refreshProfile();
+      }
+      if (mounted) context.go('/onboarding/2');
+    } else if (step == 2) {
+      final name = role == 'brand' ? state.companyName : state.displayName;
+      if (name.trim().isEmpty) {
+        AppSnackbar.show(context, 'Please enter your ${role == 'brand' ? 'Company Name' : 'Display Name'}.');
+        return;
+      }
+      context.go('/onboarding/3');
+    } else if (step == 3) {
+      if (role == 'influencer' && state.niches.isEmpty) {
+        AppSnackbar.show(context, 'Please select at least one content niche.');
+        return;
+      }
+      context.go('/onboarding/4');
+    } else if (step == 4) {
+      if (role == 'influencer') {
+        if (state.location.trim().isEmpty) {
+          AppSnackbar.show(context, 'Please enter your location.');
+          return;
+        }
+        if (state.platforms.isEmpty) {
+          AppSnackbar.show(context, 'Please connect at least one platform.');
+          return;
+        }
+      } else {
+        if (state.targetBudgetRange.trim().isEmpty) {
+          AppSnackbar.show(context, 'Please enter target budget range.');
+          return;
+        }
+      }
+      context.go('/onboarding/5');
+    } else if (step == 5) {
+      final user = ref.read(authProvider).user;
+      if (user != null) {
+        try {
+          await ref.read(onboardingStateProvider.notifier).saveProfile(user.id, ref);
+          if (mounted) {
+            _showCelebrationOverlay(context, role);
+          }
+        } catch (e) {
+          if (mounted) {
+            AppSnackbar.show(context, 'Failed to save profile: $e');
+          }
+        }
+      } else {
+        context.go('/login');
+      }
+    }
+  }
+
+  void _showCelebrationOverlay(BuildContext context, String role) {
+    HapticFeedback.vibrate();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        Timer(const Duration(milliseconds: 2200), () {
+          Navigator.of(dialogContext).pop();
+          context.go(role == 'brand' ? '/brand/home' : '/influencer/home');
+        });
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 180,
+                      width: 180,
+                      child: Lottie.network(
+                        'https://lottie.host/db6cf0a2-f3e4-4414-b6a1-cb9e4726e632/H3gVv8Z0Tz.json',
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Iconsax.flash, size: 80, color: AppColors.success);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Ready to Grow!',
+                      style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Redirecting to your dashboard...',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTopHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    String stepTitle;
+    switch (widget.currentStep) {
+      case 1: stepTitle = 'Account Type'; break;
+      case 2: stepTitle = 'Identity Details'; break;
+      case 3: stepTitle = 'Niches & Visuals'; break;
+      case 4: stepTitle = 'Platforms & Location'; break;
+      case 5: stepTitle = 'Launch Dashboard'; break;
+      default: stepTitle = 'Onboarding';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Left circular back button
+          GestureDetector(
+            onTap: () {
+              if (widget.currentStep > 1) {
+                HapticFeedback.mediumImpact();
+                context.go('/onboarding/${widget.currentStep - 1}');
+              }
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDark ? AppColors.surface : const Color(0xFFF9FAFB),
+                border: Border.all(color: isDark ? AppColors.border : const Color(0xFFE5E7EB), width: 1.5),
+              ),
+              child: Icon(
+                Iconsax.arrow_left_2,
+                size: 18,
+                color: widget.currentStep > 1
+                    ? (isDark ? Colors.white : const Color(0xFF111827))
+                    : (isDark ? Colors.white24 : const Color(0xFFD1D5DB)),
+              ),
+            ),
+          ),
+          // Title
+          Text(
+            stepTitle,
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xFF111827),
+            ),
+          ),
+          // Right circular help button
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: Text('Need Help?', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                  content: Text(
+                    'Onboarding configures your workspace and account role. You can update or reset this anytime from Settings.',
+                    style: GoogleFonts.inter(fontSize: 14),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Got it'),
+                    )
+                  ],
+                ),
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isDark ? AppColors.surface : const Color(0xFFF9FAFB),
+                border: Border.all(color: isDark ? AppColors.border : const Color(0xFFE5E7EB), width: 1.5),
+              ),
+              child: Icon(
+                Iconsax.info_circle,
+                size: 18,
+                color: isDark ? Colors.white70 : const Color(0xFF4B5563),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepperBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const primaryBlue = Color(0xFF0066FF);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        children: List.generate(5, (index) {
+          final step = index + 1;
+          final isCompleted = step < widget.currentStep;
+          final isCurrent = step == widget.currentStep;
+          final isLast = step == 5;
+
+          return Expanded(
+            flex: isLast ? 0 : 1,
+            child: Row(
+              children: [
+                // Node
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: isCurrent ? 32 : 28,
+                  height: isCurrent ? 32 : 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (isCompleted || isCurrent) ? primaryBlue : (isDark ? AppColors.surface : const Color(0xFFF3F4F6)),
+                    border: isCurrent
+                        ? Border.all(color: primaryBlue.withOpacity(0.3), width: 4)
+                        : (isCompleted ? null : Border.all(color: isDark ? AppColors.border : const Color(0xFFE5E7EB))),
+                    boxShadow: isCurrent
+                        ? [
+                            BoxShadow(
+                              color: primaryBlue.withOpacity(0.25),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : null,
+                  ),
+                  child: Center(
+                    child: isCompleted
+                        ? const Icon(Icons.check, size: 14, color: Colors.white)
+                        : Text(
+                            '$step',
+                            style: GoogleFonts.inter(
+                              fontSize: isCurrent ? 13 : 12,
+                              fontWeight: FontWeight.bold,
+                              color: (isCompleted || isCurrent) ? Colors.white : (isDark ? Colors.white38 : const Color(0xFF9CA3AF)),
+                            ),
+                          ),
+                  ),
+                ),
+                // Connecting line
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      height: 2.5,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: isCompleted ? primaryBlue : (isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authProvider);
     final role = auth.role ?? 'influencer';
-    final progress = widget.currentStep / 5;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            // Progress bar
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: AppColors.surface2,
-              valueColor: AlwaysStoppedAnimation(AppColors.accent),
-              minHeight: 3,
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (widget.currentStep > 1)
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        context.go('/onboarding/${widget.currentStep - 1}');
-                      },
-                      child: Row(
-                        children: [
-                          Icon(Iconsax.arrow_left_2, size: 18, color: AppColors.textSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Back',
-                            style: AppTextStyles.labelSm.copyWith(color: AppColors.textSecondary),
-                          )
-                        ],
-                      ),
-                    )
-                  else
-                    const SizedBox(),
-                  Row(
-                    children: [
-                      Text('Step ${widget.currentStep} of 5', style: AppTextStyles.captionSm),
-                      if (widget.currentStep == 3 || widget.currentStep == 4) ...[
-                        const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            context.go('/onboarding/${widget.currentStep + 1}');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.purple.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.purple.withOpacity(0.3)),
-                            ),
-                            child: Text(
-                              'Skip',
-                              style: AppTextStyles.labelSm.copyWith(
-                                color: AppColors.purple,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildTopHeader(context),
+            _buildStepperBar(context),
+            const SizedBox(height: 8),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.xl),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
                 child: _buildStep(context, ref, role),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 12,
+          bottom: MediaQuery.of(context).padding.bottom + 12,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surface : Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.border : const Color(0xFFF3F4F6),
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            if (widget.currentStep > 1) ...[
+              Expanded(
+                flex: 1,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    context.go('/onboarding/${widget.currentStep - 1}');
+                  },
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      color: isDark ? AppColors.surface2 : const Color(0xFFF3F4F6),
+                      border: Border.all(
+                        color: isDark ? AppColors.border : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Back',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : const Color(0xFF374151),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () => _handleStepContinue(context, ref, role),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: const Color(0xFF0066FF),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0066FF).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.currentStep == 5 ? 'Complete Setup' : 'Continue',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -486,79 +808,107 @@ class _OnboardingShellState extends ConsumerState<OnboardingShell> with WidgetsB
   }
 }
 
-class _Step1Welcome extends ConsumerStatefulWidget {
+class _Step1Welcome extends ConsumerWidget {
   final String role;
   const _Step1Welcome({required this.role});
 
-  @override
-  ConsumerState<_Step1Welcome> createState() => _Step1WelcomeState();
-}
-
-class _Step1WelcomeState extends ConsumerState<_Step1Welcome> {
-  late String _selectedRole;
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedRole = widget.role;
-  }
-
-  Widget _roleCard({
+  Widget _roleCard(
+    BuildContext context, {
     required String title,
-    required String description,
+    required String subtitle,
     required IconData icon,
     required bool selected,
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    const primaryBlue = Color(0xFF0066FF);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
           color: selected
-              ? (isDark ? Colors.white : const Color(0xFF000000))
-              : (isDark ? AppColors.surface : const Color(0xFFFFFFFF)),
+              ? (isDark ? const Color(0xFF1E293B) : const Color(0xFFF0F6FF))
+              : (isDark ? AppColors.surface : const Color(0xFFF9FAFB)),
           border: Border.all(
-            color: selected
-                ? (isDark ? Colors.white : const Color(0xFF000000))
-                : (isDark ? AppColors.border : const Color(0xFFE7EAEB)),
-            width: 1.5,
+            color: selected ? primaryBlue : (isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+            width: selected ? 2.0 : 1.5,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: primaryBlue.withOpacity(0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              size: 24,
-              color: selected
-                  ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
-                  : AppColors.textPrimary,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Icon Illustration Tile
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: selected
+                        ? primaryBlue.withOpacity(0.12)
+                        : (isDark ? AppColors.surface2 : const Color(0xFFEEF2FF)),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 28,
+                    color: selected ? primaryBlue : (isDark ? Colors.white70 : const Color(0xFF4F46E5)),
+                  ),
+                ),
+                // Radio Checkmark Badge
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected ? primaryBlue : Colors.transparent,
+                    border: Border.all(
+                      color: selected ? primaryBlue : (isDark ? Colors.white38 : const Color(0xFFD1D5DB)),
+                      width: 2,
+                    ),
+                  ),
+                  child: selected
+                      ? const Icon(Icons.check, size: 14, color: Colors.white)
+                      : null,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               title,
               style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: selected
-                    ? (isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF))
-                    : AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : const Color(0xFF111827),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
-              description,
+              subtitle,
               style: GoogleFonts.inter(
-                fontSize: 10,
+                fontSize: 13,
+                height: 1.4,
                 fontWeight: FontWeight.w400,
-                color: selected
-                    ? (isDark ? const Color(0x99000000) : const Color(0x99FFFFFF))
-                    : AppColors.textSecondary,
+                color: isDark ? Colors.white70 : const Color(0xFF6B7280),
               ),
             ),
           ],
@@ -568,72 +918,47 @@ class _Step1WelcomeState extends ConsumerState<_Step1Welcome> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final selectedRole = ref.watch(onboardingSelectedRoleProvider);
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 40),
-        Icon(Iconsax.emoji_happy, size: 64, color: AppColors.warning),
-        const SizedBox(height: 24),
-        Text('Welcome to Brand!', style: AppTextStyles.h1, textAlign: TextAlign.center),
         const SizedBox(height: 12),
         Text(
-          'Please select your account type to proceed with onboarding.',
-          style: AppTextStyles.caption.copyWith(fontSize: 14),
-          textAlign: TextAlign.center,
+          'What type of account would you like?',
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : const Color(0xFF111827),
+            height: 1.25,
+          ),
         ),
-        const SizedBox(height: 40),
-        Row(
-          children: [
-            Expanded(
-              child: _roleCard(
-                title: 'Creator',
-                description: 'I want to collaborate with brands',
-                icon: Iconsax.crown,
-                selected: _selectedRole == 'influencer',
-                onTap: () => setState(() => _selectedRole = 'influencer'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _roleCard(
-                title: 'Brand',
-                description: 'I want to hire creators for campaigns',
-                icon: Iconsax.briefcase,
-                selected: _selectedRole == 'brand',
-                onTap: () => setState(() => _selectedRole = 'brand'),
-              ),
-            ),
-          ],
+        const SizedBox(height: 8),
+        Text(
+          'Choose your role to get started with tailored tools and recommendations.',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: isDark ? Colors.white60 : const Color(0xFF6B7280),
+          ),
         ),
-        const SizedBox(height: 40),
-        AppButton(
-          label: 'Get Started',
-          isLoading: _isSaving,
-          onTap: () async {
-            setState(() {
-              _isSaving = true;
-            });
-            try {
-              final user = ref.read(authProvider).user;
-              if (user != null) {
-                await ProfileService().updateProfile(user.id, {'role': _selectedRole});
-                await ref.read(authProvider.notifier).refreshProfile();
-              }
-              if (mounted) {
-                context.go('/onboarding/2');
-              }
-            } catch (e) {
-              if (mounted) {
-                AppSnackbar.show(context, 'Failed to update account type: $e');
-              }
-            } finally {
-              if (mounted) {
-                setState(() {
-                  _isSaving = false;
-                });
-              }
-            }
-          },
+        const SizedBox(height: 24),
+        _roleCard(
+          context,
+          title: 'Creator / Influencer',
+          subtitle: 'Pitch campaign briefs, collaborate with top brands, and monetize your audience.',
+          icon: Iconsax.crown,
+          selected: selectedRole == 'influencer',
+          onTap: () => ref.read(onboardingSelectedRoleProvider.notifier).state = 'influencer',
+        ),
+        _roleCard(
+          context,
+          title: 'Brand / Business',
+          subtitle: 'Create campaign cards, hire top creators, track ROI, and scale your brand.',
+          icon: Iconsax.briefcase,
+          selected: selectedRole == 'brand',
+          onTap: () => ref.read(onboardingSelectedRoleProvider.notifier).state = 'brand',
         ),
       ],
     );
@@ -679,7 +1004,6 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(onboardingStateProvider);
     final notifier = ref.read(onboardingStateProvider.notifier);
 
     return Column(
@@ -690,7 +1014,7 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
         Text(widget.role == 'brand' ? 'Tell us about your brand.' : 'Tell us about yourself.', style: AppTextStyles.caption),
         const SizedBox(height: 24),
         AppTextField(
-          label: widget.role == 'brand' ? 'Company Name' : 'Display Name',
+          label: widget.role == 'brand' ? 'Company Name *' : 'Display Name *',
           hint: widget.role == 'brand' ? 'Acme Corp' : 'Your name',
           controller: _nameCtrl,
           focusNode: _nameFocusNode,
@@ -700,7 +1024,7 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
         ),
         const SizedBox(height: 16),
         AppTextField(
-          label: 'Bio',
+          label: 'Bio (Optional - add later)',
           hint: 'Describe yourself or company in a few sentences...',
           maxLines: 4,
           controller: _bioCtrl,
@@ -711,7 +1035,7 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
         ),
         const SizedBox(height: 16),
         AppTextField(
-          label: 'Website',
+          label: 'Website (Optional - add later)',
           hint: 'https://...',
           keyboardType: TextInputType.url,
           controller: _websiteCtrl,
@@ -719,18 +1043,6 @@ class _Step2IdentityState extends ConsumerState<_Step2Identity> {
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => FocusScope.of(context).unfocus(),
           onChanged: (val) => notifier.updateField('websiteUrl', val),
-        ),
-        const SizedBox(height: 32),
-        AppButton(
-          label: 'Continue',
-          onTap: () {
-            final name = widget.role == 'brand' ? state.companyName : state.displayName;
-            if (name.trim().isEmpty || state.bio.trim().isEmpty) {
-              AppSnackbar.show(context, 'Please fill out Display/Company Name and Bio.');
-              return;
-            }
-            context.go('/onboarding/3');
-          },
         ),
       ],
     );
@@ -848,18 +1160,6 @@ class _Step3Visual extends ConsumerWidget {
             }).toList(),
           ),
         ],
-
-        const SizedBox(height: 32),
-        AppButton(
-          label: 'Continue',
-          onTap: () {
-            if (role == 'influencer' && state.niches.isEmpty) {
-              AppSnackbar.show(context, 'Please select at least one content niche.');
-              return;
-            }
-            context.go('/onboarding/4');
-          },
-        ),
       ],
     );
   }
@@ -876,32 +1176,12 @@ class _Step4Details extends ConsumerStatefulWidget {
 class _Step4DetailsState extends ConsumerState<_Step4Details> {
   late final TextEditingController _budgetCtrl;
   late final TextEditingController _audienceCtrl;
-  late final TextEditingController _villageCtrl;
-  late final TextEditingController _mandalCtrl;
-  late final TextEditingController _districtCtrl;
-  late final TextEditingController _stateCtrl;
+  late final TextEditingController _locationCtrl;
   bool _isLoadingLocation = false;
 
   final _budgetFocusNode = FocusNode();
   final _audienceFocusNode = FocusNode();
-  final _villageFocusNode = FocusNode();
-  final _mandalFocusNode = FocusNode();
-  final _districtFocusNode = FocusNode();
-  final _stateFocusNode = FocusNode();
-
-  List<String> _splitLocation(String loc) {
-    if (loc.isEmpty) return ['', '', '', ''];
-    final parts = loc.split(',').map((e) => e.trim()).toList();
-    while (parts.length < 4) {
-      parts.add('');
-    }
-    return parts.sublist(0, 4);
-  }
-
-  void _updateLocation() {
-    final combined = '${_villageCtrl.text.trim()}, ${_mandalCtrl.text.trim()}, ${_districtCtrl.text.trim()}, ${_stateCtrl.text.trim()}';
-    ref.read(onboardingStateProvider.notifier).updateField('location', combined);
-  }
+  final _locationFocusNode = FocusNode();
 
   Future<void> _getCurrentLocation() async {
     setState(() {
@@ -972,21 +1252,17 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         final data = json.decode(response.body);
         final address = data['address'] as Map<String, dynamic>? ?? {};
         
-        final village = address['suburb'] ?? address['village'] ?? address['neighbourhood'] ?? address['road'] ?? address['residential'] ?? address['hamlet'] ?? '';
-        final mandal = address['subdistrict'] ?? address['town'] ?? address['city_district'] ?? address['county'] ?? '';
-        final district = address['district'] ?? address['state_district'] ?? address['city'] ?? '';
+        final village = address['suburb'] ?? address['village'] ?? address['neighbourhood'] ?? address['road'] ?? '';
+        final city = address['city'] ?? address['town'] ?? address['district'] ?? address['county'] ?? '';
         final stateName = address['state'] ?? '';
 
+        final locStr = [village, city, stateName].where((s) => s.toString().trim().isNotEmpty).join(', ');
+
         if (mounted) {
-          _villageCtrl.text = village.toString();
-          _mandalCtrl.text = mandal.toString();
-          _districtCtrl.text = district.toString();
-          _stateCtrl.text = stateName.toString();
-          
-          final combined = '${_villageCtrl.text.trim()}, ${_mandalCtrl.text.trim()}, ${_districtCtrl.text.trim()}, ${_stateCtrl.text.trim()}';
+          _locationCtrl.text = locStr;
           
           final notifier = ref.read(onboardingStateProvider.notifier);
-          notifier.updateField('location', combined);
+          notifier.updateField('location', locStr);
           notifier.updateField('latitude', position.latitude);
           notifier.updateField('longitude', position.longitude);
 
@@ -1014,27 +1290,17 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
     final state = ref.read(onboardingStateProvider);
     _budgetCtrl = TextEditingController(text: state.targetBudgetRange);
     _audienceCtrl = TextEditingController(text: state.targetAudience);
-    final parts = _splitLocation(state.location);
-    _villageCtrl = TextEditingController(text: parts[0]);
-    _mandalCtrl = TextEditingController(text: parts[1]);
-    _districtCtrl = TextEditingController(text: parts[2]);
-    _stateCtrl = TextEditingController(text: parts[3]);
+    _locationCtrl = TextEditingController(text: state.location);
   }
 
   @override
   void dispose() {
     _budgetCtrl.dispose();
     _audienceCtrl.dispose();
-    _villageCtrl.dispose();
-    _mandalCtrl.dispose();
-    _districtCtrl.dispose();
-    _stateCtrl.dispose();
+    _locationCtrl.dispose();
     _budgetFocusNode.dispose();
     _audienceFocusNode.dispose();
-    _villageFocusNode.dispose();
-    _mandalFocusNode.dispose();
-    _districtFocusNode.dispose();
-    _stateFocusNode.dispose();
+    _locationFocusNode.dispose();
     super.dispose();
   }
 
@@ -1169,7 +1435,7 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
         Text(
           widget.role == 'brand' 
               ? 'Set your campaign preferences.' 
-              : 'Link your social media accounts and manually input your followers count.', 
+              : 'Link your social media accounts and input your location.', 
           style: AppTextStyles.caption,
         ),
         const SizedBox(height: 24),
@@ -1190,50 +1456,18 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
             controller: _audienceCtrl,
             focusNode: _audienceFocusNode,
             textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_villageFocusNode),
+            onSubmitted: (_) => FocusScope.of(context).requestFocus(_locationFocusNode),
             onChanged: (val) => notifier.updateField('targetAudience', val),
           ),
-          const SizedBox(height: 24),
-          Text('Location Details'.toUpperCase(), style: AppTextStyles.overline),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           AppTextField(
-            label: 'Village / Street',
-            hint: 'e.g. Danavaipeta',
-            controller: _villageCtrl,
-            focusNode: _villageFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_mandalFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'Mandal / Town',
-            hint: 'e.g. Rajahmundry Urban',
-            controller: _mandalCtrl,
-            focusNode: _mandalFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_districtFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'District',
-            hint: 'e.g. East Godavari',
-            controller: _districtCtrl,
-            focusNode: _districtFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_stateFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'State',
-            hint: 'e.g. Andhra Pradesh',
-            controller: _stateCtrl,
-            focusNode: _stateFocusNode,
+            label: 'Location',
+            hint: 'e.g. Rajahmundry, Andhra Pradesh',
+            controller: _locationCtrl,
+            focusNode: _locationFocusNode,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => FocusScope.of(context).unfocus(),
-            onChanged: (val) => _updateLocation(),
+            onChanged: (val) => notifier.updateField('location', val.trim()),
           ),
           const SizedBox(height: 16),
           _isLoadingLocation
@@ -1252,48 +1486,15 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
           _buildPlatformRow('TikTok', Iconsax.music, AppColors.textPrimary, state.platformHandles['TikTok']),
           const SizedBox(height: 12),
           _buildPlatformRow('Twitter', Iconsax.global, const Color(0xFF1DA1F2), state.platformHandles['Twitter']),
-          const SizedBox(height: 16),
-          const SizedBox(height: 16),
-          Text('Location Details'.toUpperCase(), style: AppTextStyles.overline),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           AppTextField(
-            label: 'Village / Street',
-            hint: 'e.g. Danavaipeta',
-            controller: _villageCtrl,
-            focusNode: _villageFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_mandalFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'Mandal / Town',
-            hint: 'e.g. Rajahmundry Urban',
-            controller: _mandalCtrl,
-            focusNode: _mandalFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_districtFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'District',
-            hint: 'e.g. East Godavari',
-            controller: _districtCtrl,
-            focusNode: _districtFocusNode,
-            textInputAction: TextInputAction.next,
-            onSubmitted: (_) => FocusScope.of(context).requestFocus(_stateFocusNode),
-            onChanged: (val) => _updateLocation(),
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'State',
-            hint: 'e.g. Andhra Pradesh',
-            controller: _stateCtrl,
-            focusNode: _stateFocusNode,
+            label: 'Location *',
+            hint: 'e.g. Rajahmundry, Andhra Pradesh',
+            controller: _locationCtrl,
+            focusNode: _locationFocusNode,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => FocusScope.of(context).unfocus(),
-            onChanged: (val) => _updateLocation(),
+            onChanged: (val) => notifier.updateField('location', val.trim()),
           ),
           const SizedBox(height: 16),
           _isLoadingLocation
@@ -1305,28 +1506,6 @@ class _Step4DetailsState extends ConsumerState<_Step4Details> {
                   onTap: _getCurrentLocation,
                 ),
         ],
-        const SizedBox(height: 32),
-        AppButton(
-          label: 'Continue',
-          onTap: () {
-            if (widget.role == 'influencer') {
-              if (state.location.trim().isEmpty) {
-                AppSnackbar.show(context, 'Please enter your location.');
-                return;
-              }
-              if (state.platforms.isEmpty) {
-                AppSnackbar.show(context, 'Please connect at least one platform.');
-                return;
-              }
-            } else {
-              if (state.targetBudgetRange.trim().isEmpty) {
-                AppSnackbar.show(context, 'Please enter target budget range.');
-                return;
-              }
-            }
-            context.go('/onboarding/5');
-          },
-        ),
       ],
     );
   }
@@ -1393,110 +1572,31 @@ class _Step5Launch extends ConsumerWidget {
   final String role;
   const _Step5Launch({required this.role});
 
-  void _showCelebrationOverlay(BuildContext context, String role) {
-    HapticFeedback.vibrate();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        Timer(const Duration(milliseconds: 2200), () {
-          Navigator.of(dialogContext).pop();
-          context.go(role == 'brand' ? '/brand/home' : '/influencer/home');
-        });
-
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    )
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 180,
-                      width: 180,
-                      child: Lottie.network(
-                        'https://lottie.host/db6cf0a2-f3e4-4414-b6a1-cb9e4726e632/H3gVv8Z0Tz.json',
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Iconsax.flash, size: 80, color: AppColors.success);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Ready to Grow!',
-                      style: AppTextStyles.h2.copyWith(color: AppColors.textPrimary),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Redirecting to your dashboard...',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(onboardingStateProvider);
-
-    return Column(
-      children: [
-        const SizedBox(height: 40),
-        Icon(Iconsax.flash, size: 64, color: AppColors.success),
-        const SizedBox(height: 24),
-        Text('You\'re All Set!', style: AppTextStyles.h1, textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        Text(
-          role == 'brand'
-              ? 'Your brand profile is ready. Start posting campaign cards and finding influencers!'
-              : 'Your creator profile is live. Start discovering and applying to campaigns!',
-          style: AppTextStyles.caption.copyWith(fontSize: 14),
-          textAlign: TextAlign.center,
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.55,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Iconsax.flash, size: 72, color: AppColors.success),
+            const SizedBox(height: 28),
+            Text('You\'re All Set!', style: AppTextStyles.h1, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                role == 'brand'
+                    ? 'Your brand profile is ready. Start posting campaign cards and finding influencers!'
+                    : 'Your creator profile is live. Start discovering and applying to campaigns!',
+                style: AppTextStyles.caption.copyWith(fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 40),
-        AppButton(
-          label: 'Launch Dashboard',
-          isLoading: state.isSaving,
-          onTap: () async {
-            final user = ref.read(authProvider).user;
-            if (user != null) {
-              try {
-                await ref.read(onboardingStateProvider.notifier).saveProfile(user.id, ref);
-                if (context.mounted) {
-                  _showCelebrationOverlay(context, role);
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  AppSnackbar.show(context, 'Failed to save profile: $e');
-                }
-              }
-            } else {
-              context.go('/login');
-            }
-          },
-        ),
-      ],
+      ),
     );
   }
 }

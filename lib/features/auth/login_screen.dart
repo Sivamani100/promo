@@ -209,11 +209,180 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     AppSnackbar.show(context, msg);
   }
 
+  Widget _buildSegmentedTab({required bool isLogin}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surface2 : const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (!isLogin) context.go('/login');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: isLogin
+                      ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: isLogin
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Login',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: isLogin ? FontWeight.w700 : FontWeight.w500,
+                      color: isLogin
+                          ? (isDark ? Colors.white : const Color(0xFF111827))
+                          : (isDark ? Colors.white60 : const Color(0xFF6B7280)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (isLogin) context.go('/signup');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: !isLogin
+                      ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: !isLogin
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Sign up',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: !isLogin ? FontWeight.w700 : FontWeight.w500,
+                      color: !isLogin
+                          ? (isDark ? Colors.white : const Color(0xFF111827))
+                          : (isDark ? Colors.white60 : const Color(0xFF6B7280)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showLoginSuccessDialog(BuildContext context, String role) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surface : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF60A5FA).withOpacity(0.15),
+                ),
+                child: const Icon(
+                  Iconsax.verify,
+                  size: 48,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Login Successful',
+                style: GoogleFonts.inter(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : const Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Everything looks good, moving you ahead',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: isDark ? Colors.white60 : const Color(0xFF6B7280),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.go(role == 'brand' ? '/brand/home' : '/influencer/home');
+                },
+                child: Container(
+                  height: 52,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white : const Color(0xFF111827),
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Got it',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.black : Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Watch authState for errors and trigger error shake
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
         setState(() {
@@ -223,177 +392,266 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       }
     });
 
-    Widget content = Scaffold(
-      backgroundColor: Colors.transparent, // Background handled by AuthBackground
-      body: AuthBackground(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: AnimatedBuilder(
-                animation: _shakeAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(_shakeAnimation.value, 0),
-                    child: child,
-                  );
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-
-                        // Title and Subtitle
-                        Text(
-                          'Welcome Back',
-                          style: GoogleFonts.fraunces(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 32,
-                            height: 1.1875,
-                            color: isDark ? Colors.white : const Color(0xFF15171C),
-                            letterSpacing: -0.32,
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.background : const Color(0xFFF9FAFB),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: AnimatedBuilder(
+              animation: _shakeAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(_shakeAnimation.value, 0),
+                  child: child,
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDBEAFE).withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2563EB),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
-                        
-                        const SizedBox(height: 8),
-                        
-                        Text(
-                          'Sign in to continue your journey',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 15,
-                            height: 1.4667,
-                            color: isDark ? Colors.white70 : const Color(0xFF55575C),
+                          child: const Icon(
+                            Iconsax.lock,
+                            size: 32,
+                            color: Colors.white,
                           ),
-                        ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 40),
-        
-                        // Email Input
-                        PremiumInputField(
-                          label: 'Email Address',
-                          hint: 'you@example.com',
-                          controller: _emailCtrl,
-                          focusNode: _emailFocusNode,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          onSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
-                        ).animate().fade(duration: 400.ms, delay: 200.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 20),
-        
-                        // Password Input
-                        PremiumInputField(
-                          label: 'Password',
-                          hint: '••••••••',
-                          controller: _passwordCtrl,
-                          focusNode: _passwordFocusNode,
-                          obscure: _obscurePassword,
-                          errorText: _errorMessage,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => _handleSignIn(),
-                          suffixIcon: HoverablePasswordEye(
-                            obscure: _obscurePassword,
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                        ).animate().fade(duration: 400.ms, delay: 300.ms).slideY(begin: 0.2, end: 0),
-        
-                        // Forgot password?
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: HoverableTextButton(
-                              text: 'Forgot password?',
-                              onPressed: () => context.push('/reset-password'),
+                        ),
+                        Positioned(
+                          right: 12,
+                          top: 12,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF60A5FA),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Iconsax.key,
+                              size: 14,
+                              color: Colors.white,
                             ),
                           ),
-                        ).animate().fade(duration: 400.ms, delay: 400.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 32),
-        
-                        // Sign In Button
-                        PrimaryCtaButton(
-                          label: 'Sign In',
-                          isLoading: _loading,
-                          onPressed: _handleSignIn,
-                        ).animate().fade(duration: 400.ms, delay: 500.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 24),
-        
-                        // OR Separator
-                        Row(
-                          children: [
-                            Expanded(child: Container(height: 1, color: isDark ? Colors.white24 : Colors.black12)),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                'OR',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white54 : Colors.black54,
-                                  letterSpacing: 0.08 * 12,
-                                ),
-                              ),
-                            ),
-                            Expanded(child: Container(height: 1, color: isDark ? Colors.white24 : Colors.black12)),
-                          ],
-                        ).animate().fade(duration: 400.ms, delay: 600.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 24),
-        
-                        // Google Sign-In Button
-                        GoogleSignInButton(
-                          onPressed: _loading ? null : _handleGoogleSignIn,
-                        ).animate().fade(duration: 400.ms, delay: 700.ms).slideY(begin: 0.2, end: 0),
-        
-                        const SizedBox(height: 32),
-        
-                        // Bottom Account Section
-                        Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
-                                "Don't have an account? ",
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: isDark ? Colors.white70 : const Color(0xFF55575C),
-                                  height: 1.4286,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => context.push('/signup'),
-                                child: Text(
-                                  'Sign up',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
-                                    height: 1.4286,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ).animate().fade(duration: 400.ms, delay: 800.ms).slideY(begin: 0.2, end: 0),
+                        ),
                       ],
                     ),
+                  ).animate().scale(duration: 350.ms, curve: Curves.easeOutBack),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    'Welcome back 👋',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                      color: isDark ? Colors.white : const Color(0xFF111827),
+                    ),
+                  ).animate().fade(duration: 300.ms).slideY(begin: 0.1, end: 0),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    'Enter your details to access your account',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: isDark ? Colors.white60 : const Color(0xFF6B7280),
+                    ),
+                  ).animate().fade(duration: 300.ms, delay: 50.ms).slideY(begin: 0.1, end: 0),
+
+                  const SizedBox(height: 24),
+
+                  _buildSegmentedTab(isLogin: true)
+                      .animate()
+                      .fade(duration: 300.ms, delay: 100.ms),
+
+                  const SizedBox(height: 24),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Email Address',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : const Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _emailCtrl,
+                        focusNode: _emailFocusNode,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_passwordFocusNode),
+                        style: GoogleFonts.inter(fontSize: 15, color: isDark ? Colors.white : const Color(0xFF111827)),
+                        decoration: InputDecoration(
+                          hintText: 'name@company.com',
+                          hintStyle: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white38 : const Color(0xFF9CA3AF)),
+                          filled: true,
+                          fillColor: isDark ? AppColors.surface : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF0066FF), width: 1.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ).animate().fade(duration: 300.ms, delay: 150.ms),
+
+                  const SizedBox(height: 16),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Password',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : const Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _passwordCtrl,
+                        focusNode: _passwordFocusNode,
+                        obscureText: _obscurePassword,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => _handleSignIn(),
+                        style: GoogleFonts.inter(fontSize: 15, color: isDark ? Colors.white : const Color(0xFF111827)),
+                        decoration: InputDecoration(
+                          hintText: '••••••••',
+                          hintStyle: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white38 : const Color(0xFF9CA3AF)),
+                          filled: true,
+                          fillColor: isDark ? AppColors.surface : Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: isDark ? AppColors.border : const Color(0xFFE5E7EB)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFF0066FF), width: 1.5),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Iconsax.eye_slash : Iconsax.eye,
+                              size: 20,
+                              color: isDark ? Colors.white54 : const Color(0xFF6B7280),
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ).animate().fade(duration: 300.ms, delay: 200.ms),
+
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: GestureDetector(
+                        onTap: () => context.push('/reset-password'),
+                        child: Text(
+                          'Forgot Password',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : const Color(0xFF111827),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 28),
+
+                  GestureDetector(
+                    onTap: _loading ? null : _handleSignIn,
+                    child: Container(
+                      height: 52,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white : const Color(0xFF111827),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      child: Center(
+                        child: _loading
+                            ? SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    isDark ? Colors.black : Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Login',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.black : Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ).animate().fade(duration: 300.ms, delay: 250.ms),
+
+                  const SizedBox(height: 20),
+
+                  // Google Sign-In Option
+                  GoogleSignInButton(
+                    onPressed: _loading ? null : _handleGoogleSignIn,
+                  ).animate().fade(duration: 300.ms, delay: 300.ms),
+                ],
               ),
+            ),
+          ),
         ),
       ),
     );
-
-    return content;
   }
 }
 
@@ -677,7 +935,7 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
         height: 54,
         decoration: BoxDecoration(
           color: isDark ? Colors.white10 : Colors.black12,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(30),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -714,7 +972,7 @@ class _PrimaryCtaButtonState extends State<PrimaryCtaButton> {
           transformAlignment: Alignment.center,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(30),
             boxShadow: _isHovered && !_isPressed
                 ? [
                     BoxShadow(

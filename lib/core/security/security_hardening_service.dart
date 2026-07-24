@@ -52,6 +52,7 @@ class SecurityHardeningService {
   }
 
   static Future<bool> _checkDeviceIntegrity() async {
+    if (kIsWeb) return false;
     try {
       if (Platform.isAndroid) {
         // Common root indicators on Android

@@ -227,7 +227,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               transformAlignment: Alignment.center,
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(30),
                 boxShadow: isHovered && !isPressed
                     ? [
                         BoxShadow(
@@ -424,28 +424,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   List<Widget> _buildStep1(bool isDark) {
     return [
-      Text(
-        'Create your\naccount',
-        style: GoogleFonts.fraunces(
-          fontWeight: FontWeight.w600,
-          fontSize: 32,
-          height: 1.1875,
-          color: isDark ? Colors.white : const Color(0xFF15171C),
-          letterSpacing: -0.32,
-        ),
-      ).animate().fade(duration: 400.ms).slideY(begin: 0.2, end: 0),
-      const SizedBox(height: 12),
-      Text(
-        'Enter your email and set up a secure password to get started',
-        style: GoogleFonts.inter(
-          fontWeight: FontWeight.w400,
-          fontSize: 15,
-          height: 1.4,
-          color: isDark ? Colors.white70 : const Color(0xFF55575C),
-        ),
-      ).animate().fade(duration: 400.ms, delay: 100.ms).slideY(begin: 0.2, end: 0),
-      const SizedBox(height: 36),
-
       _buildInputField(
         label: 'Email Address',
         hint: 'you@example.com',
@@ -587,35 +565,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           },
         ),
       ).animate().fade(duration: 400.ms, delay: 550.ms).slideY(begin: 0.2, end: 0),
-      
-      const SizedBox(height: 32),
-      Center(
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              "Already have an account? ",
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: isDark ? Colors.white70 : const Color(0xFF55575C),
-              ),
-            ),
-            GestureDetector(
-              onTap: () => context.go('/login'),
-              child: Text(
-                'Sign in',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.purpleLight : const Color(0xFFB08D57),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ).animate().fade(duration: 400.ms, delay: 600.ms).slideY(begin: 0.2, end: 0),
     ];
   }
 
@@ -861,60 +810,222 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     }
   }
 
+  Widget _buildSegmentedTab({required bool isLogin}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surface2 : const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (!isLogin) context.go('/login');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: isLogin
+                      ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: isLogin
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Login',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: isLogin ? FontWeight.w700 : FontWeight.w500,
+                      color: isLogin
+                          ? (isDark ? Colors.white : const Color(0xFF111827))
+                          : (isDark ? Colors.white60 : const Color(0xFF6B7280)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (isLogin) context.go('/signup');
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: !isLogin
+                      ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: !isLogin
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Sign up',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: !isLogin ? FontWeight.w700 : FontWeight.w500,
+                      color: !isLogin
+                          ? (isDark ? Colors.white : const Color(0xFF111827))
+                          : (isDark ? Colors.white60 : const Color(0xFF6B7280)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    Widget content = Scaffold(
-      backgroundColor: Colors.transparent,
-      body: AuthBackground(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-
-                      // Animated Step Content
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0.05, 0),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutCubic,
-                              )),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: KeyedSubtree(
-                          key: ValueKey<int>(_step),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_step == 1) ..._buildStep1(isDark),
-                              if (_step == 2) ..._buildStep2(isDark),
-                              if (_step == 3) ..._buildStep3(isDark),
-                            ],
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.background : const Color(0xFFF9FAFB),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Mascot / Security Badge Header
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDBEAFE).withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Iconsax.user_add,
+                          size: 30,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Positioned(
+                        right: 12,
+                        top: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF60A5FA),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Iconsax.star1,
+                            size: 14,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ],
                   ),
+                ).animate().scale(duration: 350.ms, curve: Curves.easeOutBack),
+
+                const SizedBox(height: 20),
+
+                Text(
+                  'Create account 👋',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 24,
+                    color: isDark ? Colors.white : const Color(0xFF111827),
+                  ),
+                ).animate().fade(duration: 300.ms).slideY(begin: 0.1, end: 0),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  'Enter your details to register your account',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: isDark ? Colors.white60 : const Color(0xFF6B7280),
+                  ),
+                ).animate().fade(duration: 300.ms, delay: 50.ms).slideY(begin: 0.1, end: 0),
+
+                const SizedBox(height: 24),
+
+                // Segmented Switcher (Login / Sign up)
+                _buildSegmentedTab(isLogin: false)
+                    .animate()
+                    .fade(duration: 300.ms, delay: 100.ms),
+
+                const SizedBox(height: 24),
+
+                // Animated Step Content
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.05, 0),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        )),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(_step),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_step == 1) ..._buildStep1(isDark),
+                        if (_step == 2) ..._buildStep2(isDark),
+                        if (_step == 3) ..._buildStep3(isDark),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
+            ),
+          ),
         ),
       ),
     );
-
-    return content;
   }
 }

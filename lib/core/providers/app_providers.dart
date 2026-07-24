@@ -570,6 +570,43 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> resetOnboarding() async {
+    final user = state.user;
+    if (user == null) return;
+
+    state = state.copyWith(isLoading: true);
+    try {
+      // 1. Update profiles table in DB to reset onboarding completion flag and step
+      await SupabaseService.client.from('profiles').update({
+        'onboarding_complete': false,
+        'onboarding_step': 1,
+      }).eq('id', user.id);
+
+      // 2. Clear local cache in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('onboarding_complete_${user.id}', false);
+      await prefs.remove('onboarding_complete_${user.id}');
+      await prefs.remove('cached_profile_${user.id}');
+      await prefs.remove('first_time_tour_shown_${user.id}');
+
+      // 3. Fetch updated profile from DB and update state
+      final updatedProfile = await _authService.fetchProfile(user.id);
+      final profileMap = Map<String, dynamic>.from(updatedProfile ?? state.profile ?? {});
+      profileMap['onboarding_complete'] = false;
+      profileMap['onboarding_step'] = 1;
+
+      state = state.copyWith(
+        profile: profileMap,
+        isLoading: false,
+        isOnboardingComplete: false,
+      );
+    } catch (e) {
+      print('[AUTH] Error resetting onboarding: $e');
+      state = state.copyWith(isLoading: false, error: AppErrorHandler.toUserMessage(e));
+      rethrow;
+    }
+  }
+
   Future<void> updatePreferences(Map<String, dynamic> newPrefs) async {
     final user = state.user;
     if (user == null) return;
